@@ -1,0 +1,139 @@
+.details-detailpage {
+margin-top: 5px;
+}
+
+.summary-detailpage {
+    font-size: 25px;
+}
+
+.table-detailpage{
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+}
+
+th {
+width: 40%;
+padding-left: 5px;
+}
+
+tr, th, td {
+padding-top: 5px;
+padding-bottom: 5px;
+}
+
+.container-list{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.container-list input {
+    margin-top: 7.5px;
+    margin-bottom: 7.5px;
+    height: 36.5px;
+    border: 1px solid grey;
+    border-radius: 8px;
+    }
+
+table tbody tr:nth-child(odd) {
+    background-color: #CED4DA;
+}
+
+.filter-list-elements {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+
+
+.generaltable {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid;
+    border-radius: 5px;   
+}
+
+.generaltable th, .generaltable td {
+    width: 10%;
+}
+
+.lastrow {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid;
+    border-radius: 10px;
+}
+
+.button-red {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    background-color: #E1001A;
+    width: fit-content;
+    height: fit-content;
+    color: white;
+}
+
+.button-red:hover {
+    text-decoration: none;
+    background-color: #8C0011;
+    cursor: pointer;
+}
+
+.button-red a {
+    color: white;
+    text-decoration: none;
+}
+
+.button-grey {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    background-color: #CED4DA;
+    width: fit-content;
+    height: fit-content;
+}
+
+.button-grey:hover {
+    text-decoration: none;
+    background-color: #B1B7C2;
+    cursor: pointer;
+}
+
+.button-grey a {
+    color: #1D2125;
+    text-decoration: none;
+}
+
+.button-spacer {
+    margin-left: 10px;
+}
+
+.actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+
+.actionsbar-bottom {
+    margin-top: 20px;
+    width: 100%;
+    justify-content: center;
+    gap: 50px;
+}
+
+.information {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
