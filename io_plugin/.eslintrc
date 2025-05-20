@@ -1,0 +1,30 @@
+{
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "env": {
+    "browser": true,
+    "amd": true,
+    "es6": true
+  },
+  "globals": {
+    "M": true,
+    "Y": true,
+    "define": true,
+    "require": true
+  },
+  "rules": {
+    "no-console": "off",
+    "semi": ["error", "always"],
+    "indent": ["error", 4],
+    "quotes": ["warn", "single"],
+    "no-unused-vars": "warn",
+    "no-trailing-spaces": "warn",
+    "curly": "error",
+    "camelcase": "warn",
+    "no-use-before-define": ["error", {"functions": false}],
+    "space-before-blocks": "warn",
+    "keyword-spacing": "warn"
+  }
+}

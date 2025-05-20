@@ -1,0 +1,22 @@
+{
+  "name": "moodle-mod_dhbwio",
+  "version": "1.0.0",
+  "description": "DHBW International Office Moodle Plugin",
+  "private": true,
+  "scripts": {
+    "lint": "grunt eslint stylelint",
+    "build": "grunt amd",
+    "watch": "grunt watch"
+  },
+  "devDependencies": {
+    "eslint": "^9.26.0",
+    "grunt": "^1.6.1",
+    "grunt-contrib-jshint": "^3.2.0",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-eslint": "^25.0.0",
+    "grunt-stylelint": "^0.20.1",
+    "stylelint": "^16.19.1",
+    "stylelint-config-standard": "^38.0.0"
+  }
+}

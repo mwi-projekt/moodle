@@ -1,0 +1,65 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_dhbwio/universities_list
+
+    Template for displaying universities list grouped by country.
+
+    Context variables required for this template:
+    * has_universities - Whether there are universities to display
+    * no_universities_message - Message to display when no universities
+    * country_groups - Array of country groups
+      * country_name - Name of the country
+      * universities - Array of universities for this country
+        * html - HTML content for the university card
+
+    Example context (json):
+    {
+        "has_universities": true,
+        "no_universities_message": "No universities found",
+        "country_groups": [
+            {
+                "country_name": "Germany",
+                "universities": [
+                    { "html": "<div>University card 1</div>" },
+                    { "html": "<div>University card 2</div>" }
+                ]
+            },
+            {
+                "country_name": "France",
+                "universities": [
+                    { "html": "<div>University card 3</div>" }
+                ]
+            }
+        ]
+    }
+}}
+
+{{^has_universities}}
+    {{{no_universities_message}}}
+{{/has_universities}}
+
+{{#has_universities}}
+    {{#country_groups}}
+        <h3>{{country_name}}</h3>
+        <div class="dhbwio-university-grid">
+            {{#universities}}
+                {{{html}}}
+            {{/universities}}
+        </div>
+    {{/country_groups}}
+{{/has_universities}}

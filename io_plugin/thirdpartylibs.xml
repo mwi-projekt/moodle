@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>thirdparty/leaflet</location>
+    <name>Leaflet</name>
+    <version>1.9.4</version>
+    <license>BSD-2-Clause</license>
+    <licenseversion></licenseversion>
+  </library>
+</libraries>

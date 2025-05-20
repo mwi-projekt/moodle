@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/dhbwio/db" VERSION="20250516" COMMENT="XMLDB file for Moodle mod_dhbwio"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="dhbwio" COMMENT="Each record represents one dhbwio activity instance">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course dhbwio activity belongs to"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the activity instance"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Activity description"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of intro field"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp of when last modified"/>
+        <FIELD NAME="enablemap" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable world map view"/>
+        <FIELD NAME="enablereports" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable experience reports"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    
+    <TABLE NAME="dhbwio_universities" COMMENT="Information about partner universities">
+	<FIELDS>
+		<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+		<FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+		<FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of university"/>
+		<FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Country code (ISO)"/>
+		<FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="City of university"/>
+		<FIELD NAME="address" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Street address"/>
+		<FIELD NAME="postal_code" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Postal/ZIP code"/>
+		<FIELD NAME="latitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Latitude coordinates"/>
+		<FIELD NAME="longitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Longitude coordinates"/>
+		<FIELD NAME="website" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Website URL"/>
+		<FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of university"/>
+		<FIELD NAME="descriptionformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of description field"/>
+		<FIELD NAME="requirements" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Requirements for exchange students"/>
+		<FIELD NAME="available_slots" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of available slots"/>
+		<FIELD NAME="semester_start" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Start month of a semester (1-12)"/>
+		<FIELD NAME="semester_end" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="End month of a semester (1-12)"/>
+		<FIELD NAME="semester_fees" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Fees per semester"/>
+		<FIELD NAME="fee_currency" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="EUR" SEQUENCE="false" COMMENT="Currency for fees"/>
+		<FIELD NAME="accommodation_type" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="various" SEQUENCE="false" COMMENT="Type of accommodation available"/>
+		<FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is university active for display"/>
+		<FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
+	</FIELDS>
+	<KEYS>
+		<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+		<KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+	</KEYS>
+	<INDEXES>
+		<INDEX NAME="dhbwio-country" UNIQUE="false" FIELDS="dhbwio, country"/>
+	</INDEXES>
+	</TABLE>
+    
+    <TABLE NAME="dhbwio_experience_reports" COMMENT="Student experience reports">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="university_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="University ID"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Student user ID"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Report title"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Report content"/>
+        <FIELD NAME="contentformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of content field"/>
+        <FIELD NAME="rating" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Rating (1-5)"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created"/>
+        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is report visible to students"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_university" TYPE="foreign" FIELDS="university_id" REFTABLE="dhbwio_universities" REFFIELDS="id"/>
+        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="university_user" UNIQUE="false" FIELDS="university_id, userid"/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="dhbwio_email_templates" COMMENT="Email templates for notifications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Template name"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Template type (e.g., report_submitted)"/>
+        <FIELD NAME="lang" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="en" SEQUENCE="false" COMMENT="Language code (en, de, etc.)"/>
+        <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Email subject"/>
+        <FIELD NAME="body" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Email body content"/>
+        <FIELD NAME="bodyformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Format of body field"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is template enabled"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_type_lang" UNIQUE="true" FIELDS="dhbwio, type, lang" COMMENT="Each type and language can only have one template per instance"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

@@ -1,0 +1,17 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "indentation": 4,
+    "selector-list-comma-newline-after": "always",
+    "block-opening-brace-space-before": "always",
+    "declaration-colon-space-after": "always",
+    "declaration-colon-space-before": "never",
+    "comment-empty-line-before": null,
+    "rule-empty-line-before": ["always", {
+      "except": ["first-nested"],
+      "ignore": ["after-comment"]
+    }],
+    "string-quotes": "single",
+    "no-descending-specificity": null
+  }
+}

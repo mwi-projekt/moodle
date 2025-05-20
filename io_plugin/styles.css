@@ -1,0 +1,158 @@
+/**
+ * Styles for DHBW International Office module.
+ *
+ * @package    mod_dhbwio
+ * @copyright  2025 DHBW International Office
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* University Grid Layout */
+.dhbwio-university-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dhbwio-university-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
+}
+
+.dhbwio-university-card:hover {
+    box-shadow: 0 5px 15px rgb(0 0 0 / 10%);
+    transform: translateY(-2px);
+}
+
+.dhbwio-university-card h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+.dhbwio-university-info {
+    margin-bottom: 1rem;
+}
+
+/* Map View */
+#university-map {
+    width: 100%;
+    height: 500px;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+    margin-bottom: 1.5rem;
+}
+
+#university-map.loading {
+    position: relative;
+}
+
+#university-map.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(255 255 255 / 70%) url('[[pix:i/loading]]') center center no-repeat;
+    z-index: 1000;
+}
+
+.dhbwio-view-switcher {
+    margin-bottom: 1.5rem;
+    text-align: right;
+}
+
+.dhbwio-view-switcher .btn {
+    margin-left: 0.5rem;
+}
+
+/* University Popup */
+.university-popup {
+    min-width: 200px;
+}
+
+.university-popup h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.2em;
+}
+
+.university-popup p {
+    margin-bottom: 0.5rem;
+}
+
+/* University Detail Page */
+.university-header {
+    margin-bottom: 2rem;
+}
+
+.university-image {
+    max-height: 300px;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.university-image img {
+    width: 100%;
+    height: auto;
+}
+
+.university-description {
+    margin-top: 1.5rem;
+}
+
+.university-requirements {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Experience Reports */
+.university-reports .card {
+    margin-bottom: 1.5rem;
+}
+
+.university-reports .card-header {
+    background-color: rgb(0 0 0 / 3%);
+}
+
+.university-reports .card-header h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+/* Action Buttons */
+.dhbwio-actions {
+    margin-bottom: 1.5rem;
+}
+
+.dhbwio-actions .btn {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (width <= 768px) {
+    .dhbwio-university-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #university-map {
+        height: 400px;
+    }
+}
+
+/* Entfernt Fokus-Umrisse von Leaflet-Markern */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-interactive {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Fix for duplicate activity description */
+.activity-header .activity-description {
+    display: none;
+}

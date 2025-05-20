@@ -1,0 +1,50 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_dhbwio/university_view
+
+    Template for displaying university view with map and list toggle.
+
+    Context variables required for this template:
+    * list_url - URL for the list view
+    * map_url - URL for the map view
+    * list_view_text - Localized text for list view button
+    * map_view_text - Localized text for map view button
+    * universities_list - HTML for the universities list
+
+    Example context (json):
+    {
+        "list_url": "#",
+        "map_url": "#",
+        "list_view_text": "List View",
+        "map_view_text": "Map View",
+        "universities_list": "<div>Universities list here</div>"
+    }
+}}
+
+<div class="dhbwio-view-switcher mb-4">
+    <a href="{{list_url}}" class="btn {{^map_active}}btn-primary active{{/map_active}}{{#map_active}}btn-secondary{{/map_active}}">{{list_view_text}}</a>
+    <a href="{{map_url}}" class="btn {{#map_active}}btn-primary active{{/map_active}}{{^map_active}}btn-secondary{{/map_active}}">{{map_view_text}}</a>
+</div>
+
+<div id="university-map-container" {{^map_active}}style="display: none;"{{/map_active}}>
+    <div id="university-map" style="height: 500px;"></div>
+</div>
+
+<div id="university-list" {{#map_active}}style="display: none;"{{/map_active}}>
+    {{{universities_list}}}
+</div>
