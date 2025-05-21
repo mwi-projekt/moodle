@@ -97,4 +97,3 @@ mod_dhbwio/
 ## Zukünftige Erweiterungen
 - Tiefere Integration mit dem bestehenden dataform-Plugin für Bewerbungen
 - Verbessertes Statistikmodul
-- Export- und Importfunktionen für Hochschuldaten
