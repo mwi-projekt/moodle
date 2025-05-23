@@ -46,8 +46,8 @@ class university_form extends \moodleform {
         $context = $this->_customdata['context'];
 
         // Add hidden fields
-        $mform->addElement('hidden', 'id', $cmid);
-        $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
         
         $mform->addElement('hidden', 'action', $university ? 'update' : 'add');
         $mform->setType('action', PARAM_ALPHA);

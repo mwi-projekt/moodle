@@ -181,7 +181,7 @@ public function render_university_view($dhbwio, $cm) {
         
         // URL
         $data->detail_url = (new \moodle_url('/mod/dhbwio/university.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'university' => $university->id
         ]))->out(false);
         

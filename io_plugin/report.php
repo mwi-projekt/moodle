@@ -27,12 +27,12 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot . '/mod/dhbwio/classes/form/report_form.php');
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$cmid = required_param('cmid', PARAM_INT); // Course Module ID
 $action = required_param('action', PARAM_ALPHA); // add, edit, delete
 $reportid = optional_param('report', 0, PARAM_INT); // Report ID
 
 // Get course module
-$cm = get_coursemodule_from_id('dhbwio', $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id('dhbwio', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $dhbwio = $DB->get_record('dhbwio', ['id' => $cm->instance], '*', MUST_EXIST);
 
@@ -46,7 +46,7 @@ if (empty($dhbwio->enablereports)) {
 }
 
 // Set up page URL
-$urlparams = ['id' => $cm->id, 'action' => $action];
+$urlparams = ['cmid' => $cm->id, 'action' => $action];
 if ($reportid) {
     $urlparams['report'] = $reportid;
 }

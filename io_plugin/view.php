@@ -137,7 +137,7 @@ switch ($tab) {
             // Show add report button if student has permission
             if (has_capability('mod/dhbwio:submitreport', $context)) {
                 $addurl = new moodle_url('/mod/dhbwio/report.php', [
-                    'id' => $cm->id,
+                    'cmid' => $cm->id,
                     'action' => 'add'
                 ]);
                 
@@ -180,7 +180,7 @@ switch ($tab) {
                     
                     // Link to university detail page
                     $universityurl = new moodle_url('/mod/dhbwio/university.php', [
-                        'id' => $cm->id,
+                        'cmid' => $cm->id,
                         'university' => $university->id
                     ]);
                     
@@ -212,13 +212,13 @@ switch ($tab) {
                         echo '<div class="dhbwio-actions mt-3">';
                         
                         $editurl = new moodle_url('/mod/dhbwio/report.php', [
-                            'id' => $cm->id,
+                            'cmid' => $cm->id,
                             'action' => 'edit',
                             'report' => $report->id
                         ]);
                         
                         $deleteurl = new moodle_url('/mod/dhbwio/report.php', [
-                            'id' => $cm->id,
+                            'cmid' => $cm->id,
                             'action' => 'delete',
                             'report' => $report->id,
                             'sesskey' => sesskey()
@@ -251,7 +251,7 @@ switch ($tab) {
         
         // Add university button
         $addurl = new moodle_url('/mod/dhbwio/university.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'action' => 'add'
         ]);
         
@@ -301,20 +301,20 @@ switch ($tab) {
                 foreach ($unis as $university) {
                     // Create action links
                     $editurl = new moodle_url('/mod/dhbwio/university.php', [
-                        'id' => $cm->id,
+                        'cmid' => $cm->id,
                         'action' => 'edit',
                         'university' => $university->id
                     ]);
                     
                     $deleteurl = new moodle_url('/mod/dhbwio/university.php', [
-                        'id' => $cm->id,
+                        'cmid' => $cm->id,
                         'action' => 'delete',
                         'university' => $university->id,
                         'sesskey' => sesskey()
                     ]);
                     
                     $viewurl = new moodle_url('/mod/dhbwio/university.php', [
-                        'id' => $cm->id,
+                        'cmid' => $cm->id,
                         'university' => $university->id
                     ]);
                     

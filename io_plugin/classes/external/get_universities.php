@@ -108,7 +108,7 @@ class get_universities extends external_api {
                 'available_slots' => $university->available_slots,
                 'reports_count' => $reportscount,
                 'detail_url' => (new \moodle_url('/mod/dhbwio/university.php', [
-                    'id' => $cmid,
+                    'cmid' => $cmid,
                     'university' => $university->id
                 ]))->out(false)
             ];

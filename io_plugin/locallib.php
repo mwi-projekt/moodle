@@ -76,7 +76,7 @@ function dhbwio_display_universities_list($dhbwio, $cm) {
             
             foreach ($unis as $university) {
                 $detailurl = new moodle_url('/mod/dhbwio/university.php', [
-                    'id' => $cm->id,
+                    'cmid' => $cm->id,
                     'university' => $university->id
                 ]);
                 
@@ -178,7 +178,7 @@ function dhbwio_display_experience_reports($dhbwio, $cm, $universityid = null) {
         
         // Link to university detail page
         $universityurl = new moodle_url('/mod/dhbwio/university.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'university' => $university->id
         ]);
         
@@ -252,7 +252,7 @@ function dhbwio_display_manage_universities($dhbwio, $cm) {
     
     // Add university button
     $addurl = new moodle_url('/mod/dhbwio/university.php', [
-        'id' => $cm->id,
+        'cmid' => $cm->id,
         'action' => 'add'
     ]);
     
@@ -300,20 +300,20 @@ function dhbwio_display_manage_universities($dhbwio, $cm) {
         foreach ($unis as $university) {
             // Create action links
             $editurl = new moodle_url('/mod/dhbwio/university.php', [
-                'id' => $cm->id,
+                'cmid' => $cm->id,
                 'action' => 'edit',
                 'university' => $university->id
             ]);
             
             $deleteurl = new moodle_url('/mod/dhbwio/university.php', [
-                'id' => $cm->id,
+                'cmid' => $cm->id,
                 'action' => 'delete',
                 'university' => $university->id,
                 'sesskey' => sesskey()
             ]);
             
             $viewurl = new moodle_url('/mod/dhbwio/university.php', [
-                'id' => $cm->id,
+                'cmid' => $cm->id,
                 'university' => $university->id
             ]);
             

@@ -69,7 +69,7 @@ class university_updated extends \core\event\base {
      */
     public function get_url() {
         return new \moodle_url('/mod/dhbwio/university.php', [
-            'id' => $this->contextinstanceid,
+            'cmid' => $this->contextinstanceid,
             'university' => $this->objectid
         ]);
     }

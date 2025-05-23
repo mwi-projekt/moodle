@@ -27,12 +27,12 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot . '/mod/dhbwio/classes/form/university_form.php');
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$cmid = required_param('cmid', PARAM_INT); // Course Module ID
 $action = optional_param('action', '', PARAM_ALPHA); // add, edit, delete
 $universityid = optional_param('university', 0, PARAM_INT); // University ID
 
 // Get course module
-$cm = get_coursemodule_from_id('dhbwio', $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id('dhbwio', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $dhbwio = $DB->get_record('dhbwio', ['id' => $cm->instance], '*', MUST_EXIST);
 
@@ -41,7 +41,7 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
 // Set up page URL
-$urlparams = ['id' => $cm->id];
+$urlparams = ['cmid' => $cm->id];
 if ($action) {
     $urlparams['action'] = $action;
 }
@@ -73,7 +73,7 @@ if ($action == 'add' || $action == 'edit') {
     // Set up form
     $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $context];
     $filemanageroptions = ['subdirs' => 0, 'maxbytes' => $CFG->maxbytes, 'maxfiles' => 1, 'accepted_types' => ['image']];
-    
+
     // Create form
     $mform = new \mod_dhbwio\form\university_form(null, [
         'cmid' => $cm->id,
@@ -147,11 +147,6 @@ if ($action == 'add' || $action == 'edit') {
             $event = 'created';
         } else {
             $universityrecord->id = $universityid;
-
-			// Debug information to help understand what's happening
-            if (debugging()) {
-                mtrace('Updating university with ID: ' . $universityrecord->id);
-            }
 			
             $DB->update_record('dhbwio_universities', $universityrecord);
             $event = 'updated';
@@ -292,13 +287,13 @@ if ($universityid) {
     // Actions for staff
     if (has_capability('mod/dhbwio:manageuniversities', $context)) {
         $editurl = new moodle_url('/mod/dhbwio/university.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'action' => 'edit',
             'university' => $university->id
         ]);
         
         $deleteurl = new moodle_url('/mod/dhbwio/university.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'action' => 'delete',
             'university' => $university->id,
             'sesskey' => sesskey()
