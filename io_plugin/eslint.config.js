@@ -14,7 +14,8 @@ export default [
                 Y: 'readonly',
                 L: 'readonly',
                 define: 'readonly',
-                require: 'readonly'
+                require: 'readonly',
+                setTimeout: 'readonly'
             }
         },
         rules: {

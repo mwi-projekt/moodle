@@ -125,24 +125,119 @@ define([
 
         try {
             console.log('Creating map');
-            // Create the map
-            map = leafletLib.map('university-map').setView([30, 10], 2);
 
-            // Add the OpenStreetMap tile layer
-            leafletLib.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '&copy; Esri'
+            // Define world bounds to prevent excessive panning
+            const worldBounds = leafletLib.latLngBounds(
+                leafletLib.latLng(-85, -180), // Southwest corner
+                leafletLib.latLng(85, 180)    // Northeast corner
+            );
+
+            // Create the map with enhanced options
+            map = leafletLib.map('university-map', {
+                center: [30, 10],
+                zoom: 2,
+                minZoom: 1,
+                maxZoom: 18,
+                maxBounds: worldBounds,
+                maxBoundsViscosity: 0.8, // How much to resist dragging outside bounds
+                worldCopyJump: true,     // Enable world copy jumping for markers
+                zoomControl: false       // We'll add custom zoom control
+            });
+
+            // Add custom zoom control in top-right
+            leafletLib.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+
+            // Define base layers
+            const baseLayers = createBaseLayers();
+
+            // Add default layer
+            baseLayers['Streets'].addTo(map);
+
+            // Create layer control
+            const layerControl = leafletLib.control.layers(baseLayers, null, {
+                position: 'topleft',
+                collapsed: false
             }).addTo(map);
 
             console.log('Map created, adding marker layer');
-            // Create a layer for markers
+
+            // Create a layer for markers with world wrapping support
             markersLayer = leafletLib.layerGroup().addTo(map);
 
             // Setup view switcher
             setupViewSwitcher();
+
+            // Add scale control
+            leafletLib.control.scale({
+                position: 'bottomright',
+                metric: true,
+                imperial: false
+            }).addTo(map);
+
+            // Add loading control
+            setupLoadingControl();
+
         } catch (error) {
             console.error('Error creating map:', error);
             Notification.exception({message: `${strings.mapCreationError}: ${error.message}`});
         }
+    };
+
+    /**
+     * Create base layers for the map
+     */
+    const createBaseLayers = () => {
+        return {
+            'Streets': leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19,
+                noWrap: false
+            }),
+
+            'Satellite': leafletLib.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+                maxZoom: 18,
+                noWrap: false
+            }),
+
+            'CartoDB Light': leafletLib.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                maxZoom: 19,
+                noWrap: false
+            }),
+
+            'CartoDB Dark': leafletLib.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                maxZoom: 19,
+                noWrap: false
+            })
+        };
+    };
+
+    /**
+     * Setup loading control
+     */
+    const setupLoadingControl = () => {
+        // Add loading indicator for tile loading
+        let tilesLoading = 0;
+
+        map.on('layeradd', (e) => {
+            if (e.layer._url) { // This is a tile layer
+                e.layer.on('loading', () => {
+                    tilesLoading++;
+                    $('#university-map').addClass('tiles-loading');
+                });
+
+                e.layer.on('load', () => {
+                    tilesLoading--;
+                    if (tilesLoading === 0) {
+                        $('#university-map').removeClass('tiles-loading');
+                    }
+                });
+            }
+        });
     };
 
     /**
@@ -151,8 +246,8 @@ define([
     const loadUniversities = async(cmid) => {
         console.log('Loading universities data');
 
-        // Show loading indicator
-        $('#university-map').addClass('loading');
+        // Show loading state
+        showLoadingState(true);
 
         try {
             const response = await Ajax.call([{
@@ -163,15 +258,81 @@ define([
             console.log('Universities data loaded:', response);
             if (response && response.universities) {
                 addUniversitiesToMap(response.universities);
+                // Update success message
+                showStatusMessage('success', `${response.universities.length} universities loaded successfully`);
+            } else {
+                showStatusMessage('warning', 'No universities found');
             }
-            $('#university-map').removeClass('loading');
         } catch (error) {
             console.error('Error loading universities:', error);
+            showStatusMessage('error', strings.mapLoadingError);
             Notification.exception({
                 message: strings.mapLoadingError,
                 error: error
             });
-            $('#university-map').removeClass('loading');
+        } finally {
+            // Hide loading state
+            showLoadingState(false);
+        }
+    };
+
+    /**
+     * Show/hide loading state
+     */
+    const showLoadingState = (show) => {
+        const $mapContainer = $('#university-map');
+        const $loadingOverlay = $mapContainer.find('.loading-overlay');
+
+        if (show) {
+            $mapContainer.addClass('loading');
+            $loadingOverlay.show();
+        } else {
+            $mapContainer.removeClass('loading');
+            setTimeout(() => {
+                $loadingOverlay.fadeOut(300);
+            }, 500); // Small delay to show completion
+        }
+    };
+
+    /**
+     * Show status message
+     */
+    const showStatusMessage = (type, message) => {
+        const alertClass = {
+            'success': 'alert-success',
+            'warning': 'alert-warning',
+            'error': 'alert-danger',
+            'info': 'alert-info'
+        }[type] || 'alert-info';
+
+        const icon = {
+            'success': 'fa-check-circle',
+            'warning': 'fa-exclamation-triangle',
+            'error': 'fa-exclamation-circle',
+            'info': 'fa-info-circle'
+        }[type] || 'fa-info-circle';
+
+        const $statusContainer = $('#map-status-messages');
+        if ($statusContainer.length === 0) {
+            // Create status container if it doesn't exist
+            $('#university-map-container').prepend('<div id="map-status-messages"></div>');
+        }
+
+        const statusHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="fa ${icon}" aria-hidden="true"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        $('#map-status-messages').html(statusHtml);
+
+        // Auto-hide after 5 seconds for success/info messages
+        if (type === 'success' || type === 'info') {
+            setTimeout(() => {
+                $('#map-status-messages .alert').fadeOut(500);
+            }, 5000);
         }
     };
 
@@ -186,18 +347,19 @@ define([
 
         // Group universities by country for clustering
         const countryClusters = {};
+        const markers = [];
 
         // Add markers for each university
         universities.forEach((university) => {
             if (university.latitude && university.longitude) {
-                // Create marker
-                const marker = leafletLib.marker([university.latitude, university.longitude])
-                    .bindPopup(createPopupContent(university));
+                // Create marker with custom icon
+                const marker = createUniversityMarker(university);
 
-                // Add to layer
+                // Add to layer and tracking array
                 markersLayer.addLayer(marker);
+                markers.push(marker);
 
-                // Group by country for clustering
+                // Group by country for potential clustering
                 if (!countryClusters[university.country]) {
                     countryClusters[university.country] = [];
                 }
@@ -205,16 +367,149 @@ define([
             }
         });
 
+        // Handle world wrapping for markers
+        setupMarkerWorldWrapping(markers);
+
         // Adjust map view to show all markers
-        if (markersLayer.getLayers().length > 0) {
-            try {
-                const bounds = leafletLib.featureGroup(markersLayer.getLayers()).getBounds();
-                map.fitBounds(bounds, {
-                    padding: [50, 50]
-                });
-            } catch (error) {
-                console.error('Error fitting bounds:', error);
+        if (markers.length > 0) {
+            fitMapToMarkers(markers);
+        }
+
+        // Update university count display
+        updateUniversityCount(universities.length);
+    };
+
+    /**
+     * Create a university marker with custom styling
+     */
+    const createUniversityMarker = (university) => {
+        // Create custom icon based on availability
+        const icon = createUniversityIcon(university);
+
+        // Create marker
+        const marker = leafletLib.marker([university.latitude, university.longitude], {
+            icon: icon,
+            title: university.name
+        }).bindPopup(createPopupContent(university), {
+            maxWidth: 300,
+            className: 'university-popup-container'
+        });
+
+        // Add hover effects
+        marker.on('mouseover', function() {
+            this.openPopup();
+        });
+
+        // Store university data on marker for easy access
+        marker.universityData = university;
+
+        return marker;
+    };
+
+    /**
+     * Create custom icon for university marker
+     */
+    const createUniversityIcon = (university) => {
+        // Determine icon color based on availability
+        let iconColor = '#dc3545'; // Red for no slots
+        if (university.available_slots > 0) {
+            iconColor = university.available_slots > 5 ? '#28a745' : '#ffc107'; // Green for many, yellow for few
+        }
+
+        // Create custom divIcon
+        return leafletLib.divIcon({
+            className: 'university-marker',
+            html: `
+                <div class="marker-pin" style="background-color: ${iconColor};">
+                    <i class="fa fa-university" style="color: white; font-size: 12px;"></i>
+                </div>
+                <div class="marker-pulse" style="background-color: ${iconColor};"></div>
+            `,
+            iconSize: [30, 42],
+            iconAnchor: [15, 42],
+            popupAnchor: [0, -42]
+        });
+    };
+
+    /**
+     * Setup marker world wrapping
+     */
+    const setupMarkerWorldWrapping = (markers) => {
+        // Handle world copy events
+        map.on('worldcopyjump', () => {
+            // Re-add markers to ensure they appear on all world copies
+            markers.forEach(marker => {
+                const latlng = marker.getLatLng();
+                // Force marker to update its position on all world copies
+                marker.setLatLng([latlng.lat, latlng.lng]);
+            });
+        });
+
+        // Also handle zoom and pan events for marker visibility
+        map.on('zoomend moveend', () => {
+            // Ensure markers are visible on current view
+            updateMarkerVisibility(markers);
+        });
+    };
+
+    /**
+     * Update marker visibility based on current map view
+     */
+    const updateMarkerVisibility = (markers) => {
+        const bounds = map.getBounds();
+        const zoom = map.getZoom();
+
+        markers.forEach(marker => {
+            const latlng = marker.getLatLng();
+
+            // Check if marker should be visible
+            if (bounds.contains(latlng)) {
+                if (!markersLayer.hasLayer(marker)) {
+                    markersLayer.addLayer(marker);
+                }
             }
+        });
+    };
+
+    /**
+     * Fit map to show all markers optimally
+     */
+    const fitMapToMarkers = (markers) => {
+        try {
+            // Create bounds from all markers
+            const group = leafletLib.featureGroup(markers);
+            const bounds = group.getBounds();
+
+            // Fit map to bounds with padding
+            map.fitBounds(bounds, {
+                padding: [20, 20],
+                maxZoom: 10 // Don't zoom in too much for single markers
+            });
+
+            // If only one marker, set a reasonable zoom level
+            if (markers.length === 1) {
+                map.setZoom(6);
+            }
+
+        } catch (error) {
+            console.error('Error fitting bounds:', error);
+            // Fallback to world view
+            map.setView([30, 10], 2);
+        }
+    };
+
+    /**
+     * Update university count display
+     */
+    const updateUniversityCount = (count) => {
+        const $counter = $('#university-counter');
+        if ($counter.length) {
+            $counter.text(count);
+        }
+
+        // Update page title if needed
+        if (count > 0) {
+            document.title = `${count} Universities - International Office`;
         }
     };
 

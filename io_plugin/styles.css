@@ -1,158 +1,276 @@
-/**
- * Styles for DHBW International Office module.
- *
- * @package    mod_dhbwio
- * @copyright  2025 DHBW International Office
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+/* Custom styles for DHBW International Office Map */
 
-/* University Grid Layout */
-.dhbwio-university-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.dhbwio-university-card {
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    padding: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgb(0 0 0 / 5%);
-}
-
-.dhbwio-university-card:hover {
-    box-shadow: 0 5px 15px rgb(0 0 0 / 10%);
-    transform: translateY(-2px);
-}
-
-.dhbwio-university-card h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #e9ecef;
-    padding-bottom: 0.5rem;
-}
-
-.dhbwio-university-info {
-    margin-bottom: 1rem;
-}
-
-/* Map View */
+/* Map container enhancements */
 #university-map {
-    width: 100%;
-    height: 500px;
-    border-radius: 0.25rem;
-    border: 1px solid #dee2e6;
-    margin-bottom: 1.5rem;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 #university-map.loading {
-    position: relative;
+    opacity: 0.7;
 }
 
-#university-map.loading::after {
+#university-map.tiles-loading::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: rgb(255 255 255 / 70%) url('[[pix:i/loading]]') center center no-repeat;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
     z-index: 1000;
 }
 
-.dhbwio-view-switcher {
-    margin-bottom: 1.5rem;
-    text-align: right;
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-.dhbwio-view-switcher .btn {
-    margin-left: 0.5rem;
+/* Custom university markers */
+.university-marker {
+    position: relative;
+    background: transparent;
+    border: none;
 }
 
-/* University Popup */
+.marker-pin {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    background: #dc3545;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.marker-pin i {
+    transform: rotate(45deg);
+    color: white !important;
+    font-size: 12px !important;
+}
+
+.marker-pin:hover {
+    transform: rotate(-45deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.marker-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.6;
+    animation: pulse 2s infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 0.3;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.8);
+        opacity: 0;
+    }
+}
+
+/* Popup styling */
+.university-popup-container .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e9ecef;
+}
+
 .university-popup {
-    min-width: 200px;
+    min-width: 250px;
+    font-family: inherit;
 }
 
 .university-popup h4 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-size: 1.2em;
+    margin: 0 0 10px 0;
+    color: #343a40;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
 }
 
 .university-popup p {
-    margin-bottom: 0.5rem;
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-/* University Detail Page */
-.university-header {
-    margin-bottom: 2rem;
+.university-popup .btn {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 6px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
-.university-image {
-    max-height: 300px;
-    overflow: hidden;
-    border-radius: 0.25rem;
-    margin-bottom: 1.5rem;
+.university-popup .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
-.university-image img {
-    width: 100%;
-    height: auto;
+/* Layer control styling */
+.leaflet-control-layers {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
 }
 
-.university-description {
-    margin-top: 1.5rem;
+.leaflet-control-layers-expanded {
+    padding: 12px;
+    min-width: 150px;
 }
 
-.university-requirements {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #dee2e6;
+.leaflet-control-layers-list {
+    font-size: 14px;
 }
 
-/* Experience Reports */
-.university-reports .card {
-    margin-bottom: 1.5rem;
+.leaflet-control-layers label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
-.university-reports .card-header {
-    background-color: rgb(0 0 0 / 3%);
+.leaflet-control-layers label:hover {
+    color: #007bff;
 }
 
-.university-reports .card-header h4 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
+.leaflet-control-layers input {
+    margin-right: 8px;
 }
 
-/* Action Buttons */
-.dhbwio-actions {
-    margin-bottom: 1.5rem;
+/* View switcher enhancements */
+.dhbwio-view-switcher {
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
 }
 
-.dhbwio-actions .btn {
-    margin-right: 0.5rem;
+.dhbwio-view-switcher .btn {
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
 }
 
-/* Responsive Adjustments */
-@media (width <= 768px) {
-    .dhbwio-university-grid {
-        grid-template-columns: 1fr;
+.dhbwio-view-switcher .btn i {
+    margin-right: 6px;
+}
+
+.dhbwio-view-switcher .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* University count display */
+.university-stats {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 123, 255, 0.2);
+}
+
+.university-stats h5 {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.university-stats .stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Loading states */
+.dhbwio-container.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    border-radius: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #university-map {
+        height: 400px !important;
     }
     
-    #university-map {
-        height: 400px;
+    .dhbwio-view-switcher {
+        text-align: center;
+    }
+    
+    .university-popup {
+        min-width: 200px;
+    }
+    
+    .marker-pin {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .marker-pin i {
+        font-size: 10px !important;
     }
 }
 
-/* Entfernt Fokus-Umrisse von Leaflet-Markern */
-.leaflet-marker-icon,
-.leaflet-marker-shadow,
-.leaflet-interactive {
-    outline: none !important;
-    box-shadow: none !important;
+/* Animation for map interactions */
+.leaflet-zoom-anim .university-marker {
+    transition: transform 0.25s ease;
 }
 
-/* Fix for duplicate activity description */
-.activity-header .activity-description {
-    display: none;
+.leaflet-fade-anim .university-marker {
+    transition: opacity 0.25s ease;
+}
+
+/* Scale control positioning */
+.leaflet-control-scale {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    padding: 4px 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
