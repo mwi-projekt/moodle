@@ -232,7 +232,7 @@ define([
 
                 e.layer.on('load', () => {
                     tilesLoading--;
-                    if (tilesLoading === 0) {
+                    if (tilesLoading <= 0) {
                         $('#university-map').removeClass('tiles-loading');
                     }
                 });
