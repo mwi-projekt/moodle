@@ -21,30 +21,77 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str'], 
-function($, Ajax, Notification, Str) {
-    
-    // Private variables - must use var for mutable variables
-    var map = null;
-    var markersLayer = null;
-    var leafletLib = null;
-    
+define([
+    'jquery',
+    'core/ajax',
+    'core/notification',
+    'core/str'
+], function($, Ajax, Notification, Str) {
+    'use strict';
+
+    // Private variables
+    let map = null;
+    let markersLayer = null;
+    let leafletLib = null;
+    let strings = {};
+
+    /**
+     * Load required language strings
+     */
+    const loadStrings = async() => {
+        const stringRequests = [
+            {key: 'university_available_slots', component: 'mod_dhbwio'},
+            {key: 'reports', component: 'mod_dhbwio'},
+            {key: 'view_details', component: 'mod_dhbwio'},
+            {key: 'loading_universities', component: 'mod_dhbwio'},
+            {key: 'map_loading_error', component: 'mod_dhbwio'},
+            {key: 'leaflet_not_loaded', component: 'mod_dhbwio'},
+            {key: 'map_creation_error', component: 'mod_dhbwio'}
+        ];
+
+        try {
+            const results = await Str.get_strings(stringRequests);
+
+            strings = {
+                availableSlots: results[0],
+                reports: results[1],
+                viewDetails: results[2],
+                loadingUniversities: results[3],
+                mapLoadingError: results[4],
+                leafletNotLoaded: results[5],
+                mapCreationError: results[6]
+            };
+        } catch (error) {
+            // Fallback to English if string loading fails
+            strings = {
+                availableSlots: 'Available Slots',
+                reports: 'Reports',
+                viewDetails: 'View Details',
+                loadingUniversities: 'Loading universities...',
+                mapLoadingError: 'Error loading universities',
+                leafletNotLoaded: 'Leaflet library not loaded',
+                mapCreationError: 'Error creating map'
+            };
+            console.warn('Could not load language strings, using fallback:', error);
+        }
+    };
+
     /**
      * Initialize the map
-     * 
-     * @method init
-     * @param {int} courseModuleId The course module ID
      */
-    var init = function(courseModuleId) {
-        var cmid = courseModuleId;
-        
+    const init = async(courseModuleId) => {
+        const cmid = courseModuleId;
+
+        // Load language strings first
+        await loadStrings();
+
         // Wait for DOM to be ready
-        $(document).ready(function() {
+        $(document).ready(() => {
             if ($('#university-map').length) {
                 console.log('Map container found, initializing map for CM ID:', cmid);
                 // Initialize the map
                 initMap();
-                
+
                 // After map is initialized, load universities
                 if (map) {
                     loadUniversities(cmid);
@@ -54,13 +101,13 @@ function($, Ajax, Notification, Str) {
             }
         });
     };
-    
+
     /**
      * Initialize the Leaflet map
      */
-    var initMap = function() {
+    const initMap = () => {
         console.log('initMap called');
-        
+
         // Check if Leaflet is available
         if (typeof L === 'undefined') {
             if (typeof window.L !== 'undefined') {
@@ -68,87 +115,88 @@ function($, Ajax, Notification, Str) {
                 console.log('Found Leaflet as window.L');
             } else {
                 console.error('Leaflet library not loaded');
-                Notification.exception({message: 'Leaflet library not loaded'});
+                Notification.exception({message: strings.leafletNotLoaded});
                 return;
             }
         } else {
             leafletLib = L;
             console.log('Leaflet already available as L');
         }
-        
+
         try {
             console.log('Creating map');
             // Create the map
             map = leafletLib.map('university-map').setView([30, 10], 2);
-            
+
             // Add the OpenStreetMap tile layer
             leafletLib.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri'
             }).addTo(map);
-            
+
             console.log('Map created, adding marker layer');
             // Create a layer for markers
             markersLayer = leafletLib.layerGroup().addTo(map);
-            
+
             // Setup view switcher
             setupViewSwitcher();
         } catch (error) {
             console.error('Error creating map:', error);
-            Notification.exception({message: 'Error creating map: ' + error.message});
+            Notification.exception({message: `${strings.mapCreationError}: ${error.message}`});
         }
     };
-    
+
     /**
      * Load universities data via AJAX
      */
-    var loadUniversities = function(cmid) {
+    const loadUniversities = async(cmid) => {
         console.log('Loading universities data');
-        
+
         // Show loading indicator
         $('#university-map').addClass('loading');
-        
-        // Call the web service to get universities
-        Ajax.call([{
-            methodname: 'mod_dhbwio_get_universities',
-            args: { cmid: cmid },
-            done: function(response) {
-                console.log('Universities data loaded:', response);
-                if (response && response.universities) {
-                    addUniversitiesToMap(response.universities);
-                }
-                $('#university-map').removeClass('loading');
-            },
-            fail: function(error) {
-                console.error('Error loading universities:', error);
-                Notification.exception(error);
-                $('#university-map').removeClass('loading');
+
+        try {
+            const response = await Ajax.call([{
+                methodname: 'mod_dhbwio_get_universities',
+                args: { cmid: cmid }
+            }])[0];
+
+            console.log('Universities data loaded:', response);
+            if (response && response.universities) {
+                addUniversitiesToMap(response.universities);
             }
-        }]);
+            $('#university-map').removeClass('loading');
+        } catch (error) {
+            console.error('Error loading universities:', error);
+            Notification.exception({
+                message: strings.mapLoadingError,
+                error: error
+            });
+            $('#university-map').removeClass('loading');
+        }
     };
-    
+
     /**
      * Add universities to the map
-     * 
-     * @param {Array} universities Array of university objects
      */
-    var addUniversitiesToMap = function(universities) {
+    const addUniversitiesToMap = (universities) => {
         console.log('Adding universities to map');
-        
+
         // Clear existing markers
         markersLayer.clearLayers();
-        
+
         // Group universities by country for clustering
-        var countryClusters = {};
-        
+        const countryClusters = {};
+
         // Add markers for each university
-        universities.forEach(function(university) {
+        universities.forEach((university) => {
             if (university.latitude && university.longitude) {
                 // Create marker
-                var marker = leafletLib.marker([university.latitude, university.longitude])
+                const marker = leafletLib.marker([university.latitude, university.longitude])
                     .bindPopup(createPopupContent(university));
-                
+
                 // Add to layer
                 markersLayer.addLayer(marker);
-                
+
                 // Group by country for clustering
                 if (!countryClusters[university.country]) {
                     countryClusters[university.country] = [];
@@ -156,11 +204,11 @@ function($, Ajax, Notification, Str) {
                 countryClusters[university.country].push(marker);
             }
         });
-        
+
         // Adjust map view to show all markers
         if (markersLayer.getLayers().length > 0) {
             try {
-                var bounds = leafletLib.featureGroup(markersLayer.getLayers()).getBounds();
+                const bounds = leafletLib.featureGroup(markersLayer.getLayers()).getBounds();
                 map.fitBounds(bounds, {
                     padding: [50, 50]
                 });
@@ -169,47 +217,44 @@ function($, Ajax, Notification, Str) {
             }
         }
     };
-    
+
     /**
      * Create popup content for university marker
-     * 
-     * @param {Object} university University data
-     * @returns {String} HTML content for popup
      */
-    var createPopupContent = function(university) {
-        var content = '<div class="university-popup">';
-        content += '<h4>' + university.name + '</h4>';
-        content += '<p><strong>' + university.city + ', ' + university.country + '</strong></p>';
-        
+    const createPopupContent = (university) => {
+        let content = '<div class="university-popup">';
+        content += `<h4>${university.name}</h4>`;
+        content += `<p><strong>${university.city}, ${university.country}</strong></p>`;
+
         if (university.available_slots) {
-            content += '<p>Available Slots: ' + university.available_slots + '</p>';
+            content += `<p>${strings.availableSlots}: ${university.available_slots}</p>`;
         }
-        
+
         if (university.reports_count) {
-            content += '<p>Experience Reports: ' + university.reports_count + '</p>';
+            content += `<p>${strings.reports}: ${university.reports_count}</p>`;
         }
-        
+
         // Add link to university detail page
-        content += '<a href="' + university.detail_url + '" class="btn btn-primary btn-sm mt-2">View Details</a>';
+        content += `<a href="${university.detail_url}" class="btn btn-primary btn-sm mt-2">${strings.viewDetails}</a>`;
         content += '</div>';
-        
+
         return content;
     };
-    
+
     /**
      * Setup the view switcher between map and list views
      */
-    var setupViewSwitcher = function() {
-        $('.dhbwio-view-switcher a').on('click', function(e) {
+    const setupViewSwitcher = () => {
+        $('.dhbwio-view-switcher a').on('click', (e) => {
             e.preventDefault();
-            
-            var $this = $(this);
-            var view = $this.attr('href').split('view=')[1];
-            
+
+            const $this = $(e.currentTarget);
+            const view = $this.attr('href').split('view=')[1];
+
             // Update active class and button styles for all buttons
             $('.dhbwio-view-switcher a').removeClass('active btn-primary').addClass('btn-secondary');
             $this.removeClass('btn-secondary').addClass('active btn-primary');
-            
+
             // Toggle views
             if (view === 'map') {
                 $('#university-list').hide();
@@ -224,7 +269,8 @@ function($, Ajax, Notification, Str) {
             }
         });
     };
-    
+
+    // Return public interface (AMD-style export)
     return {
         init: init
     };
