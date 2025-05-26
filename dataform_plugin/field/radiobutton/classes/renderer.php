@@ -36,7 +36,7 @@ class dataformfield_radiobutton_renderer extends dataformfield_select_renderer {
         $grp = array();
         $separators = array();
         foreach ($options as $key => $option) {
-            $grp[] = &$mform->createElement('radio', $fieldname, $field->separator, $option, $key);
+            $grp[] = &$mform->createElement('radio', $fieldname, null, $option, $key);
         }
         if (!empty($selected)) {
             $mform->setDefault($fieldname, (int) $selected);
