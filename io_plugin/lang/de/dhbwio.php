@@ -48,6 +48,81 @@ $string['geocoding_provider_desc'] = 'Wählen Sie aus, welcher Dienst für die U
 $string['geocoding_api_key'] = 'Geocoding-API-Schlüssel';
 $string['geocoding_api_key_desc'] = 'API-Schlüssel für den ausgewählten Geocoding-Anbieter (erforderlich für Google Maps und Mapbox).';
 
+// DataForm Integration
+$string['dataform_activity'] = 'DataForm-Aktivität';
+$string['dataform_activity_help'] = 'Wählen Sie die DataForm-Aktivität aus, die die Bewerbungen für dieses International Office-Modul verwaltet. Das ausgewählte DataForm wird verwendet, um Bewerbungsdaten für Auslastungsberechnungen abzurufen.';
+$string['no_dataform_selected'] = 'Keine DataForm ausgewählt';
+
+// Wunsch-Feld-Konfiguration
+$string['first_wish_field'] = 'Erstwunsch-Feldname';
+$string['first_wish_field_help'] = 'Geben Sie den Feldnamen im DataForm ein, der die Erstwunsch-Universität enthält (z.B. "first_wish")';
+$string['second_wish_field'] = 'Zweitwunsch-Feldname';
+$string['second_wish_field_help'] = 'Geben Sie den Feldnamen im DataForm ein, der die Zweitwunsch-Universität enthält (z.B. "second_wish")';
+$string['third_wish_field'] = 'Drittwunsch-Feldname';
+$string['third_wish_field_help'] = 'Geben Sie den Feldnamen im DataForm ein, der die Drittwunsch-Universität enthält (z.B. "third_wish")';
+
+// Gewichtungs-Konfiguration
+$string['first_wish_weight'] = 'Erstwunsch-Gewichtung (%)';
+$string['first_wish_weight_help'] = 'Gewichtungsprozentsatz für Erstwunsch-Universitäten in der Auslastungsberechnung (0-100%)';
+$string['second_wish_weight'] = 'Zweitwunsch-Gewichtung (%)';
+$string['second_wish_weight_help'] = 'Gewichtungsprozentsatz für Zweitwunsch-Universitäten in der Auslastungsberechnung (0-100%)';
+$string['third_wish_weight'] = 'Drittwunsch-Gewichtung (%)';
+$string['third_wish_weight_help'] = 'Gewichtungsprozentsatz für Drittwunsch-Universitäten in der Auslastungsberechnung (0-100%)';
+
+// Cache-Einstellungen
+$string['utilisation_cache_duration'] = 'Cache-Dauer für Auslastungsberechnung';
+$string['utilisation_cache_duration_help'] = 'Wie lange Auslastungsberechnungen zwischengespeichert werden sollen, bevor sie neu berechnet werden';
+$string['cache_5min'] = '5 Minuten';
+$string['cache_15min'] = '15 Minuten';
+$string['cache_30min'] = '30 Minuten';
+$string['cache_1hour'] = '1 Stunde';
+$string['cache_2hours'] = '2 Stunden';
+$string['cache_1day'] = '1 Tag';
+
+// Auslastungsanzeige
+$string['enable_utilisation'] = 'Auslastungsanzeige aktivieren';
+$string['enable_utilisation_help'] = 'Auslastungsstatistiken auf Universitäts-Detailseiten anzeigen';
+
+// Validierungsmeldungen
+$string['weight_range_error'] = 'Gewichtung muss zwischen 0 und 100 Prozent liegen';
+$string['invalid_field_name'] = 'Feldname muss mit einem Buchstaben beginnen und darf nur Buchstaben, Zahlen und Unterstriche enthalten';
+
+// Auslastungsberechnung Einstellungen
+$string['utilization_settings'] = 'Auslastungsberechnung Einstellungen';
+$string['utilization_settings_desc'] = 'Konfigurieren Sie, wie die Universitätsauslastung basierend auf Bewerbungsvorlieben berechnet wird';
+
+// DataForm Activity ID (globale Einstellung)
+$string['dataform_activity_id'] = 'DataForm Aktivitäts-ID';
+$string['dataform_activity_id_desc'] = 'Die ID der DataForm-Aktivität, die Bewerbungen verwaltet';
+
+// Gewichtungen (globale Einstellungen)
+$string['first_choice_weight'] = 'Gewichtung Erstwahl (%)';
+$string['first_choice_weight_desc'] = 'Gewichtungsprozentsatz für Erstwahl-Universitäten in der Auslastungsberechnung (Standard: 100%)';
+$string['second_choice_weight'] = 'Gewichtung Zweitwahl (%)';
+$string['second_choice_weight_desc'] = 'Gewichtungsprozentsatz für Zweitwahl-Universitäten in der Auslastungsberechnung (Standard: 30%)';
+$string['third_choice_weight'] = 'Gewichtung Drittwahl (%)';
+$string['third_choice_weight_desc'] = 'Gewichtungsprozentsatz für Drittwahl-Universitäten in der Auslastungsberechnung (Standard: 0%)';
+
+// Dataform Feld-Zuordnung (globale Einstellungen)
+$string['dataform_mapping'] = 'DataForm Feld-Zuordnung';
+$string['dataform_mapping_desc'] = 'Ordnen Sie die DataForm-Feldnamen den Universitätswahl-Feldern zu';
+$string['first_choice_field'] = 'Erstwahl Feldname';
+$string['first_choice_field_desc'] = 'Der Feldname in DataForm, der die Erstwahl-Universität enthält';
+$string['second_choice_field'] = 'Zweitwahl Feldname';
+$string['second_choice_field_desc'] = 'Der Feldname in DataForm, der die Zweitwahl-Universität enthält';
+$string['third_choice_field'] = 'Drittwahl Feldname';
+$string['third_choice_field_desc'] = 'Der Feldname in DataForm, der die Drittwahl-Universität enthält';
+// Dataform field mapping
+$string['dataform_mapping'] = 'Dataform Field Mapping';
+$string['dataform_mapping_desc'] = 'Map the dataform field names to university choice fields';
+$string['first_choice_field'] = 'First Choice Field Name';
+$string['first_choice_field_desc'] = 'The field name in dataform that contains the first choice university';
+$string['second_choice_field'] = 'Second Choice Field Name';
+$string['second_choice_field_desc'] = 'The field name in dataform that contains the second choice university';
+$string['third_choice_field'] = 'Third Choice Field Name';
+$string['third_choice_field_desc'] = 'The field name in dataform that contains the third choice university';
+
+
 // Adresse und Geocoding bezogene Strings
 $string['address'] = 'Straße und Hausnummer';
 $string['postal_code'] = 'Postleitzahl';

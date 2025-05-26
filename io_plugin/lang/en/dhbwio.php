@@ -47,6 +47,54 @@ $string['geocoding_provider'] = 'Geocoding provider';
 $string['geocoding_provider_desc'] = 'Select which service to use for converting addresses to coordinates. Note: Some providers require an API key.';
 $string['geocoding_api_key'] = 'Geocoding API key';
 $string['geocoding_api_key_desc'] = 'API key for the selected geocoding provider (required for Google Maps and Mapbox).';
+$string['dataform_activity'] = 'DataForm Activity';
+$string['dataform_activity_help'] = 'Select the DataForm activity that manages applications for this International Office module. The selected DataForm will be used to retrieve application data for utilization calculations.';
+$string['no_dataform_selected'] = 'No DataForm selected';
+$string['first_wish_field'] = 'First Wish Field Name';
+$string['first_wish_field_help'] = 'Enter the field name in DataForm that contains the first choice university (e.g., "first_wish")';
+$string['second_wish_field'] = 'Second Wish Field Name';
+$string['second_wish_field_help'] = 'Enter the field name in DataForm that contains the second choice university (e.g., "second_wish")';
+$string['third_wish_field'] = 'Third Wish Field Name';
+$string['third_wish_field_help'] = 'Enter the field name in DataForm that contains the third choice university (e.g., "third_wish")';
+$string['first_wish_weight'] = 'First Wish Weight (%)';
+$string['first_wish_weight_help'] = 'Weight percentage for first choice universities in utilization calculation (0-100%)';
+$string['second_wish_weight'] = 'Second Wish Weight (%)';
+$string['second_wish_weight_help'] = 'Weight percentage for second choice universities in utilization calculation (0-100%)';
+$string['third_wish_weight'] = 'Third Wish Weight (%)';
+$string['third_wish_weight_help'] = 'Weight percentage for third choice universities in utilization calculation (0-100%)';
+$string['enable_utilisation'] = 'Enable Utilization Display';
+$string['enable_utilisation_help'] = 'Show utilization statistics on university detail pages';
+$string['weight_range_error'] = 'Weight must be between 0 and 100 percent';
+$string['invalid_field_name'] = 'Field name must start with a letter and contain only letters, numbers, and underscores';
+$string['utilization_settings'] = 'Utilization Calculation Settings';
+$string['utilization_settings_desc'] = 'Configure how university utilization is calculated based on application preferences';
+$string['dataform_activity_id'] = 'Dataform Activity ID';
+$string['dataform_activity_id_desc'] = 'The ID of the dataform activity that manages applications';
+$string['first_choice_weight'] = 'First Choice Weight (%)';
+$string['first_choice_weight_desc'] = 'Weight percentage for first choice universities in utilization calculation (default: 100%)';
+$string['second_choice_weight'] = 'Second Choice Weight (%)';
+$string['second_choice_weight_desc'] = 'Weight percentage for second choice universities in utilization calculation (default: 30%)';
+$string['third_choice_weight'] = 'Third Choice Weight (%)';
+$string['third_choice_weight_desc'] = 'Weight percentage for third choice universities in utilization calculation (default: 0%)';
+$string['dataform_mapping'] = 'Dataform Field Mapping';
+$string['dataform_mapping_desc'] = 'Map the dataform field names to university choice fields';
+$string['first_choice_field'] = 'First Choice Field Name';
+$string['first_choice_field_desc'] = 'The field name in dataform that contains the first choice university';
+$string['second_choice_field'] = 'Second Choice Field Name';
+$string['second_choice_field_desc'] = 'The field name in dataform that contains the second choice university';
+$string['third_choice_field'] = 'Third Choice Field Name';
+$string['third_choice_field_desc'] = 'The field name in dataform that contains the third choice university';
+
+// Cache settings
+$string['utilisation_cache_duration'] = 'Utilization Cache Duration';
+$string['utilisation_cache_duration_help'] = 'How long to cache utilization calculations before recalculating';
+$string['cache_5min'] = '5 minutes';
+$string['cache_15min'] = '15 minutes';
+$string['cache_30min'] = '30 minutes';
+$string['cache_1hour'] = '1 hour';
+$string['cache_2hours'] = '2 hours';
+$string['cache_1day'] = '1 day';
+
 
 // Address and geocoding related strings
 $string['address'] = 'Street address';

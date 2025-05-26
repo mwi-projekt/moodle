@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_dhbwio';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.1.0';
-$plugin->version = 2025050500;
+$plugin->release = 'v0.2.0';
+$plugin->version = 2025052601;
 $plugin->requires = 2024100704;
 
 $plugin->dependencies = [

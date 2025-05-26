@@ -17,9 +17,9 @@
 /**
  * Library of interface functions and constants.
  *
- * @package     mod_dhbwio
+ * @package    mod_dhbwio
  * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();

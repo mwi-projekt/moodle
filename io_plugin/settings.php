@@ -24,13 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    $ADMIN->add('localplugins', new admin_category('mod_dhbwio_settings', 
-        get_string('pluginname', 'mod_dhbwio')));
+if ($ADMIN->fulltree) {
     
-    $settings = new admin_settingpage('mod_dhbwio_general', 
-        get_string('general_settings', 'mod_dhbwio'));
-    $ADMIN->add('mod_dhbwio_settings', $settings);
+    // General settings heading
+    $settings->add(new admin_setting_heading('mod_dhbwio/general',
+        get_string('general_settings', 'mod_dhbwio'),
+        get_string('general_settings_desc', 'mod_dhbwio')));
     
     // Email notification settings
     $settings->add(new admin_setting_configcheckbox(
@@ -45,8 +44,18 @@ if ($hassiteconfig) {
         get_string('geocoding_settings', 'mod_dhbwio'),
         get_string('geocoding_settings_desc', 'mod_dhbwio')));
     
+    // Check if the geocoder class exists before using it
+    if (class_exists('\mod_dhbwio\util\geocoder')) {
+        $providers = \mod_dhbwio\util\geocoder::get_providers();
+    } else {
+        $providers = [
+            'nominatim' => 'OpenStreetMap/Nominatim (Free)',
+            'google' => 'Google Maps (API Key required)',
+            'mapbox' => 'Mapbox (API Key required)'
+        ];
+    }
+    
     // Geocoding Provider
-    $providers = \mod_dhbwio\util\geocoder::get_providers();
     $settings->add(new admin_setting_configselect('mod_dhbwio/geocoding_provider',
         get_string('geocoding_provider', 'mod_dhbwio'),
         get_string('geocoding_provider_desc', 'mod_dhbwio'),
@@ -58,25 +67,4 @@ if ($hassiteconfig) {
         get_string('geocoding_api_key', 'mod_dhbwio'),
         get_string('geocoding_api_key_desc', 'mod_dhbwio'),
         '', PARAM_TEXT));
-    
-    // Email templates page link
-    $ADMIN->add('mod_dhbwio_settings', new admin_externalpage(
-        'mod_dhbwio_email_templates',
-        get_string('email_templates', 'mod_dhbwio'),
-        new moodle_url('/local/dhbwio/email_templates.php')
-    ));
-    
-    // University management page link
-    $ADMIN->add('mod_dhbwio_settings', new admin_externalpage(
-        'mod_dhbwio_university_admin',
-        get_string('university_management', 'mod_dhbwio'),
-        new moodle_url('/local/dhbwio/university.php')
-    ));
-    
-    // Reports page link
-    $ADMIN->add('mod_dhbwio_settings', new admin_externalpage(
-        'mod_dhbwio_reports',
-        get_string('reports', 'mod_dhbwio'),
-        new moodle_url('/local/dhbwio/reports.php')
-    ));
 }
