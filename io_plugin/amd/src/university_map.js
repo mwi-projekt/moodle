@@ -137,7 +137,7 @@ define([
                 center: [30, 10],
                 zoom: 2,
                 minZoom: 1,
-                maxZoom: 18,
+                maxZoom: 15,
                 maxBounds: worldBounds,
                 maxBoundsViscosity: 0.8, // How much to resist dragging outside bounds
                 worldCopyJump: true,     // Enable world copy jumping for markers
@@ -192,25 +192,25 @@ define([
         return {
             'Streets': leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19,
+                maxZoom: 15,
                 noWrap: false
             }),
 
             'Satellite': leafletLib.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
-                maxZoom: 18,
+                maxZoom: 15,
                 noWrap: false
             }),
 
             'CartoDB Light': leafletLib.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                maxZoom: 19,
+                maxZoom: 15,
                 noWrap: false
             }),
 
             'CartoDB Dark': leafletLib.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                maxZoom: 19,
+                maxZoom: 15,
                 noWrap: false
             })
         };
@@ -258,8 +258,6 @@ define([
             console.log('Universities data loaded:', response);
             if (response && response.universities) {
                 addUniversitiesToMap(response.universities);
-                // Update success message
-                showStatusMessage('success', `${response.universities.length} universities loaded successfully`);
             } else {
                 showStatusMessage('warning', 'No universities found');
             }
