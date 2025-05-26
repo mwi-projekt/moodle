@@ -75,8 +75,8 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
             $selected = $field->defaultcontent;
         }
         
-        // Get universities (now as flat list)
-        $universities = $field->get_universities_by_country();
+        // Get universities as flat list
+        $universities = $field->universities_menu();
         
         if (empty($universities)) {
             // Show warning if no universities available
@@ -89,11 +89,17 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
             return;
         }
         
-        // Create the select element
-        list($elem, $separators) = $this->render($mform, $fieldname, $universities, $selected, $required);
+        // Create the select element directly
+        $options_array = array('' => get_string('choose', 'dataformfield_dhbwuni')) + $universities;
+        $select = &$mform->createElement('select', $fieldname, null, $options_array);
         
-        // Add element directly to form - no groups
-        $mform->addElement($elem);
+        // Set selected value
+        if ($selected) {
+            $select->setSelected($selected);
+        }
+        
+        // Add element directly to form
+        $mform->addElement($select);
         
         // Required validation
         if ($required) {
@@ -121,56 +127,6 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
         }
         
         return '';
-    }
-    
-    /**
-     * Render the select element with flat options
-     */
-    protected function render(&$mform, $fieldname, $universities, $selected, $required = false) {
-        // Build flat options array
-        $options = array();
-        
-        // Add empty option
-        $options[0] = get_string('choose', 'dataformfield_dhbwuni');
-        
-        // Flatten universities array and add country to name
-        $flat_universities = array();
-        foreach ($universities as $country => $unis) {
-            foreach ($unis as $uni) {
-                $flat_universities[] = (object) array(
-                    'id' => $uni->id,
-                    'name' => $uni->name,
-                    'country' => $country
-                );
-            }
-        }
-        
-        // Sort alphabetically by university name
-        usort($flat_universities, function($a, $b) {
-            return strcmp($a->name, $b->name);
-        });
-        
-        // Build options
-        foreach ($flat_universities as $uni) {
-            $options[$uni->id] = $uni->name . ' (' . $uni->country . ')';
-        }
-        
-        // Create simple select element without extra wrappers
-        $select = &$mform->createElement('select', $fieldname, null, $options);
-        
-        // Set selected value
-        if ($selected) {
-            $select->setSelected($selected);
-        }
-        
-        return array($select, null);
-    }
-    
-    /**
-     * Set required validation
-     */
-    protected function set_required(&$mform, $fieldname, $selected) {
-        $mform->addRule("{$fieldname}_selected", null, 'required', null, 'client');
     }
     
     /**

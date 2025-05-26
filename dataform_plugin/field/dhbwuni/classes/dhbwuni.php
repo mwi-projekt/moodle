@@ -39,62 +39,59 @@ class dataformfield_dhbwuni_dhbwuni extends mod_dataform\pluginbase\dataformfiel
      * Get country name from country code using Moodle's built-in function
      */
     private function get_country_name($country_code) {
-        // Use Moodle's built-in country list (supports all languages)
         $countries = get_string_manager()->get_list_of_countries();
         return isset($countries[$country_code]) ? $countries[$country_code] : $country_code;
     }
     
     /**
-     * Returns list of available universities grouped by country
-     */
-    public function get_universities_by_country() {
-        global $DB;
-        
-        // Get the course ID from the dataform
-        $courseid = $this->df->course->id;
-        
-        // Simplified query without countries table
-        $sql = "SELECT du.*
-                FROM {dhbwio_universities} du
-                JOIN {dhbwio} d ON d.id = du.dhbwio
-                JOIN {course_modules} cm ON cm.instance = d.id
-                JOIN {modules} m ON m.id = cm.module AND m.name = 'dhbwio'
-                WHERE d.course = ? AND du.active = 1
-                ORDER BY du.country, du.name";
-        
-        $universities = $DB->get_records_sql($sql, array($courseid));
-        
-        $grouped = array();
-        foreach ($universities as $uni) {
-            // Get country name from code
-            $country_name = $this->get_country_name($uni->country);
-            
-            if (!isset($grouped[$country_name])) {
-                $grouped[$country_name] = array();
-            }
-            $grouped[$country_name][] = $uni;
-        }
-        
-        // Sort countries alphabetically
-        ksort($grouped);
-        
-        return $grouped;
-    }
-    
-    /**
-     * Get university options as flat list (like select field)
+     * Get university options as flat list with caching
      */
     public function universities_menu($forceget = false) {
         if (!$this->_universities || $forceget) {
             $this->_universities = array();
-            $universities = $this->get_universities_by_country();
             
-            foreach ($universities as $country => $unis) {
-                foreach ($unis as $uni) {
-                    $this->_universities[$uni->id] = $uni->name . ' (' . $uni->city . ', ' . $country . ')';
+            global $DB;
+            
+            // Create cache key based on course and field
+            $courseid = $this->df->course->id;
+            $cachekey = "dhbwuni_flat_{$courseid}_{$this->id}";
+            
+            // Try to get from cache first
+            $cache = \cache::make('dataformfield_dhbwuni', 'universities');
+            $cached_data = $cache->get($cachekey);
+            
+            if ($cached_data !== false) {
+                $this->_universities = $cached_data;
+                return $this->_universities;
+            }
+            
+            // Query database if not in cache
+            $sql = "SELECT du.id, du.name, du.city, du.country
+                    FROM {dhbwio_universities} du
+                    JOIN {dhbwio} d ON d.id = du.dhbwio
+                    JOIN {course_modules} cm ON cm.instance = d.id
+                    JOIN {modules} m ON m.id = cm.module AND m.name = 'dhbwio'
+                    WHERE d.course = ? AND du.active = 1
+                    ORDER BY du.name";
+            
+            try {
+                $universities = $DB->get_records_sql($sql, array($courseid));
+                
+                foreach ($universities as $uni) {
+                    $country_name = $this->get_country_name($uni->country);
+                    $this->_universities[$uni->id] = $uni->name . ' (' . $country_name . ')';
                 }
+                
+                // Store in cache for 5 minutes
+                $cache->set($cachekey, $this->_universities);
+                
+            } catch (Exception $e) {
+                // Log error and return empty array
+                debugging('Error loading universities: ' . $e->getMessage(), DEBUG_DEVELOPER);
+                $this->_universities = array();
             }
         }
+        
         return $this->_universities;
     }
     
@@ -130,6 +127,7 @@ class dataformfield_dhbwuni_dhbwuni extends mod_dataform\pluginbase\dataformfiel
             foreach ($values as $name => $value) {
                 if ($name == 'selected' && !empty($value)) {
                     $selected = (int) $value;
+                    break;
                 }
             }
         }
@@ -213,12 +211,5 @@ class dataformfield_dhbwuni_dhbwuni extends mod_dataform\pluginbase\dataformfiel
         }
         
         return $data;
-    }
-    
-    /**
-     * Check if multiple selection is enabled
-     */
-    public function is_multiple() {
-        return !empty($this->param1);
     }
 }

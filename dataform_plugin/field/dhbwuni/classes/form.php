@@ -75,23 +75,15 @@ class dataformfield_dhbwuni_form extends mod_dataform\pluginbase\dataformfieldfo
         } catch (Exception $e) {
             // If there's an error checking universities, show a generic message
             $mform->addElement('static', 'check_error', 
-                'University Check',
-                'Please ensure DHBW IO plugin is properly installed and configured.'
+                get_string('field_info', 'dataformfield_dhbwuni'),
+                get_string('ensure_dhbwio_installed', 'dataformfield_dhbwuni')
             );
         }
         
-        // Enable multiple selection (stored in param1, like select field)
-        $mform->addElement('selectyesno', 'param1', 
-            get_string('allow_multiple_selections', 'dataformfield_dhbwuni'));
-        $mform->setDefault('param1', 0);
-        $mform->addHelpButton('param1', 'allow_multiple_selections', 'dataformfield_dhbwuni');
-        
-        // NOTE: Description field is handled by the parent class - do NOT add it here!
-        
-        // Grouping information (static, always enabled)
-        $mform->addElement('static', 'grouping_info', 
-            get_string('grouping', 'dataformfield_dhbwuni'),
-            get_string('universities_grouped_by_country', 'dataformfield_dhbwuni')
+        // Simple info about the field
+        $mform->addElement('static', 'field_info', 
+            get_string('fieldtype', 'dataformfield_dhbwuni'),
+            get_string('universities_alphabetical', 'dataformfield_dhbwuni')
         );
     }
     
