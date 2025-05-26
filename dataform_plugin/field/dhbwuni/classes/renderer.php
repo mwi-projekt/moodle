@@ -17,7 +17,7 @@
 /**
  * Renderer for DHBW IO university field
  *
- * @package    dataformfield_dhbwuni
+ * @subpackage dhbwuni
  * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -64,11 +64,11 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
         $field = $this->_field;
         $fieldid = $field->id;
         $entryid = $entry->id;
-        $fieldname = "field_{$fieldid}_{$entryid}_selected";
+        $fieldname = "field_{$fieldid}_{$entryid}";
         $required = !empty($options['required']);
         
         // Get current selection
-        $selected = !empty($entry->{"c{$fieldid}_content"}) ? $entry->{"c{$fieldid}_content"} : 0;
+        $selected = !empty($entry->{"c{$fieldid}_content"}) ? (int) $entry->{"c{$fieldid}_content"} : 0;
         
         // Check for default value
         if (!$selected && !empty($field->defaultcontent)) {
@@ -76,9 +76,9 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
         }
         
         // Get universities as flat list
-        $universities = $field->universities_menu();
+        $menuoptions = $field->universities_menu();
         
-        if (empty($universities)) {
+        if (empty($menuoptions)) {
             // Show warning if no universities available
             $mform->addElement('static', $fieldname, null, 
                 html_writer::div(
@@ -89,21 +89,20 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
             return;
         }
         
-        // Create the select element directly
-        $options_array = array('' => get_string('choose', 'dataformfield_dhbwuni')) + $universities;
-        $select = &$mform->createElement('select', $fieldname, null, $options_array);
-        
-        // Set selected value
-        if ($selected) {
-            $select->setSelected($selected);
-        }
-        
-        // Add element directly to form
-        $mform->addElement($select);
-        
-        // Required validation
-        if ($required) {
-            $mform->addRule($fieldname, null, 'required', null, 'client');
+        // Add element only if there are options
+        if ($menuoptions) {
+            list($elem, $separators) = $this->render($mform, "{$fieldname}_selected", $menuoptions, $selected, $required);
+            // Add group or element
+            if (is_array($elem)) {
+                $mform->addGroup($elem, $fieldname, null, $separators, false);
+            } else {
+                $mform->addElement($elem);
+            }
+            
+            // Required validation
+            if ($required) {
+                $this->set_required($mform, $fieldname, $selected);
+            }
         }
     }
     
@@ -127,6 +126,22 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
         }
         
         return '';
+    }
+    
+    /**
+     * Render the select element with options (like standard select field)
+     */
+    protected function render(&$mform, $fieldname, $options, $selected, $required = false) {
+        $select = &$mform->createElement('select', $fieldname, null, array('' => get_string('choose', 'dataformfield_dhbwuni')) + $options);
+        $select->setSelected($selected);
+        return array($select, null);
+    }
+    
+    /**
+     * Set required validation (like standard select field)
+     */
+    protected function set_required(&$mform, $fieldname, $selected) {
+        $mform->addRule("{$fieldname}_selected", null, 'required', null, 'client');
     }
     
     /**

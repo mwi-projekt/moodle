@@ -17,7 +17,7 @@
 /**
  * DataForm field class for DHBW IO university selection
  *
- * @package    dataformfield_dhbwuni
+ * @subpackage dhbwuni
  * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
