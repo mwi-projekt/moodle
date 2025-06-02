@@ -1,0 +1,65 @@
+button.red-button {
+    background-color: #e1001a !important;
+    color: #f2f2f2;
+    border: none;
+    padding: 10px 20px;
+    font-family: "Avenir Next", sans-serif;
+    font-size: medium;
+    border-radius: 5px;
+}
+
+button.red-button:hover {
+    background-color: #8c0011;
+}
+
+.student {
+    padding: 5px;
+    margin: 5px;
+    background: #e1001a;
+    border: 1px solid #7f7f7f;
+    cursor: grab;
+    color: #f2f2f2;
+    font-family: "Avenir Next", sans-serif;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.student .wuensche{
+    font-family: "Avenir Next", sans-serif;
+    font-weight: normal;
+    font-size: small;
+}
+
+.drop-cell {
+    width: 150px;
+    height: 60px;
+    background-color: #f2f2f2;
+    vertical-align: top;
+}
+.disabled {
+    background-color: #d9d9d9 !important;
+    pointer-events: none;
+}
+.drop-cell.over {
+    background-color: #8c0011;
+}
+
+h3 {
+    color: black;
+    font-family: "Avenir Next", sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#studentList {
+    max-height: 480px;
+    overflow-y: auto;
+    border: none;
+    padding: 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#studentlist::--webkit-scrollbar {
+    display: none;
+}
