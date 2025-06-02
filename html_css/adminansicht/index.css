@@ -137,3 +137,49 @@ table tbody tr:nth-child(odd) {
     flex-direction: row;
     justify-content: space-between;
 }
+
+.status-gelb {
+    background-color: #ffff7a;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: bold;
+}
+.status-gruen {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: bold;
+}
+.status-rot {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: bold;
+}
+.status-orange {
+    background-color: #ffe5b4;
+    color: #8a4b00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.status * {
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
