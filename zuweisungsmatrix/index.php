@@ -65,6 +65,7 @@ $entriesql = "
     LEFT JOIN {dhbwio_universities} uniw3 
     ON uniw3.id = c.content AND f.name = 'DRITTWUNSCH'
     WHERE e.dataid = ?
+    AND e.state <> 3
     GROUP BY e.id
 ";
 
