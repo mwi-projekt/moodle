@@ -9,6 +9,10 @@ allButtons.forEach(button => {
     });
 });
 
+/*
+Anpassung der Statusfarben
+Abhängig von dem Status wird eine andere css-Klasse angehängt
+*/
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".status").forEach(function (el) {
         const status = el.textContent.trim();

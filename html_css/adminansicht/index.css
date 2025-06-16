@@ -138,6 +138,7 @@ table tbody tr:nth-child(odd) {
     justify-content: space-between;
 }
 
+/*Anpassung der Statusfarben*/
 .status-gelb {
     background-color: #ffff7a;
     color: #856404;

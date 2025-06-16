@@ -41,7 +41,7 @@ $hochschulen = [];
 foreach ($hochschulen_raw as $record) {
     $hochschulen[] = [
         'name' => $record->name,
-        'plätze' => (int)$record->available_slots
+        'plätze' => (int) $record->available_slots
     ];
 }
 
@@ -75,12 +75,13 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
 
 ?>
 
+<!--Bewerberlist-->
 <div style="display: flex; gap: 20px;">
     <div style="width: 220px;">
         <h3>Bewerber</h3>
-        <div id="studentList" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="this.classList.add('over')" 
-             ondragleave="this.classList.remove('over')">
-        <div id="emptyInfo" style="display: none; margin-top: 10px; color: gray;">
+        <div id="studentList" ondrop="drop(event)" ondragover="allowDrop(event)"
+            ondragenter="this.classList.add('over')" ondragleave="this.classList.remove('over')">
+            <div id="emptyInfo" style="display: none; margin-top: 10px; color: gray;">
                 &#x2139; <em>Hier können erneut Bewerbende platziert werden</em>
             </div>
             <?php
@@ -104,6 +105,7 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
         </div>
     </div>
 
+    <!--Zuweisungsmatrix-->
     <div style="overflow-x: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
             <h3 style="margin: 0;">Zuweisung</h3>
@@ -128,11 +130,9 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
                     <tr>
                         <td>Platz <?= $i + 1 ?></td>
                         <?php foreach ($hochschulen as $h): ?>
-                            <?php if ($i < $h['plätze']): ?> 
-                                <td class="drop-cell" ondragover="allowDrop(event)" 
-                                    ondragleave="this.classList.remove('over')"
-                                    ondrop="drop(event)" 
-                                    ondragenter="this.classList.add('over')"></td>
+                            <?php if ($i < $h['plätze']): ?>
+                                <td class="drop-cell" ondragover="allowDrop(event)" ondragleave="this.classList.remove('over')"
+                                    ondrop="drop(event)" ondragenter="this.classList.add('over')"></td>
                             <?php else: ?>
                                 <td class="drop-cell disabled"></td>
                             <?php endif; ?>
@@ -144,6 +144,7 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
     </div>
 </div>
 
+<!--Buttons: Reset, Zuweiungs, Export-->
 <div style="margin-top: 20px; display: flex; gap: 10px;">
     <button id="resetBtn" class="red-button" onclick="resetZuweisung()">Reset</button>
     <button id="submitBtn" class="red-button" onclick="automatischZuteilen()">Zuteilung</button>
