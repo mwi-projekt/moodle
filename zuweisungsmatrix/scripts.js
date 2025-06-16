@@ -69,7 +69,7 @@ function drop(event) {
         var studentId = dragged.dataset.id;
         saveAssignment(studentId, null);
     }
-
+    updateEmptyInfoVisibility();
 }
 
 function resetZuweisung() {
@@ -87,6 +87,7 @@ function resetZuweisung() {
             wishes.style.display = 'block';
         }
     });
+    updateEmptyInfoVisibility();
 }
 
 function prepareExport() {
@@ -183,6 +184,7 @@ function automatischZuteilen() {
             }
         }
     });
+    updateEmptyInfoVisibility();
 }
 
 function toggleWunschAnzeige() {
@@ -214,3 +216,11 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleWunschAnzeige(); // Initialzustand direkt anwenden
     }
 });
+
+function updateEmptyInfoVisibility() {
+    const studentList = document.getElementById('studentList');
+    const emptyInfo = document.getElementById('emptyInfo');
+
+    const hasStudents = studentList.querySelectorAll('.student').length > 0;
+    emptyInfo.style.display = hasStudents ? 'none' : 'block';
+}

@@ -79,7 +79,10 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
     <div style="width: 220px;">
         <h3>Bewerber</h3>
         <div id="studentList" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="this.classList.add('over')" 
-     ondragleave="this.classList.remove('over')">
+             ondragleave="this.classList.remove('over')">
+        <div id="emptyInfo" style="display: none; margin-top: 10px; color: gray;">
+                &#x2139; <em>Hier können erneut Bewerbende platziert werden</em>
+            </div>
             <?php
             $idx = 0;
             foreach ($studenten as $s) {
