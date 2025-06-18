@@ -49,7 +49,7 @@ class university_form extends \moodleform {
         $mform->addElement('hidden', 'cmid', $cmid);
         $mform->setType('cmid', PARAM_INT);
         
-        $mform->addElement('hidden', 'action', $university ? 'update' : 'add');
+        $mform->addElement('hidden', 'action', $university ? 'edit' : 'add');
         $mform->setType('action', PARAM_ALPHA);
         
         if ($university) {
@@ -133,16 +133,16 @@ class university_form extends \moodleform {
 
         // Semester start month
         $mform->addElement('select', 'semester_start', get_string('semester_start_month', 'mod_dhbwio'), $months);
-        $mform->addHelpButton('semester_start', 'semester_start_month_help', 'mod_dhbwio');
+        $mform->addHelpButton('semester_start', 'semester_start_month', 'mod_dhbwio');
 
         // Semester end month
         $mform->addElement('select', 'semester_end', get_string('semester_end_month', 'mod_dhbwio'), $months);
-        $mform->addHelpButton('semester_end', 'semester_end_month_help', 'mod_dhbwio');
+        $mform->addHelpButton('semester_end', 'semester_end_month', 'mod_dhbwio');
 
         // Semester fees
         $mform->addElement('text', 'semester_fees', get_string('semester_fees', 'mod_dhbwio'), ['size' => '10']);
         $mform->setType('semester_fees', PARAM_FLOAT);
-        $mform->addHelpButton('semester_fees', 'semester_fees_help', 'mod_dhbwio');
+        $mform->addHelpButton('semester_fees', 'semester_fees', 'mod_dhbwio');
         $mform->setDefault('semester_fees', '0.00');
 
         // Currency for fees
@@ -175,7 +175,7 @@ class university_form extends \moodleform {
             'none' => get_string('accommodation_none', 'mod_dhbwio')
         ];
         $mform->addElement('select', 'accommodation_type', get_string('accommodation_type', 'mod_dhbwio'), $accommodations);
-        $mform->addHelpButton('accommodation_type', 'accommodation_type_help', 'mod_dhbwio');
+        $mform->addHelpButton('accommodation_type', 'accommodation_type', 'mod_dhbwio');
 
         // --------------------------------------------------------------
         // 3. Description fieldset

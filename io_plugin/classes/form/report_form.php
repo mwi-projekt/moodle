@@ -47,6 +47,8 @@ class report_form extends \moodleform {
         $universities = $this->_customdata['universities'];
 
         // Add hidden fields
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
         $mform->addElement('hidden', 'id', $cmid);
         $mform->setType('id', PARAM_INT);
         

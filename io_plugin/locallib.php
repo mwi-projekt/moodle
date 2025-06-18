@@ -143,7 +143,7 @@ function dhbwio_display_experience_reports($dhbwio, $cm, $universityid = null) {
     if (has_capability('mod/dhbwio:submitreport', $context)) {
         $showaddbutton = true;
         $addurl = new moodle_url('/mod/dhbwio/report.php', [
-            'id' => $cm->id,
+            'cmid' => $cm->id,
             'action' => 'add'
         ]);
         
@@ -210,13 +210,13 @@ function dhbwio_display_experience_reports($dhbwio, $cm, $universityid = null) {
             echo '<div class="dhbwio-actions mt-3">';
             
             $editurl = new moodle_url('/mod/dhbwio/report.php', [
-                'id' => $cm->id,
+                'cmid' => $cm->id,
                 'action' => 'edit',
                 'report' => $report->id
             ]);
             
             $deleteurl = new moodle_url('/mod/dhbwio/report.php', [
-                'id' => $cm->id,
+                'cmid' => $cm->id,
                 'action' => 'delete',
                 'report' => $report->id,
                 'sesskey' => sesskey()
