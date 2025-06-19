@@ -233,34 +233,20 @@ if ($universityid) {
     // Set page title
     $PAGE->set_title(format_string($university->name));
     
-    // Output
-    echo $OUTPUT->header();
+    // Prepare template data
+    $templatedata = new stdClass();
     
-    // Display back button
-    $backurl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'universities']);
-    echo html_writer::div(
-        $OUTPUT->single_button($backurl, get_string('back_to_universities', 'mod_dhbwio')),
-        'dhbwio-actions mb-4'
-    );
+    // Basic info
+    $templatedata->backurl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'universities']);
+    $templatedata->name = format_string($university->name);
+    $templatedata->city = $university->city;
+    $templatedata->country = $countryName;
     
-    // Display university details
-    echo '<div class="university-details">';
-    echo '<h2>' . format_string($university->name) . '</h2>';
-    echo '<h4>' . $university->city . ', ' . $countryName . '</h4>';
-    
-    // Display address if available
+    // Address
     if (!empty($university->address) || !empty($university->postal_code)) {
-        echo '<p>';
-        if (!empty($university->address)) {
-            echo $university->address;
-        }
-        if (!empty($university->postal_code)) {
-            if (!empty($university->address)) {
-                echo ', ';
-            }
-            echo $university->postal_code;
-        }
-        echo '</p>';
+        $templatedata->hasaddress = true;
+        $templatedata->address = $university->address;
+        $templatedata->postal_code = $university->postal_code;
     }
     
     // University image
@@ -270,7 +256,8 @@ if ($universityid) {
     
     if (!empty($files)) {
         $file = reset($files);
-        $fileurl = moodle_url::make_pluginfile_url(
+        $templatedata->hasimage = true;
+        $templatedata->imageurl = moodle_url::make_pluginfile_url(
             $file->get_contextid(),
             $file->get_component(),
             $file->get_filearea(),
@@ -278,96 +265,87 @@ if ($universityid) {
             $file->get_filepath(),
             $file->get_filename()
         );
-        
-        echo '<div class="university-image mb-3">';
-        echo '<img src="' . $fileurl . '" class="img-fluid rounded" alt="' . $university->name . '">';
-        echo '</div>';
     }
     
-    // Actions for staff
+    // Apply button - check if dataform is configured
+    if (!empty($dhbwio->dataform_id)) {
+		// The dataform_id is a course module ID
+		$dataformcm = $DB->get_record_sql(
+			"SELECT cm.*, c.id as courseid 
+			FROM {course_modules} cm 
+			JOIN {modules} m ON m.id = cm.module 
+			JOIN {course} c ON c.id = cm.course
+			WHERE cm.id = ? AND m.name = 'dataform'",
+			[$dhbwio->dataform_id]
+		);
+		
+		if ($dataformcm && $dataformcm->visible) {
+			// Check if user can access this activity
+			$modinfo = get_fast_modinfo($dataformcm->courseid);
+			if (isset($modinfo->cms[$dataformcm->id]) && $modinfo->cms[$dataformcm->id]->uservisible) {
+				$templatedata->showapplybutton = true;
+				$templatedata->applyurl = new moodle_url('/mod/dataform/view.php', ['id' => $dataformcm->id]);
+			}
+		}
+	}
+    
+    // Management actions
     if (has_capability('mod/dhbwio:manageuniversities', $context)) {
-        $editurl = new moodle_url('/mod/dhbwio/university.php', [
+        $templatedata->canmanage = true;
+        $templatedata->editurl = new moodle_url('/mod/dhbwio/university.php', [
             'cmid' => $cm->id,
             'action' => 'edit',
             'university' => $university->id
         ]);
-        
-        $deleteurl = new moodle_url('/mod/dhbwio/university.php', [
+        $templatedata->deleteurl = new moodle_url('/mod/dhbwio/university.php', [
             'cmid' => $cm->id,
             'action' => 'delete',
             'university' => $university->id,
             'sesskey' => sesskey()
         ]);
-        
-        echo '<div class="university-actions mt-3 mb-4">';
-        echo '<a href="' . $editurl . '" class="btn btn-secondary mr-2">';
-        echo get_string('edit_university', 'mod_dhbwio') . '</a>';
-        
-        echo '<a href="' . $deleteurl . '" class="btn btn-danger" onclick="return confirm(\'' . 
-             get_string('delete_university_confirm', 'mod_dhbwio') . '\')">';
-        echo get_string('delete_university', 'mod_dhbwio') . '</a>';
-        echo '</div>';
     }
     
-    // Display university details
-    echo '<div class="card mb-4">';
-    echo '<div class="card-header">';
-    echo '<h3>' . get_string('university_details', 'mod_dhbwio') . '</h3>';
-    echo '</div>';
-    
-    echo '<div class="card-body">';
-    
-    // Website
+    // University details
     if (!empty($university->website)) {
-        echo '<p><strong>' . get_string('university_website', 'mod_dhbwio') . ':</strong> ';
-        echo '<a href="' . $university->website . '" target="_blank">' . $university->website . '</a></p>';
+        $templatedata->haswebsite = true;
+        $templatedata->website = $university->website;
     }
     
-    // Available slots
-    echo '<p><strong>' . get_string('university_available_slots', 'mod_dhbwio') . ':</strong> ' . 
-         $university->available_slots . '</p>';
+    $templatedata->available_slots = $university->available_slots;
     
-    // Semester periods
+    // Semester period
     if (!empty($university->semester_start) && !empty($university->semester_end)) {
-        echo '<p><strong>' . get_string('semester_period', 'mod_dhbwio') . ':</strong> ';
-        echo $months[$university->semester_start] . ' - ' . $months[$university->semester_end] . '</p>';
+        $templatedata->hassemesterperiod = true;
+        $templatedata->semester_period = $months[$university->semester_start] . ' - ' . $months[$university->semester_end];
     }
     
     // Semester fees
     if (!empty($university->semester_fees)) {
-        echo '<p><strong>' . get_string('semester_fees', 'mod_dhbwio') . ':</strong> ';
-        echo number_format($university->semester_fees, 2) . ' ' . $university->fee_currency . '</p>';
+        $templatedata->hasfees = true;
+        $templatedata->semester_fees_formatted = number_format($university->semester_fees, 2) . ' ' . $university->fee_currency;
     }
     
     // Accommodation type
     if (!empty($university->accommodation_type) && isset($accommodationTypes[$university->accommodation_type])) {
-        echo '<p><strong>' . get_string('accommodation_type', 'mod_dhbwio') . ':</strong> ';
-        echo $accommodationTypes[$university->accommodation_type] . '</p>';
+        $templatedata->hasaccommodation = true;
+        $templatedata->accommodation_type = $accommodationTypes[$university->accommodation_type];
     }
     
     // Description
     if (!empty($university->description)) {
-        echo '<div class="university-description mt-4">';
-        echo '<h4>' . get_string('university_description', 'mod_dhbwio') . '</h4>';
-        echo format_text($university->description, $university->descriptionformat);
-        echo '</div>';
+        $templatedata->hasdescription = true;
+        $templatedata->description = format_text($university->description, $university->descriptionformat);
     }
     
     // Requirements
     if (!empty($university->requirements)) {
-        echo '<div class="university-requirements mt-4">';
-        echo '<h4>' . get_string('university_requirements', 'mod_dhbwio') . '</h4>';
-        echo format_text($university->requirements);
-        echo '</div>';
+        $templatedata->hasrequirements = true;
+        $templatedata->requirements = format_text($university->requirements);
     }
-    
-    echo '</div>'; // End card-body
-    echo '</div>'; // End card
     
     // Experience reports if enabled
     if (!empty($dhbwio->enablereports)) {
-        echo '<div class="university-reports mt-4">';
-        echo '<h3>' . get_string('reports', 'mod_dhbwio') . '</h3>';
+        $templatedata->hasreports = true;
         
         // Get reports for this university
         $reports = $DB->get_records('dhbwio_experience_reports', [
@@ -376,41 +354,36 @@ if ($universityid) {
         ], 'timecreated DESC');
         
         if (empty($reports)) {
-            echo $OUTPUT->notification(get_string('no_reports_for_university', 'mod_dhbwio'), 'info');
+            $templatedata->noreports = true;
         } else {
+            $templatedata->reports = [];
             foreach ($reports as $report) {
                 // Get student info
                 $student = $DB->get_record('user', ['id' => $report->userid]);
                 
-                echo '<div class="card mb-3">';
-                echo '<div class="card-header">';
-                echo '<h4>' . format_string($report->title) . '</h4>';
-                echo '<p>' . get_string('by', 'mod_dhbwio') . ' ' . fullname($student) . ' | ' . 
-                     userdate($report->timecreated) . '</p>';
+                $reportdata = new stdClass();
+                $reportdata->title = format_string($report->title);
+                $reportdata->author = fullname($student);
+                $reportdata->date = userdate($report->timecreated);
+                $reportdata->content = format_text($report->content, $report->contentformat);
                 
-                // Display rating if any
+                // Format rating
                 if (!empty($report->rating)) {
-                    echo '<p>' . get_string('rating', 'mod_dhbwio') . ': ';
+                    $reportdata->rating = $report->rating;
+                    $reportdata->ratingdisplay = '';
                     for ($i = 1; $i <= 5; $i++) {
-                        echo ($i <= $report->rating) ? '★' : '☆';
+                        $reportdata->ratingdisplay .= ($i <= $report->rating) ? '★' : '☆';
                     }
-                    echo '</p>';
                 }
                 
-                echo '</div>'; // End card-header
-                
-                echo '<div class="card-body">';
-                echo format_text($report->content, $report->contentformat);
-                echo '</div>'; // End card-body
-                echo '</div>'; // End card
+                $templatedata->reports[] = $reportdata;
             }
         }
-        
-        echo '</div>'; // End university-reports
     }
     
-    echo '</div>'; // End university-details
-    
+    // Render using template
+    echo $OUTPUT->header();
+    echo $OUTPUT->render_from_template('mod_dhbwio/university_detail', $templatedata);
     echo $OUTPUT->footer();
     exit;
 }

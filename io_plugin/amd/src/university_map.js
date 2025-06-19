@@ -409,10 +409,11 @@ define([
      */
     const createUniversityIcon = (university) => {
         // Determine icon color based on availability
-        let iconColor = '#dc3545'; // Red for no slots
-        if (university.available_slots > 0) {
+        // Disabled for now
+        const iconColor = '#D10000'; // Red for no slots
+        /*if (university.available_slots > 0) {
             iconColor = university.available_slots > 5 ? '#28a745' : '#ffc107'; // Green for many, yellow for few
-        }
+        }*/
 
         // Create custom divIcon
         return leafletLib.divIcon({

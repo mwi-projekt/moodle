@@ -39,6 +39,7 @@ $string['universities_grouped_by_country'] = 'Universities will be automatically
 $string['choose'] = 'Select a university...';
 $string['not_selected'] = 'No university selected';
 $string['any'] = 'Any university';
+$string['none'] = 'None';
 
 // Error messages
 $string['fieldrequired'] = 'Please select a university';

@@ -88,7 +88,7 @@ class dataformfield_dhbwuni_form extends mod_dataform\pluginbase\dataformfieldfo
     }
     
     /**
-     * Default content definition - with error handling
+     * Default content definition
      */
     public function definition_default_content() {
         $mform = &$this->_form;
@@ -100,7 +100,7 @@ class dataformfield_dhbwuni_form extends mod_dataform\pluginbase\dataformfieldfo
             
             if (!empty($universities)) {
                 $label = get_string('fielddefaultvalue', 'dataform');
-                $options = array('' => get_string('choose', 'dataformfield_dhbwuni')) + $universities;
+                $options = array('' => get_string('choose', 'dataformfield_dhbwuni')) + array(0 => get_string('none', 'dataformfield_dhbwuni')) + $universities;
                 $mform->addElement('select', 'contentdefault', $label, $options);
             } else {
                 $mform->addElement('static', 'no_default', 
@@ -131,11 +131,11 @@ class dataformfield_dhbwuni_form extends mod_dataform\pluginbase\dataformfieldfo
      * Get default content data
      */
     protected function get_data_default_content(\stdClass $data) {
-        if (!empty($data->contentdefault)) {
-            return $data->contentdefault;
-        }
-        return null;
-    }
+		if (isset($data->contentdefault) && $data->contentdefault !== '') {
+			return $data->contentdefault;
+		}
+		return null;
+	}
     
     /**
      * Validate default content

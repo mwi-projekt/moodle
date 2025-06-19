@@ -1,0 +1,186 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_dhbwio/university_detail
+
+    Display detailed information about a university
+
+    Example context (json):
+    {
+        "backurl": "https://example.com/mod/dhbwio/view.php?id=1&tab=universities",
+        "name": "American University in Bulgaria",
+        "city": "Blagoevgrad",
+        "country": "Bulgaria",
+        "address": "1 Georgi Izmirliev Sq.",
+        "postal_code": "2700",
+        "hasaddress": true,
+        "imageurl": "https://example.com/pluginfile.php/123/mod_dhbwio/university_images/1/university.jpg",
+        "hasimage": true,
+        "canmanage": true,
+        "editurl": "https://example.com/mod/dhbwio/university.php?cmid=1&action=edit&university=1",
+        "deleteurl": "https://example.com/mod/dhbwio/university.php?cmid=1&action=delete&university=1",
+        "website": "https://www.aubg.edu/",
+        "haswebsite": true,
+        "available_slots": 3,
+        "semester_period": "January - April",
+        "hassemesterperiod": true,
+        "semester_fees_formatted": "0.00 EUR",
+        "hasfees": false,
+        "accommodation_type": "Student Dormitory",
+        "hasaccommodation": true,
+        "description": "<p>Description of the university...</p>",
+        "hasdescription": true,
+        "requirements": "<p>English (C1)</p>",
+        "hasrequirements": true,
+        "showapplybutton": true,
+        "applyurl": "https://example.com/mod/dataform/view.php?id=123",
+        "reports": [
+            {
+                "title": "My Experience at AUBG",
+                "author": "John Doe",
+                "date": "15 January 2025",
+                "rating": 4,
+                "ratingdisplay": "★★★★☆",
+                "content": "<p>Great experience...</p>"
+            }
+        ],
+        "hasreports": true,
+        "noreports": false
+    }
+}}
+
+<div class="dhbwio-actions mb-4">
+    <a href="{{backurl}}" class="btn btn-secondary">
+        {{#str}} back_to_universities, mod_dhbwio {{/str}}
+    </a>
+</div>
+
+<div class="university-details">
+    <h2>{{name}}</h2>
+    <h4>{{city}}, {{country}}</h4>
+    
+    {{#hasaddress}}
+    <p>
+        {{#address}}{{address}}{{/address}}{{#postal_code}}{{#address}}, {{/address}}{{postal_code}}{{/postal_code}}
+    </p>
+    {{/hasaddress}}
+    
+    {{#hasimage}}
+    <div class="university-image mb-3">
+        <img src="{{imageurl}}" class="img-fluid rounded" alt="{{name}}">
+    </div>
+    {{/hasimage}}
+    
+    <div class="university-actions mt-3 mb-4">
+        {{#showapplybutton}}
+        <a href="{{applyurl}}" class="btn btn-primary mr-2">
+            {{#str}} apply_for_exchange, mod_dhbwio {{/str}}
+        </a>
+        {{/showapplybutton}}
+        
+        {{#canmanage}}
+        <a href="{{editurl}}" class="btn btn-secondary mr-2">
+            {{#str}} edit_university, mod_dhbwio {{/str}}
+        </a>
+        <a href="{{deleteurl}}" class="btn btn-danger" onclick="return confirm('{{#str}} delete_university_confirm, mod_dhbwio {{/str}}')">
+            {{#str}} delete_university, mod_dhbwio {{/str}}
+        </a>
+        {{/canmanage}}
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>{{#str}} university_details, mod_dhbwio {{/str}}</h3>
+        </div>
+        
+        <div class="card-body">
+            {{#haswebsite}}
+            <p>
+                <strong>{{#str}} university_website, mod_dhbwio {{/str}}:</strong>
+                <a href="{{website}}" target="_blank">{{website}}</a>
+            </p>
+            {{/haswebsite}}
+            
+            <p>
+                <strong>{{#str}} university_available_slots, mod_dhbwio {{/str}}:</strong>
+                {{available_slots}}
+            </p>
+            
+            {{#hassemesterperiod}}
+            <p>
+                <strong>{{#str}} semester_period, mod_dhbwio {{/str}}:</strong>
+                {{semester_period}}
+            </p>
+            {{/hassemesterperiod}}
+            
+            {{#hasfees}}
+            <p>
+                <strong>{{#str}} semester_fees, mod_dhbwio {{/str}}:</strong>
+                {{semester_fees_formatted}}
+            </p>
+            {{/hasfees}}
+            
+            {{#hasaccommodation}}
+            <p>
+                <strong>{{#str}} accommodation_type, mod_dhbwio {{/str}}:</strong>
+                {{accommodation_type}}
+            </p>
+            {{/hasaccommodation}}
+            
+            {{#hasdescription}}
+            <div class="university-description mt-4">
+                <h4>{{#str}} university_description, mod_dhbwio {{/str}}</h4>
+                {{{description}}}
+            </div>
+            {{/hasdescription}}
+            
+            {{#hasrequirements}}
+            <div class="university-requirements mt-4">
+                <h4>{{#str}} university_requirements, mod_dhbwio {{/str}}</h4>
+                {{{requirements}}}
+            </div>
+            {{/hasrequirements}}
+        </div>
+    </div>
+    
+    {{#hasreports}}
+    <div class="university-reports mt-4">
+        <h3>{{#str}} reports, mod_dhbwio {{/str}}</h3>
+        
+        {{#noreports}}
+        <div class="alert alert-info">
+            {{#str}} no_reports_for_university, mod_dhbwio {{/str}}
+        </div>
+        {{/noreports}}
+        
+        {{#reports}}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h4>{{title}}</h4>
+                <p>
+                    {{#str}} by, mod_dhbwio {{/str}} {{author}} | {{date}}
+                    {{#rating}} | {{#str}} rating, mod_dhbwio {{/str}}: {{{ratingdisplay}}}{{/rating}}
+                </p>
+            </div>
+            <div class="card-body">
+                {{{content}}}
+            </div>
+        </div>
+        {{/reports}}
+    </div>
+    {{/hasreports}}
+</div>

@@ -166,6 +166,7 @@ $string['longitude_help'] = 'Geographic longitude of the university (between -18
 $string['invalid_latitude'] = 'Invalid latitude. Value must be between -90 and 90.';
 $string['invalid_longitude'] = 'Invalid longitude. Value must be between -180 and 180.';
 $string['invalid_slots'] = 'Invalid number of slots. Value must be positive.';
+$string['apply_for_exchange'] = 'Apply for exchange semester';
 
 // Semester periods
 $string['semester_start_month'] = 'Semester start month';

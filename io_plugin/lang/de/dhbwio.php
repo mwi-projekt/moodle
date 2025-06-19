@@ -193,6 +193,7 @@ $string['longitude_help'] = 'Geografischer Längengrad der Hochschule (zwischen 
 $string['invalid_latitude'] = 'Ungültiger Breitengrad. Der Wert muss zwischen -90 und 90 liegen.';
 $string['invalid_longitude'] = 'Ungültiger Längengrad. Der Wert muss zwischen -180 und 180 liegen.';
 $string['invalid_slots'] = 'Ungültige Anzahl von Plätzen. Der Wert muss positiv sein.';
+$string['apply_for_exchange'] = 'Jetzt zum Auslandssemester anmelden';
 
 // Semesterzeiträume
 $string['semester_start_month'] = 'Semesterbeginn (Monat)';

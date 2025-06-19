@@ -58,53 +58,57 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
     }
     
     /**
-     * Display edit form
-     */
-    public function display_edit(&$mform, $entry, array $options = null) {
-        $field = $this->_field;
-        $fieldid = $field->id;
-        $entryid = $entry->id;
-        $fieldname = "field_{$fieldid}_{$entryid}";
-        $required = !empty($options['required']);
-        
-        // Get current selection
-        $selected = !empty($entry->{"c{$fieldid}_content"}) ? (int) $entry->{"c{$fieldid}_content"} : 0;
-        
-        // Check for default value
-        if (!$selected && !empty($field->defaultcontent)) {
-            $selected = $field->defaultcontent;
-        }
-        
-        // Get universities as flat list
-        $menuoptions = $field->universities_menu();
-        
-        if (empty($menuoptions)) {
-            // Show warning if no universities available
-            $mform->addElement('static', $fieldname, null, 
-                html_writer::div(
-                    get_string('no_universities_available', 'dataformfield_dhbwuni'),
-                    'alert alert-warning'
-                )
-            );
-            return;
-        }
-        
-        // Add element only if there are options
-        if ($menuoptions) {
-            list($elem, $separators) = $this->render($mform, "{$fieldname}_selected", $menuoptions, $selected, $required);
-            // Add group or element
-            if (is_array($elem)) {
-                $mform->addGroup($elem, $fieldname, null, $separators, false);
-            } else {
-                $mform->addElement($elem);
-            }
-            
-            // Required validation
-            if ($required) {
-                $this->set_required($mform, $fieldname, $selected);
-            }
-        }
-    }
+	 * Display edit form
+	 */
+	public function display_edit(&$mform, $entry, array $options = null) {
+		$field = $this->_field;
+		$fieldid = $field->id;
+		$entryid = $entry->id;
+		$fieldname = "field_{$fieldid}_{$entryid}";
+		$required = !empty($options['required']);
+		
+		// Determine the selected value
+		if (isset($entry->{"c{$fieldid}_content"})) {
+			// Entry has existing content - use it
+			$selected = (int) $entry->{"c{$fieldid}_content"};
+		} else if (!empty($field->defaultcontent)) {
+			// New entry with no content - use default value
+			$selected = (int) $field->defaultcontent;
+		} else {
+			// No existing content and no default - use empty string (not 0)
+			$selected = '';
+		}
+		
+		// Get universities as flat list
+		$menuoptions = $field->universities_menu();
+		
+		if (empty($menuoptions)) {
+			// Show warning if no universities available
+			$mform->addElement('static', $fieldname, null, 
+				html_writer::div(
+					get_string('no_universities_available', 'dataformfield_dhbwuni'),
+					'alert alert-warning'
+				)
+			);
+			return;
+		}
+		
+		// Add element only if there are options
+		if ($menuoptions) {
+			list($elem, $separators) = $this->render($mform, "{$fieldname}_selected", $menuoptions, $selected, $required);
+			// Add group or element
+			if (is_array($elem)) {
+				$mform->addGroup($elem, $fieldname, null, $separators, false);
+			} else {
+				$mform->addElement($elem);
+			}
+			
+			// Required validation
+			if ($required) {
+				$this->set_required($mform, $fieldname, $selected);
+			}
+		}
+	}
     
     /**
      * Display browse/view mode
@@ -132,10 +136,13 @@ class dataformfield_dhbwuni_renderer extends mod_dataform\pluginbase\dataformfie
      * Render the select element with options (like standard select field)
      */
     protected function render(&$mform, $fieldname, $options, $selected, $required = false) {
-        $select = &$mform->createElement('select', $fieldname, null, array('' => get_string('choose', 'dataformfield_dhbwuni')) + $options);
-        $select->setSelected($selected);
-        return array($select, null);
-    }
+		$selectoptions = array('' => get_string('choose', 'dataformfield_dhbwuni')) + 
+						array(0 => get_string('none', 'dataformfield_dhbwuni')) + 
+						$options;
+		$select = &$mform->createElement('select', $fieldname, null, $selectoptions);
+		$select->setSelected((string)$selected);
+		return array($select, null);
+	}
     
     /**
      * Set required validation (like standard select field)

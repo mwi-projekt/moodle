@@ -39,6 +39,7 @@ $string['universities_grouped_by_country'] = 'Hochschulen werden automatisch nac
 $string['choose'] = 'Hochschule auswählen...';
 $string['not_selected'] = 'Keine Hochschule ausgewählt';
 $string['any'] = 'Beliebige Hochschule';
+$string['none'] = 'Keine';
 
 // Fehlermeldungen
 $string['fieldrequired'] = 'Bitte wählen Sie eine Hochschule aus';
