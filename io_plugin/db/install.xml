@@ -113,5 +113,26 @@
         <INDEX NAME="dhbwio_type_lang" UNIQUE="true" FIELDS="dhbwio, type, lang" COMMENT="Each type and language can only have one template per instance"/>
       </INDEXES>
     </TABLE>
+
+	<TABLE NAME="dhbwio_email_log" COMMENT="Log of emails sent for dataform entries">
+	<FIELDS>
+		<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+		<FIELD NAME="dhbwio_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dhbwio instance"/>
+		<FIELD NAME="entry_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dataform entry"/>
+		<FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user who received the email"/>
+		<FIELD NAME="email_type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type of email sent"/>
+		<FIELD NAME="status" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Status at time of sending"/>
+		<FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Time when email was sent"/>
+	</FIELDS>
+	<KEYS>
+		<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+		<KEY NAME="dhbwio_id" TYPE="foreign" FIELDS="dhbwio_id" REFTABLE="dhbwio" REFFIELDS="id"/>
+		<KEY NAME="user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
+	</KEYS>
+	<INDEXES>
+		<INDEX NAME="entry_id" UNIQUE="false" FIELDS="entry_id"/>
+		<INDEX NAME="dhbwio_entry" UNIQUE="false" FIELDS="dhbwio_id, entry_id"/>
+	</INDEXES>
+	</TABLE>
   </TABLES>
 </XMLDB>

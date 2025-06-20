@@ -15,21 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for the mod_dhbwio plugin.
+ * Definition of mod_dhbwio scheduled tasks.
  *
- * @package   mod_dhbwio
- * @copyright 2025, DHBW <esc@dhbw-karlsruhe.de>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_dhbwio
+ * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_dhbwio';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = 'v0.4.0';
-$plugin->version = 2025062000;
-$plugin->requires = 2024100704;
-
-$plugin->dependencies = [
-    'mod_dataform' => 2017051502
+$tasks = [
+    [
+        'classname' => 'mod_dhbwio\task\process_email_notifications',
+        'blocking' => 0,
+        'minute' => '*/15', // Run every 15 minutes
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+        'disabled' => 0
+    ]
 ];

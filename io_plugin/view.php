@@ -345,10 +345,119 @@ switch ($tab) {
         break;
         
     case 'emailtemplates':
-        // Check capability
-        require_capability('mod/dhbwio:managetemplates', $context);
-        echo $OUTPUT->notification("Email templates feature is coming soon", 'info');
-        break;
+		// Check capability
+		require_capability('mod/dhbwio:managetemplates', $context);
+		
+		// Display email template management interface
+		echo '<div class="dhbwio-emailtemplates">';
+		
+		// Get all templates for this instance
+		$templates = $DB->get_records('dhbwio_email_templates', ['dhbwio' => $dhbwio->id], 'type, lang, name');
+		
+		if (empty($templates)) {
+			echo $OUTPUT->notification(get_string('no_templates', 'mod_dhbwio'), 'info');
+			
+			// Show info about creating default templates
+			echo '<div class="alert alert-info">';
+			echo '<h5>' . get_string('create_default_templates', 'mod_dhbwio') . '</h5>';
+			echo '<p>' . get_string('create_default_templates_desc', 'mod_dhbwio') . '</p>';
+			
+			$createdefaulturl = new moodle_url('/mod/dhbwio/email_template.php', [
+				'cmid' => $cm->id,
+				'action' => 'createdefaults',
+				'sesskey' => sesskey()
+			]);
+			echo '<a href="' . $createdefaulturl . '" class="btn btn-secondary">';
+			echo get_string('create_default_templates_button', 'mod_dhbwio') . '</a>';
+			echo '</div>';
+		} else {
+			// Template types for display
+			$templatetypes = [
+				'application_received' => get_string('template_application_received', 'mod_dhbwio'),
+				'application_approved' => get_string('template_application_accepted', 'mod_dhbwio'),
+				'application_rejected' => get_string('template_application_rejected', 'mod_dhbwio'),
+				'application_inquiry' => get_string('template_application_inquiry', 'mod_dhbwio')
+			];
+			
+			echo $OUTPUT->box_start('generalbox');
+			
+			// Create single table for all templates
+			$table = new html_table();
+			$table->head = [
+				get_string('template_name', 'mod_dhbwio'),
+				get_string('template_type', 'mod_dhbwio'),
+				get_string('language'),
+				get_string('template_subject', 'mod_dhbwio'),
+				get_string('status', 'mod_dhbwio'),
+				get_string('actions', 'mod_dhbwio')
+			];
+			$table->attributes['class'] = 'table table-striped table-hover';
+			
+			$stringmanager = get_string_manager();
+			$languageList = $stringmanager->get_list_of_languages();
+			
+			foreach ($templates as $template) {
+				$langdisplay = isset($languageList[$template->lang]) ? $languageList[$template->lang] : $template->lang;
+				$typedisplay = isset($templatetypes[$template->type]) ? $templatetypes[$template->type] : $template->type;
+				
+				// Status display
+				$status = $template->enabled ? 
+					'<span class="badge badge-success">' . get_string('enabled', 'mod_dhbwio') . '</span>' : 
+					'<span class="badge badge-secondary">' . get_string('disabled', 'mod_dhbwio') . '</span>';
+				
+				// Action links
+				$actions = [];
+				
+				// Edit
+				$editurl = new moodle_url('/mod/dhbwio/email_template.php', [
+					'cmid' => $cm->id,
+					'action' => 'edit',
+					'template' => $template->id
+				]);
+				$actions[] = html_writer::link($editurl, $OUTPUT->pix_icon('t/edit', get_string('edit')), 
+											['class' => 'btn btn-sm btn-outline-secondary']);
+				
+				// Preview
+				$previewurl = new moodle_url('/mod/dhbwio/email_template.php', [
+					'cmid' => $cm->id,
+					'action' => 'preview',
+					'template' => $template->id
+				]);
+				$actions[] = html_writer::link($previewurl, $OUTPUT->pix_icon('i/preview', get_string('preview')), 
+											['class' => 'btn btn-sm btn-outline-info']);
+				
+				// Test email
+				$testurl = new moodle_url('/mod/dhbwio/email_template.php', [
+					'cmid' => $cm->id,
+					'action' => 'test',
+					'template' => $template->id,
+					'sesskey' => sesskey()
+				]);
+				$actions[] = html_writer::link($testurl, $OUTPUT->pix_icon('t/email', get_string('send_test_email', 'mod_dhbwio')), 
+											['class' => 'btn btn-sm btn-outline-warning']);
+				
+				// Truncate subject for display
+				$subjectdisplay = strlen($template->subject) > 50 ? 
+								substr($template->subject, 0, 50) . '...' : 
+								$template->subject;
+				
+				// Add table row
+				$table->data[] = [
+					format_string($template->name),
+					$typedisplay,
+					$langdisplay,
+					format_string($subjectdisplay),
+					$status,
+					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>'
+				];
+			}
+			
+			echo html_writer::table($table);
+			echo $OUTPUT->box_end();
+		}
+		
+		echo '</div>'; // End dhbwio-emailtemplates
+		break;
         
     default:
         // Default to universities view

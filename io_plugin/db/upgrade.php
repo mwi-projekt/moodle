@@ -88,5 +88,38 @@ function xmldb_dhbwio_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
     }
 
+	// Add email log table
+    if ($oldversion < 2025012000) {
+        
+        // Define table dhbwio_email_log to be created
+        $table = new xmldb_table('dhbwio_email_log');
+
+        // Adding fields to table dhbwio_email_log
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('dhbwio_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('entry_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('user_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('email_type', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table dhbwio_email_log
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('dhbwio_id', XMLDB_KEY_FOREIGN, ['dhbwio_id'], 'dhbwio', ['id']);
+        $table->add_key('user_id', XMLDB_KEY_FOREIGN, ['user_id'], 'user', ['id']);
+
+        // Adding indexes to table dhbwio_email_log
+        $table->add_index('entry_id', XMLDB_INDEX_NOTUNIQUE, ['entry_id']);
+        $table->add_index('dhbwio_entry', XMLDB_INDEX_NOTUNIQUE, ['dhbwio_id', 'entry_id']);
+
+        // Conditionally launch create table for dhbwio_email_log
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Update version number
+        upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
+    }
+
     return true;
 }

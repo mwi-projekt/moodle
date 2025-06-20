@@ -15,21 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for the mod_dhbwio plugin.
+ * Event observers for mod_dhbwio
  *
- * @package   mod_dhbwio
- * @copyright 2025, DHBW <esc@dhbw-karlsruhe.de>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_dhbwio
+ * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_dhbwio';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = 'v0.4.0';
-$plugin->version = 2025062000;
-$plugin->requires = 2024100704;
-
-$plugin->dependencies = [
-    'mod_dataform' => 2017051502
+$observers = [
+    // Observer for dataform entry created
+    [
+        'eventname' => '\mod_dataform\event\entry_created',
+        'callback' => '\mod_dhbwio\observer::dataform_entry_created',
+        'includefile' => null,
+        'priority' => 0,
+        'internal' => true,
+    ],
+    // Observer for dataform entry updated
+    [
+        'eventname' => '\mod_dataform\event\entry_updated',
+        'callback' => '\mod_dhbwio\observer::dataform_entry_updated',
+        'includefile' => null,
+        'priority' => 0,
+        'internal' => true,
+    ],
 ];

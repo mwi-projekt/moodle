@@ -282,6 +282,49 @@ $string['variable_comments'] = 'Comments';
 $string['preview_template'] = 'Preview';
 $string['send_test_email'] = 'Send Test Email';
 $string['test_email_sent'] = 'Test email sent successfully';
+$string['template_updated'] = 'Email template updated successfully';
+$string['template_deleted'] = 'Email template deleted successfully';
+$string['delete_template_confirm'] = 'Are you sure you want to delete this email template?';
+$string['default_templates_created'] = 'Default email templates created successfully';
+$string['create_default_templates'] = 'Create Default Templates';
+$string['create_default_templates_desc'] = 'Click the button below to create default email templates for all notification types in English and German.';
+$string['create_default_templates_button'] = 'Create Default Templates';
+$string['email_template_name_help'] = 'A descriptive name for this email template';
+$string['email_template_type_help'] = 'The type of notification this template will be used for';
+$string['email_template_subject_help'] = 'The subject line for emails sent using this template. You can use variables like {STUDENT_NAME}.';
+$string['email_template_body_help'] = 'The content of the email. You can use HTML formatting and variables like {STUDENT_NAME}, {SEMESTER}, etc.';
+$string['email_template_enabled_help'] = 'Check to enable this template for sending notifications';
+$string['template_language_help'] = 'The language this template is written in. Users will receive emails in their preferred language if available.';
+$string['standard_variables'] = 'Standard Variables';
+$string['dataform_variables'] = 'Dataform Variables';
+$string['variable_student_email'] = 'Email address of the student';
+$string['variable_first_wish'] = 'Student\'s first choice university';
+$string['variable_second_wish'] = 'Student\'s second choice university';
+$string['variable_third_wish'] = 'Student\'s third choice university';
+$string['variable_university_choices'] = 'List of universities the student selected';
+$string['variables_in_preview'] = 'Variables Used in This Template';
+$string['no_dataform_fields'] = 'No dataform fields found in this course';
+$string['test_email_failed'] = 'Failed to send test email';
+$string['template_type_lang_exists'] = 'A template for this type and language already exists';
+$string['missing_required_variables'] = 'The following required variables are missing from the email body: {$a}';
+
+
+// Email template management
+$string['no_templates'] = 'No email templates found. Default templates should be created automatically.';
+$string['missing_templates'] = 'Missing Templates';
+$string['missing_templates_desc'] = 'The following template types have not been created yet:';
+$string['enabled'] = 'Enabled';
+$string['disabled'] = 'Disabled';
+$string['template_type_lang_exists'] = 'A template of this type and language already exists.';
+$string['email_template_name'] = 'Template Name';
+$string['email_template_type'] = 'Template Type';
+$string['email_template_subject'] = 'Subject';
+$string['email_template_body'] = 'Email Body';
+$string['email_template_body_help'] = 'Enter the email body content. You can use HTML formatting and template variables like {STUDENT_NAME}.';
+$string['email_template_enabled'] = 'Enabled';
+$string['email_template_enabled_desc'] = 'Enable this template for automatic email sending';
+$string['template_language'] = 'Template Language';
+$string['template_language_help'] = 'Select the language for this email template. Each template type can have versions in different languages.';
 
 // Application process
 $string['application'] = 'Application';
@@ -359,3 +402,20 @@ $string['month_9'] = 'September';
 $string['month_10'] = 'October';
 $string['month_11'] = 'November';
 $string['month_12'] = 'December';
+
+// Event strings
+$string['event_email_sent'] = 'Email notification sent';
+$string['task_process_email_notifications'] = 'Process email notifications for status changes';
+$string['important_dataform_vars'] = 'Important dataform variables:';
+$string['all_dataform_vars'] = 'All available dataform variables:';
+$string['dataform_status_desc'] = 'Application status (used to determine which email to send)';
+$string['dataform_wishes_desc'] = 'University choices from the application';
+$string['dataform_comment_desc'] = 'IO comment/feedback (used in rejection/inquiry emails)';
+$string['email_auto_sent'] = 'Automatic email notification sent successfully';
+$string['email_auto_failed'] = 'Failed to send automatic email notification';
+$string['status_change_detected'] = 'Status change detected - sending notification';
+$string['status_field_help'] = 'The DATAFORM_STATUS_BEWERBUNG field is used to automatically trigger emails. Common values:
+- angenommen/approved/accepted → Sends approval email
+- abgelehnt/rejected/declined → Sends rejection email
+- rückfrage/inquiry/pending → Sends inquiry email
+- eingegangen/received/new → Sends receipt confirmation (only on first submission)';
