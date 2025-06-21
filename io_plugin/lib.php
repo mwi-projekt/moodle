@@ -887,8 +887,8 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
         '', // Attachment
         '', // Attachment name
         true, // HTML format
-        '', // Reply-to email
-        '', // Reply-to name
+        'internationaloffice@dhbw-karlsruhe.de', // Reply-to email
+        'DHBW International Office', // Reply-to name
         $template->bodyformat // Message format
     );
 }

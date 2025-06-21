@@ -89,7 +89,7 @@ function xmldb_dhbwio_upgrade($oldversion) {
     }
 
 	// Add email log table
-    if ($oldversion < 2025012000) {
+    if ($oldversion < 2025062100) {
         
         // Define table dhbwio_email_log to be created
         $table = new xmldb_table('dhbwio_email_log');
@@ -118,7 +118,7 @@ function xmldb_dhbwio_upgrade($oldversion) {
         }
 
         // Update version number
-        upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
+        upgrade_mod_savepoint(true, 2025062100, 'dhbwio');
     }
 
     return true;
