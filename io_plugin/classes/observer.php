@@ -56,21 +56,27 @@ class observer {
             $userid = $event->userid;
             $entryid = $event->objectid;
             
-            // Get entry data to check status
-            $entry_data = dhbwio_get_dataform_entry_data($dhbwio->id, $entryid);
+            // Get the actual dataform entry to get creation date
+            $entry = self::get_dataform_entry($entryid);
+            $additional_params = [];
+            
+            if ($entry) {
+                $additional_params['SUBMISSION_DATE'] = userdate($entry->timecreated);
+            }
             
             // Send application received notification
-            dhbwio_send_email_notification(
+            $sent = dhbwio_send_email_notification(
                 'application_received',
                 $dhbwio->id,
                 $userid,
-                [],
+                $additional_params,
                 null,
                 $entryid
             );
             
-            // Log the email sending
-            self::log_email_sent($dhbwio->id, $userid, 'application_received', $entryid);
+            if ($sent) {
+                self::log_email_sent($dhbwio->id, $userid, 'application_received', $entryid, 'eingegangen');
+            }
         }
     }
     
@@ -120,8 +126,15 @@ class observer {
             if ($email_type && $email_type !== 'application_received') {
                 // Don't send received email on update, only on create
                 
+                // Get the actual dataform entry to get creation date
+                $entry = self::get_dataform_entry($entryid);
+                
                 // Prepare additional parameters based on email type
                 $additional_params = [];
+                
+                if ($entry) {
+                    $additional_params['SUBMISSION_DATE'] = userdate($entry->timecreated);
+                }
                 
                 if ($email_type === 'application_inquiry' || $email_type === 'application_rejected') {
                     // Use IO comment as feedback/inquiry comment
@@ -142,10 +155,25 @@ class observer {
                 );
                 
                 if ($sent) {
-                    // Log the email sending
-                    self::log_email_sent($dhbwio->id, $entry_userid, $email_type, $entryid);
+                    self::log_email_sent($dhbwio->id, $entry_userid, $email_type, $entryid, $status);
                 }
             }
+        }
+    }
+    
+    /**
+     * Get dataform entry data.
+     *
+     * @param int $entryid Entry ID
+     * @return object|false Entry or false if not found
+     */
+    private static function get_dataform_entry($entryid) {
+        global $DB;
+        
+        try {
+            return $DB->get_record('dataform_entries', ['id' => $entryid]);
+        } catch (\Exception $e) {
+            return false;
         }
     }
     
@@ -172,7 +200,7 @@ class observer {
      * @param string $status Status from dataform
      * @return string|null Email template type or null
      */
-    private static function get_email_type_from_status($status) {
+    public static function get_email_type_from_status($status) {
         $status = trim(strtolower($status));
         
         // Common status mappings
@@ -200,11 +228,23 @@ class observer {
      * @param int $userid User ID
      * @param string $email_type Email template type
      * @param int $entryid Entry ID
+     * @param string $status Current status
      */
-    private static function log_email_sent($dhbwio_id, $userid, $email_type, $entryid) {
+    private static function log_email_sent($dhbwio_id, $userid, $email_type, $entryid, $status = '') {
         global $DB, $USER;
         
-        // You can create a log table if needed, for now just use Moodle's logging
+        // Insert into dhbwio_email_log table
+        $log = new \stdClass();
+        $log->dhbwio_id = $dhbwio_id;
+        $log->entry_id = $entryid;
+        $log->user_id = $userid;
+        $log->email_type = $email_type;
+        $log->status = $status;
+        $log->timecreated = time();
+        
+        $DB->insert_record('dhbwio_email_log', $log);
+        
+        // Also trigger event for additional logging
         $event = \mod_dhbwio\event\email_sent::create([
             'objectid' => $entryid,
             'context' => \context_module::instance($dhbwio_id),

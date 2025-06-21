@@ -516,6 +516,23 @@ function dhbwio_get_dataform_fields($dhbwio_id) {
 }
 
 /**
+ * Get dataform entry by ID.
+ *
+ * @param int $entry_id Entry ID
+ * @return object|false Entry object or false if not found
+ */
+function dhbwio_get_dataform_entry($entry_id) {
+    global $DB;
+    
+    try {
+        return $DB->get_record('dataform_entries', ['id' => $entry_id]);
+    } catch (Exception $e) {
+        debugging('Error getting dataform entry: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        return false;
+    }
+}
+
+/**
  * Get dataform entry data for use in email templates.
  *
  * @param int $dhbwio_id DHBW IO instance ID
@@ -768,13 +785,11 @@ function dhbwio_get_latest_user_entry($dhbwio_id, $userid) {
 function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params = [], $language = null, $entry_id = null) {
     global $DB;
     
-    // Get user
     $user = $DB->get_record('user', ['id' => $to_user_id]);
     if (!$user) {
         return false;
     }
     
-    // Determine language
     if (!$language) {
         $language = $user->lang ?: get_config('core', 'lang');
     }
@@ -801,18 +816,23 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
         return false;
     }
     
-    // Merge standard parameters with dataform data
     $allparams = $params;
     
     // Get dataform data
     if ($entry_id) {
-        // Use specific entry ID
         $dataformdata = dhbwio_get_dataform_entry_data($dhbwio_id, $entry_id);
+        $entry = dhbwio_get_dataform_entry($entry_id);
+        if ($entry && !isset($allparams['SUBMISSION_DATE'])) {
+            $allparams['SUBMISSION_DATE'] = userdate($entry->timecreated);
+        }
     } else {
         // Find latest entry for user and use that
         $entry = dhbwio_get_latest_user_entry($dhbwio_id, $to_user_id);
         if ($entry) {
             $dataformdata = dhbwio_get_dataform_entry_data($dhbwio_id, $entry->id);
+            if (!isset($allparams['SUBMISSION_DATE'])) {
+                $allparams['SUBMISSION_DATE'] = userdate($entry->timecreated);
+            }
         } else {
             $dataformdata = [];
         }
@@ -829,6 +849,9 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
     }
     if (!isset($allparams['STUDENT_EMAIL'])) {
         $allparams['STUDENT_EMAIL'] = $user->email;
+    }
+    if (!isset($allparams['SUBMISSION_DATE'])) {
+        $allparams['SUBMISSION_DATE'] = userdate(time());
     }
     
     // Process template variables
@@ -848,6 +871,7 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
             'to_user' => $to_user_id,
             'entry_id' => $entry_id,
             'subject' => $subject,
+            'submission_date' => $allparams['SUBMISSION_DATE'],
             'variables_used' => array_keys($allparams)
         ];
         debugging('Sending email notification: ' . json_encode($logdata), DEBUG_DEVELOPER);
@@ -920,11 +944,6 @@ function dhbwio_send_automatic_notification($dhbwio_id, $userid, $status, $addit
     }
     
     $template_type = $type_mapping[trim(strtolower($status))];
-    
-    // Add timestamp if not provided
-    if (!isset($additional_params['SUBMISSION_DATE'])) {
-        $additional_params['SUBMISSION_DATE'] = userdate(time());
-    }
     
     return dhbwio_send_email_notification($template_type, $dhbwio_id, $userid, $additional_params, null, $entry_id);
 }

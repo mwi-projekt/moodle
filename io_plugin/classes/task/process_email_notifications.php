@@ -81,10 +81,8 @@ class process_email_notifications extends \core\task\scheduled_task {
     private function process_dataform_entries($dhbwio, $dataform) {
         global $DB;
         
-        // Get notification log table name (we'll create this)
         $logtable = 'dhbwio_email_log';
         
-        // Get all entries from the dataform
         $entries = $DB->get_records('dataform_entries', ['dataid' => $dataform->id]);
         
         foreach ($entries as $entry) {
@@ -122,8 +120,9 @@ class process_email_notifications extends \core\task\scheduled_task {
             }
             
             if ($should_send && $email_type) {
-                // Prepare additional parameters
                 $additional_params = [];
+                
+                $additional_params['SUBMISSION_DATE'] = userdate($entry->timecreated);
                 
                 if ($email_type === 'application_inquiry' || $email_type === 'application_rejected') {
                     if (isset($entry_data['DATAFORM_KOMMENTAR_IO'])) {
@@ -143,7 +142,6 @@ class process_email_notifications extends \core\task\scheduled_task {
                 );
                 
                 if ($sent) {
-                    // Log the email sending
                     $log = new \stdClass();
                     $log->dhbwio_id = $dhbwio->id;
                     $log->entry_id = $entry->id;
