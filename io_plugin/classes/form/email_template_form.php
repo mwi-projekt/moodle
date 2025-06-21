@@ -156,7 +156,7 @@ class email_template_form extends \moodleform {
 			'STUDENT_NAME' => get_string('variable_student_name', 'mod_dhbwio'),
 			'STUDENT_FIRSTNAME' => get_string('variable_student_firstname', 'mod_dhbwio'),
 			'STUDENT_EMAIL' => get_string('variable_student_email', 'mod_dhbwio'),
-			'SUBMISSION_DATE' => get_string('variable_application_date', 'mod_dhbwio')
+			'SUBMISSION_DATE' => get_string('variable_application_date', 'mod_dhbwio'),
 			'UNIVERSITY_CHOICES' => get_string('variable_university_choices', 'mod_dhbwio')
 		];
 		
