@@ -428,3 +428,21 @@ $string['month_9'] = 'September';
 $string['month_10'] = 'Oktober';
 $string['month_11'] = 'November';
 $string['month_12'] = 'Dezember';
+
+
+// Event strings
+$string['event_email_sent'] = 'E-Mail gesendet';
+$string['task_process_email_notifications'] = 'E-Mail für Statusänderungen verarbeiten';
+$string['important_dataform_vars'] = 'Wichtige Dataform-Variablen:';
+$string['all_dataform_vars'] = 'Alle verfügbaren Dataform-Variablen:';
+$string['dataform_status_desc'] = 'Bewerbungsstatus (wird verwendet, um zu bestimmen, welche E-Mail gesendet werden soll)';
+$string['dataform_wishes_desc'] = 'Hochschulwahl aus der Bewerbung';
+$string['dataform_comment_desc'] = 'IO-Kommentar/Feedback (wird in Ablehnungs/Rückfrage E-Mails verwendet');
+$string['email_auto_sent'] = 'Automatische E-Mail erfolgreich gesendet';
+$string['email_auto_failed'] = 'Automatische E-Mail konnte nicht gesendet werden';
+$string['status_change_detected'] = 'Statusänderung erkannt – E-Mail wird gesendet';
+$string['status_field_help'] = 'Das Feld DATAFORM_STATUS_BEWERBUNG dient zum automatischen Auslösen von E-Mails. Allgemeine Werte sind:
+- ANGENOMMEN → Sendet eine Genehmigungs E-Mail
+- ABGELEHNT → Sendet eine Ablehnungs E-Mail
+- NEUEINZUREICHEN → Sendet Rückfragen E-Mail
+- EINGEGANGEN → Sendet eine Empfangsbestätigung (nur bei der ersten Übermittlung)';

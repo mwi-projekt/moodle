@@ -179,30 +179,15 @@ class observer {
         $status_map = [
             // Approved statuses
             'angenommen' => 'application_approved',
-            'approved' => 'application_approved',
-            'accepted' => 'application_approved',
-            'genehmigt' => 'application_approved',
-            'bestätigt' => 'application_approved',
             
             // Rejected statuses
             'abgelehnt' => 'application_rejected',
-            'rejected' => 'application_rejected',
-            'declined' => 'application_rejected',
-            'nicht genehmigt' => 'application_rejected',
             
             // Inquiry statuses
-            'rückfrage' => 'application_inquiry',
-            'inquiry' => 'application_inquiry',
-            'nachfrage' => 'application_inquiry',
-            'pending' => 'application_inquiry',
-            'in bearbeitung' => 'application_inquiry',
-            'weitere informationen benötigt' => 'application_inquiry',
+            'neueinzureichen' => 'application_inquiry',
             
             // Received status (usually handled on create, not update)
-            'eingegangen' => 'application_received',
-            'received' => 'application_received',
-            'neu' => 'application_received',
-            'new' => 'application_received'
+            'eingegangen' => 'application_received'
         ];
         
         return isset($status_map[$status]) ? $status_map[$status] : null;

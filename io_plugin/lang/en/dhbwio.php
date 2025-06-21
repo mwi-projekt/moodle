@@ -308,7 +308,6 @@ $string['test_email_failed'] = 'Failed to send test email';
 $string['template_type_lang_exists'] = 'A template for this type and language already exists';
 $string['missing_required_variables'] = 'The following required variables are missing from the email body: {$a}';
 
-
 // Email template management
 $string['no_templates'] = 'No email templates found. Default templates should be created automatically.';
 $string['missing_templates'] = 'Missing Templates';

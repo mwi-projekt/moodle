@@ -908,22 +908,18 @@ function dhbwio_get_all_template_variables($dhbwio_id = null) {
  */
 function dhbwio_send_automatic_notification($dhbwio_id, $userid, $status, $additional_params = [], $entry_id = null) {
     $type_mapping = [
-        'submitted' => 'application_received',
-        'received' => 'application_received',
-        'approved' => 'application_approved',
-        'accepted' => 'application_approved',
-        'rejected' => 'application_rejected',
-        'declined' => 'application_rejected',
-        'inquiry' => 'application_inquiry',
-        'question' => 'application_inquiry'
+        'eingegangen' => 'application_received',
+        'angenommen' => 'application_approved',
+        'abgelehnt' => 'application_rejected',
+        'neueinzureichen' => 'application_inquiry'
     ];
     
-    if (!isset($type_mapping[$status])) {
+    if (!isset($type_mapping[trim(strtolower($status))])) {
         debugging('Unknown status for automatic notification: ' . $status, DEBUG_DEVELOPER);
         return false;
     }
     
-    $template_type = $type_mapping[$status];
+    $template_type = $type_mapping[trim(strtolower($status))];
     
     // Add timestamp if not provided
     if (!isset($additional_params['SUBMISSION_DATE'])) {
