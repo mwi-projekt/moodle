@@ -166,21 +166,6 @@ if ($action == 'add' || $action == 'edit') {
             $reportrecord->userid = $USER->id;
             $reportrecord->timecreated = $now;
             $reportrecord->id = $DB->insert_record('dhbwio_experience_reports', $reportrecord);
-            
-            // Send notification to IO staff
-            $university = $DB->get_record('dhbwio_universities', ['id' => $reportrecord->university_id]);
-            $params = [
-                'STUDENT_NAME' => fullname($USER),
-                'UNIVERSITY_NAME' => $university->name,
-                'REPORT_TITLE' => $reportrecord->title,
-                'REPORT_DATE' => userdate($now)
-            ];
-            
-            // Get manager users
-            $managers = get_users_by_capability($context, 'mod/dhbwio:manageuniversities');
-            foreach ($managers as $manager) {
-                dhbwio_send_email_notification('report_submitted', $dhbwio->id, $manager->id, $params);
-            }
         } else {
             $reportrecord->id = $reportid;
             $DB->update_record('dhbwio_experience_reports', $reportrecord);
