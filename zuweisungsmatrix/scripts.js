@@ -3,23 +3,6 @@ function allowDrop(event){
     event.preventDefault();
 }
 
-function saveAssignment(studentId, hochschule) {
-    fetch('save_assignment.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ studentid: studentId, hochschule: hochschule })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            console.error('Fehler beim Speichern:', data.message);
-        }
-    })
-    .catch(error => console.error('Netzwerkfehler:', error));
-}
-
 function drop(event) {
     event.preventDefault();
     event.target.classList.remove("over");
@@ -50,10 +33,6 @@ function drop(event) {
                 const showWishes = document.getElementById("showWishes")?.checked;
                 wishes.style.display = inMatrix ? (showWishes ? 'block' : 'none') : 'block';
             }
-            // Zuweisung speichern
-            var hochschule = dropTarget.dataset.hochschule;
-            var studentId = dragged.dataset.id;
-            saveAssignment(studentId, hochschule);
         }
     }
     // Drop zurück in Studentenliste
@@ -65,9 +44,6 @@ function drop(event) {
             const showWishes = document.getElementById("showWishes")?.checked;
             wishes.style.display = showWishes ? 'block' : 'none';
         }
-        // Zuweisung entfernen
-        var studentId = dragged.dataset.id;
-        saveAssignment(studentId, null);
     }
     updateEmptyInfoVisibility();
 }
