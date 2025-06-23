@@ -80,22 +80,34 @@ class mod_dhbwio_mod_form extends moodleform_mod {
         $mform->addElement('select', 'dataform_id', get_string('dataform_activity', 'mod_dhbwio'), $dataforms);
         $mform->addHelpButton('dataform_id', 'dataform_activity', 'mod_dhbwio');
 
+        // Overview View
+        $overviewviews = $this->get_dataform_views();
+        $mform->addElement('select', 'dataform_overview_view_id', get_string('dataform_overview_view', 'mod_dhbwio'), $overviewviews);
+        $mform->addHelpButton('dataform_overview_view_id', 'dataform_overview_view', 'mod_dhbwio');
+        $mform->hideIf('dataform_overview_view_id', 'dataform_id', 'eq', '0');
+        
+        // Entry View
+        $entryviews = $this->get_dataform_views();
+        $mform->addElement('select', 'dataform_entry_view_id', get_string('dataform_entry_view', 'mod_dhbwio'), $entryviews);
+        $mform->addHelpButton('dataform_entry_view_id', 'dataform_entry_view', 'mod_dhbwio');
+        $mform->hideIf('dataform_entry_view_id', 'dataform_id', 'eq', '0');
+
         // First Wish Field.
         $mform->addElement('text', 'first_wish_field', get_string('first_wish_field', 'mod_dhbwio'));
         $mform->setType('first_wish_field', PARAM_TEXT);
-        $mform->setDefault('first_wish_field', 'first_wish');
+        $mform->setDefault('first_wish_field', 'ERSTWUNSCH');
         $mform->addHelpButton('first_wish_field', 'first_wish_field', 'mod_dhbwio');
 
         // Second Wish Field.
         $mform->addElement('text', 'second_wish_field', get_string('second_wish_field', 'mod_dhbwio'));
         $mform->setType('second_wish_field', PARAM_TEXT);
-        $mform->setDefault('second_wish_field', 'second_wish');
+        $mform->setDefault('second_wish_field', 'ZWEITWUNSCH');
         $mform->addHelpButton('second_wish_field', 'second_wish_field', 'mod_dhbwio');
 
         // Third Wish Field.
         $mform->addElement('text', 'third_wish_field', get_string('third_wish_field', 'mod_dhbwio'));
         $mform->setType('third_wish_field', PARAM_TEXT);
-        $mform->setDefault('third_wish_field', 'third_wish');
+        $mform->setDefault('third_wish_field', 'DRITTWUNSCH');
         $mform->addHelpButton('third_wish_field', 'third_wish_field', 'mod_dhbwio');
 
         // First Wish Weight.
@@ -169,6 +181,42 @@ class mod_dhbwio_mod_form extends moodleform_mod {
 
             foreach ($dataforms as $dataform) {
                 $options[$dataform->id] = $dataform->name;
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get available DataForm views for selected DataForm activity.
+     */
+    private function get_dataform_views() {
+        global $DB;
+
+        $options = [0 => get_string('no_view_selected', 'mod_dhbwio')];
+
+        // Try to get dataform_id from current instance or form data
+        $dataformcmid = 0;
+        if (isset($this->current->dataform_id)) {
+            $dataformcmid = $this->current->dataform_id;
+        }
+
+        if ($dataformcmid) {
+            // Get the dataform instance ID from course module
+            $cm = get_coursemodule_from_id('dataform', $dataformcmid, 0, false, IGNORE_MISSING);
+            if ($cm) {
+                $dataformid = $cm->instance;
+                
+                // Get views for this dataform
+                $views = $DB->get_records('dataform_views', 
+                    ['dataid' => $dataformid, 'visible' => 1], 
+                    'name ASC',
+                    'id, name, type'
+                );
+
+                foreach ($views as $view) {                    
+                    $options[$view->id] = $view->name . ' (' . ucfirst($view->type) . ')';
+                }
             }
         }
 

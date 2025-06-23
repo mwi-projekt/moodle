@@ -151,13 +151,15 @@ class email_template_form extends \moodleform {
 		$mform->addElement('header', 'variablehelp', get_string('template_variables', 'mod_dhbwio'));
 		$mform->setExpanded('variablehelp', false);
 		
-		// Standard variables - removed redundant ones
+		// Standard variables
 		$standardvars = [
 			'STUDENT_NAME' => get_string('variable_student_name', 'mod_dhbwio'),
 			'STUDENT_FIRSTNAME' => get_string('variable_student_firstname', 'mod_dhbwio'),
 			'STUDENT_EMAIL' => get_string('variable_student_email', 'mod_dhbwio'),
 			'SUBMISSION_DATE' => get_string('variable_application_date', 'mod_dhbwio'),
-			'UNIVERSITY_CHOICES' => get_string('variable_university_choices', 'mod_dhbwio')
+			'UNIVERSITY_CHOICES' => get_string('variable_university_choices', 'mod_dhbwio'),            
+			'APPLICATION_OVERVIEW_LINK' => get_string('variable_application_overview_link', 'mod_dhbwio'),
+			'APPLICATION_ENTRY_LINK' => get_string('variable_application_entry_link', 'mod_dhbwio')
 		];
 		
 		$standardhtml = '<div class="alert alert-info"><h6>' . get_string('standard_variables', 'mod_dhbwio') . '</h6><ul>';

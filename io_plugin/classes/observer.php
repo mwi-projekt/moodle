@@ -27,6 +27,7 @@ namespace mod_dhbwio;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/dhbwio/lib.php');
+require_once($CFG->dirroot . '/mod/dhbwio/locallib.php');
 
 /**
  * Event observer class.

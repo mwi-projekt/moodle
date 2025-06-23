@@ -26,7 +26,7 @@ Dieses Moodle-Plugin bietet eine Lösung für die Hochschulverwaltung des Intern
 - Durchsuchbare Berichtsdatenbank
 
 ### E-Mail-Kommunikation
-- Konfigurierbare E-Mail-Vorlagen
+- Konfigurierbare E-Mail Vorlagen
 - Unterstützung für Vorlagevariablen
 
 ## Anforderungen

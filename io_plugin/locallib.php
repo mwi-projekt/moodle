@@ -49,3 +49,61 @@ function dhbwio_load_leaflet_map($cmid) {
     // Nach dem Laden von Leaflet das AMD-Modul initialisieren
     $PAGE->requires->js_call_amd('mod_dhbwio/university_map', 'init', [$cmid]);
 }
+
+/**
+ * Generate DataForm overview link for email templates.
+ *
+ * @param int $dhbwio_id DHBW IO instance ID
+ * @return string Generated URL or empty string if not configured
+ */
+function dhbwio_generate_dataform_overview_link($dhbwio_id) {
+    global $DB, $CFG;
+
+    $dhbwio = $DB->get_record('dhbwio', ['id' => $dhbwio_id], 'dataform_id, dataform_overview_view_id');
+    
+    if (!$dhbwio || !$dhbwio->dataform_id || !$dhbwio->dataform_overview_view_id) {
+        return '';
+    }
+
+    // Get the course module for the DataForm
+    $cm = get_coursemodule_from_instance('dataform', null, 0, false, IGNORE_MISSING);
+    if (!$cm) {
+        return '';
+    }
+
+    $params = [
+        'id' => $dhbwio->dataform_id,
+        'view' => $dhbwio->dataform_overview_view_id
+    ];
+
+    return new moodle_url('/mod/dataform/view.php', $params);
+}
+
+/**
+ * Generate DataForm entry link for email templates.
+ *
+ * @param int $dhbwio_id DHBW IO instance ID
+ * @param int $entry_id DataForm entry ID
+ * @return string Generated URL or empty string if not configured
+ */
+function dhbwio_generate_dataform_entry_link($dhbwio_id, $entry_id) {
+    global $DB, $CFG;
+
+    if (!$entry_id) {
+        return '';
+    }
+
+    $dhbwio = $DB->get_record('dhbwio', ['id' => $dhbwio_id], 'dataform_id, dataform_entry_view_id');
+    
+    if (!$dhbwio || !$dhbwio->dataform_id || !$dhbwio->dataform_entry_view_id) {
+        return '';
+    }
+
+    $params = [
+        'id' => $dhbwio->dataform_id,
+        'view' => $dhbwio->dataform_entry_view_id,
+        'eids' => $entry_id
+    ];
+
+    return new moodle_url('/mod/dataform/view.php', $params);
+}

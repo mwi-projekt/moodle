@@ -818,6 +818,10 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
     
     $allparams = $params;
     
+    $overviewlink = dhbwio_generate_dataform_overview_link($dhbwio_id);
+    $allparams['APPLICATION_OVERVIEW_LINK'] = $overviewlink ? $overviewlink->out() : '';
+    $allparams['APPLICATION_ENTRY_LINK'] = '';
+    
     // Get dataform data
     if ($entry_id) {
         $dataformdata = dhbwio_get_dataform_entry_data($dhbwio_id, $entry_id);
@@ -825,6 +829,9 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
         if ($entry && !isset($allparams['SUBMISSION_DATE'])) {
             $allparams['SUBMISSION_DATE'] = userdate($entry->timecreated);
         }
+        
+        $entrylink = dhbwio_generate_dataform_entry_link($dhbwio_id, $entry_id);
+        $allparams['APPLICATION_ENTRY_LINK'] = $entrylink ? $entrylink->out() : '';
     } else {
         // Find latest entry for user and use that
         $entry = dhbwio_get_latest_user_entry($dhbwio_id, $to_user_id);

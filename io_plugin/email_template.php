@@ -24,6 +24,7 @@
 
 require_once('../../config.php');
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot . '/mod/dhbwio/classes/form/email_template_form.php');
 
 $id = required_param('cmid', PARAM_INT); // Course Module ID
@@ -106,7 +107,11 @@ if ($action == 'edit') {
         
         // Process body editor
         if (isset($formdata->body_editor)) {
-            $templaterecord->body = $formdata->body_editor['text'];
+            $body = $formdata->body_editor['text'];
+            
+            $body = preg_replace('/https?:\/\/(\{[A-Z_]+\})/', '$1', $body);
+            
+            $templaterecord->body = $body;
             $templaterecord->bodyformat = $formdata->body_editor['format'];
         }
         
@@ -150,7 +155,7 @@ if ($action == 'preview' && $templateid) {
         'dhbwio-actions mb-4'
     );
     
-    // Preview with sample data including dataform fields
+    // Preview with sample data
     $sampledata = [
         'STUDENT_NAME' => 'Max Mustermann',
         'STUDENT_FIRSTNAME' => 'Max',
@@ -163,7 +168,9 @@ if ($action == 'preview' && $templateid) {
         'THIRD_WISH' => 'Sorbonne University (France)',
         'APPROVED_UNIVERSITY' => 'Harvard University',
         'FEEDBACK' => 'Ihre Bewerbung war überzeugend, aber leider hatten wir mehr qualifizierte Kandidaten als freie Plätze.',
-        'INQUIRY_COMMENT' => 'Bitte legen Sie eine Kopie Ihres letzten Zeugnisses und ein Empfehlungsschreiben vor.'
+        'INQUIRY_COMMENT' => 'Bitte legen Sie eine Kopie Ihres letzten Zeugnisses und ein Empfehlungsschreiben vor.',
+        'APPLICATION_OVERVIEW_LINK' => 'https://example.com/mod/dataform/view.php?id=123&view=456',
+        'APPLICATION_ENTRY_LINK' => 'https://example.com/mod/dataform/view.php?id=123&view=789&eids=101'
     ];
     
     // Add sample dataform data based on actual fields
@@ -242,7 +249,9 @@ if ($action == 'preview' && $templateid) {
     echo '<tbody>';
     foreach ($sampledata as $var => $value) {
         if (strpos($template->subject . $template->body, '{' . $var . '}') !== false) {
-            echo '<tr><td><code>{' . $var . '}</code></td><td>' . htmlspecialchars($value) . '</td></tr>';
+            // Truncate long values for display
+            $displayvalue = strlen($value) > 100 ? substr($value, 0, 100) . '...' : $value;
+            echo '<tr><td><code>{' . $var . '}</code></td><td>' . htmlspecialchars($displayvalue) . '</td></tr>';
         }
     }
     echo '</tbody>';
@@ -260,7 +269,6 @@ if ($action == 'test' && $templateid) {
     
     $template = $DB->get_record('dhbwio_email_templates', ['id' => $templateid, 'dhbwio' => $dhbwio->id], '*', MUST_EXIST);
     
-    // Send test email to current user using enhanced function
     $testparams = [
         'STUDENT_NAME' => fullname($USER),
         'STUDENT_FIRSTNAME' => $USER->firstname,
@@ -276,7 +284,8 @@ if ($action == 'test' && $templateid) {
         'INQUIRY_COMMENT' => 'This is a test inquiry comment.'
     ];
     
-    $result = dhbwio_send_email_notification($template->type, $dhbwio->id, $USER->id, $testparams, $template->lang);
+    // Use sample entry ID for testing links
+    $result = dhbwio_send_email_notification($template->type, $dhbwio->id, $USER->id, $testparams, $template->lang, 999);
     
     if ($result) {
         $message = get_string('test_email_sent', 'mod_dhbwio');

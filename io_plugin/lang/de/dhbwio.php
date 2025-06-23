@@ -52,6 +52,11 @@ $string['geocoding_api_key_desc'] = 'API-Schlüssel für den ausgewählten Geoco
 $string['dataform_activity'] = 'DataForm-Aktivität';
 $string['dataform_activity_help'] = 'Wählen Sie die DataForm-Aktivität aus, die die Bewerbungen für dieses International Office-Modul verwaltet. Das ausgewählte DataForm wird verwendet, um Bewerbungsdaten für Auslastungsberechnungen abzurufen.';
 $string['no_dataform_selected'] = 'Keine DataForm ausgewählt';
+$string['dataform_overview_view'] = 'Bewerbungsübersicht Ansicht';
+$string['dataform_overview_view_help'] = 'Wählen Sie die DataForm-Ansicht aus, die für die Übersicht der Bewerbungen der Studierenden verwendet werden soll';
+$string['dataform_entry_view'] = 'Bewerbungsdetail Ansicht';
+$string['dataform_entry_view_help'] = 'Wählen Sie die DataForm-Ansicht aus, die für die individuelle Bewerbungsansicht pro Studierenden verwendet werden soll';
+$string['no_view_selected'] = 'Keine Ansicht ausgewählt';
 
 // Wunsch-Feld-Konfiguration
 $string['first_wish_field'] = 'Erstwunsch-Feldname';
@@ -143,7 +148,7 @@ $string['dhbwio:addinstance'] = 'Neue International Office-Instanz hinzufügen';
 $string['dhbwio:view'] = 'International Office-Inhalte anzeigen';
 $string['dhbwio:manageuniversities'] = 'Partnerhochschulen verwalten';
 $string['dhbwio:submitreport'] = 'Erfahrungsbericht einreichen';
-$string['dhbwio:managetemplates'] = 'E-Mail-Vorlagen verwalten';
+$string['dhbwio:managetemplates'] = 'E-Mail Vorlagen verwalten';
 $string['dhbwio:viewreports'] = 'Berichte und Statistiken anzeigen';
 
 // Navigation
@@ -151,7 +156,7 @@ $string['nav_universities'] = 'Partnerhochschulen';
 $string['nav_manageunis'] = 'Hochschulen verwalten';
 $string['nav_reports'] = 'Erfahrungsberichte';
 $string['nav_statistics'] = 'Statistiken';
-$string['nav_emailtemplates'] = 'E-Mail-Vorlagen';
+$string['nav_emailtemplates'] = 'E-Mail Vorlagen';
 $string['nav_applications'] = 'Bewerbungen';
 $string['nav_myapplications'] = 'Meine Bewerbungen';
 
@@ -268,7 +273,7 @@ $string['report_course'] = 'Studiengang';
 $string['report_attachment'] = 'Anhang';
 
 // Email template management
-$string['no_templates'] = 'Keine E-Mail-Vorlagen gefunden. Standardvorlagen sollten automatisch erstellt werden.';
+$string['no_templates'] = 'Keine E-Mail Vorlagen gefunden. Standardvorlagen sollten automatisch erstellt werden.';
 $string['missing_templates'] = 'Fehlende Vorlagen';
 $string['missing_templates_desc'] = 'Die folgenden Vorlagentypen wurden noch nicht erstellt:';
 $string['enabled'] = 'Aktiviert';
@@ -286,9 +291,9 @@ $string['template_language_help'] = 'Wählen Sie die Sprache für diese E-Mail-V
 $string['template_updated'] = 'E-Mail-Vorlage erfolgreich aktualisiert';
 $string['template_deleted'] = 'E-Mail-Vorlage erfolgreich gelöscht';
 $string['delete_template_confirm'] = 'Sind Sie sicher, dass Sie diese E-Mail-Vorlage löschen möchten?';
-$string['default_templates_created'] = 'Standard-E-Mail-Vorlagen erfolgreich erstellt';
+$string['default_templates_created'] = 'Standard-E-Mail Vorlagen erfolgreich erstellt';
 $string['create_default_templates'] = 'Standard-Vorlagen erstellen';
-$string['create_default_templates_desc'] = 'Klicken Sie auf die Schaltfläche unten, um Standard-E-Mail-Vorlagen für alle Benachrichtigungstypen in Englisch und Deutsch zu erstellen.';
+$string['create_default_templates_desc'] = 'Klicken Sie auf die Schaltfläche unten, um Standard-E-Mail Vorlagen für alle Benachrichtigungstypen in Englisch und Deutsch zu erstellen.';
 $string['create_default_templates_button'] = 'Standard-Vorlagen erstellen';
 $string['email_template_name_help'] = 'Ein beschreibender Name für diese E-Mail-Vorlage';
 $string['email_template_type_help'] = 'Der Typ der Benachrichtigung, für die diese Vorlage verwendet wird';
@@ -303,6 +308,8 @@ $string['variable_first_wish'] = 'Erstwunsch-Universität des Studierenden';
 $string['variable_second_wish'] = 'Zweitwunsch-Universität des Studierenden';
 $string['variable_third_wish'] = 'Drittwunsch-Universität des Studierenden';
 $string['variable_university_choices'] = 'Liste der vom Studierenden ausgewählten Universitäten';
+$string['variable_application_overview_link'] = 'Link zur Bewerbungsübersicht';
+$string['variable_application_entry_link'] = 'Link zur Einzelansicht der Bewerbung';
 $string['variables_in_preview'] = 'In dieser Vorlage verwendete Variablen';
 $string['no_dataform_fields'] = 'Keine Dataform-Felder in diesem Kurs gefunden';
 $string['test_email_failed'] = 'Test-E-Mail konnte nicht gesendet werden';
@@ -325,8 +332,8 @@ $string['student_distribution'] = 'Studierendenverteilung';
 $string['semester_distribution'] = 'Semesterverteilung';
 $string['country_distribution'] = 'Länderverteilung';
 
-// E-Mail-Vorlagen
-$string['email_templates'] = 'E-Mail-Vorlagen';
+// E-Mail Vorlagen
+$string['email_templates'] = 'E-Mail Vorlagen';
 $string['template_name'] = 'Vorlagenname';
 $string['template_subject'] = 'E-Mail-Betreff';
 $string['template_body'] = 'E-Mail-Text';

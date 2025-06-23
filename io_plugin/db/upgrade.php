@@ -121,5 +121,28 @@ function xmldb_dhbwio_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
     }
 
+    // Add DataForm view fields for link generation
+    if ($oldversion < 2025062300) {
+
+        // Define field dataform_overview_view_id to be added to dhbwio.
+        $table = new xmldb_table('dhbwio');
+        $field = new xmldb_field('dataform_overview_view_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'dataform_id');
+
+        // Conditionally launch add field dataform_overview_view_id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field dataform_entry_view_id to be added to dhbwio.
+        $field = new xmldb_field('dataform_entry_view_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'dataform_overview_view_id');
+
+        // Conditionally launch add field dataform_entry_view_id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
+    }
+
     return true;
 }

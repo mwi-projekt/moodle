@@ -16,6 +16,8 @@
         <FIELD NAME="enablemap" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable world map view"/>
         <FIELD NAME="enablereports" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable experience reports"/>
         <FIELD NAME="dataform_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of linked DataForm activity"/>
+        <FIELD NAME="dataform_overview_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for applications overview"/>
+        <FIELD NAME="dataform_entry_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for single application entry"/>
         <FIELD NAME="first_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="first_wish" SEQUENCE="false" COMMENT="Field name for first choice university"/>
         <FIELD NAME="second_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="second_wish" SEQUENCE="false" COMMENT="Field name for second choice university"/>
         <FIELD NAME="third_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="third_wish" SEQUENCE="false" COMMENT="Field name for third choice university"/>
