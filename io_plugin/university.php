@@ -292,17 +292,17 @@ if ($universityid) {
     // Management actions
     if (has_capability('mod/dhbwio:manageuniversities', $context)) {
         $templatedata->canmanage = true;
-        $templatedata->editurl = new moodle_url('/mod/dhbwio/university.php', [
+        $templatedata->editurl = (new moodle_url('/mod/dhbwio/university.php', [
             'cmid' => $cm->id,
             'action' => 'edit',
             'university' => $university->id
-        ]);
-        $templatedata->deleteurl = new moodle_url('/mod/dhbwio/university.php', [
+        ]))->out();
+        $templatedata->deleteurl = (new moodle_url('/mod/dhbwio/university.php', [
             'cmid' => $cm->id,
             'action' => 'delete',
             'university' => $university->id,
             'sesskey' => sesskey()
-        ]);
+        ]))->out();
     }
     
     // University details

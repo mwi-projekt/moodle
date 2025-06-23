@@ -64,7 +64,7 @@
 }}
 
 <div class="dhbwio-actions mb-4">
-    <a href="{{backurl}}" class="btn btn-secondary">
+    <a href="{{{backurl}}}" class="btn btn-secondary">
         {{#str}} back_to_universities, mod_dhbwio {{/str}}
     </a>
 </div>
@@ -81,22 +81,22 @@
     
     {{#hasimage}}
     <div class="university-image mb-3">
-        <img src="{{imageurl}}" class="img-fluid rounded" alt="{{name}}">
+        <img src="{{{imageurl}}}" class="img-fluid rounded" alt="{{name}}">
     </div>
     {{/hasimage}}
     
     <div class="university-actions mt-3 mb-4">
         {{#showapplybutton}}
-        <a href="{{applyurl}}" class="btn btn-primary mr-2">
+        <a href="{{{applyur}}}" class="btn btn-primary mr-2">
             {{#str}} apply_for_exchange, mod_dhbwio {{/str}}
         </a>
         {{/showapplybutton}}
         
         {{#canmanage}}
-        <a href="{{editurl}}" class="btn btn-secondary mr-2">
+        <a href="{{{editurl}}}" class="btn btn-secondary mr-2">
             {{#str}} edit_university, mod_dhbwio {{/str}}
         </a>
-        <a href="{{deleteurl}}" class="btn btn-danger" onclick="return confirm('{{#str}} delete_university_confirm, mod_dhbwio {{/str}}')">
+        <a href="{{{deleteurl}}}" class="btn btn-danger" onclick="return confirm('{{#str}} delete_university_confirm, mod_dhbwio {{/str}}')">
             {{#str}} delete_university, mod_dhbwio {{/str}}
         </a>
         {{/canmanage}}
