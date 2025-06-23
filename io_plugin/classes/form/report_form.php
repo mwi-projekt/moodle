@@ -95,12 +95,9 @@ class report_form extends \moodleform {
                           ['subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => 5]);
         $mform->addHelpButton('attachments', 'attachments', 'mod_dhbwio');
 
-        // Visibility (only for staff)
-        if (has_capability('mod/dhbwio:manageuniversities', $context)) {
-            $mform->addElement('advcheckbox', 'visible', get_string('report_visible', 'mod_dhbwio'), 
-                               get_string('report_visible_desc', 'mod_dhbwio'), ['group' => 1], [0, 1]);
-            $mform->setDefault('visible', 1);
-        }
+        $mform->addElement('advcheckbox', 'visible', get_string('report_visible', 'mod_dhbwio'), 
+                            get_string('report_visible_desc', 'mod_dhbwio'), ['group' => 1], [0, 1]);
+        $mform->setDefault('visible', 1);
 
         // Add standard buttons
         $this->add_action_buttons();

@@ -248,6 +248,7 @@ switch ($tab) {
 		require_capability('mod/dhbwio:manageuniversities', $context);
 		
 		// Display management interface
+		echo '<div class="dhbwio-manageuniversities">';
 		
 		// Add university button
 		$addurl = new moodle_url('/mod/dhbwio/university.php', [
@@ -268,19 +269,17 @@ switch ($tab) {
 		if (empty($universities)) {
 			echo $OUTPUT->notification(get_string('no_universities', 'mod_dhbwio'), 'info');
 		} else {
-			// Get country names
 			$countries = get_string_manager()->get_list_of_countries();
 			
 			echo $OUTPUT->box_start('generalbox');
 			
-			// Create single table for all universities
 			$table = new html_table();
 			$table->head = [
 				get_string('university_name', 'mod_dhbwio'),
 				get_string('university_country', 'mod_dhbwio'),
 				get_string('university_city', 'mod_dhbwio'),
 				get_string('university_available_slots', 'mod_dhbwio'),
-				get_string('university_active', 'mod_dhbwio'),
+				get_string('status', 'mod_dhbwio'),
 				get_string('actions', 'mod_dhbwio')
 			];
 			$table->attributes['class'] = 'table table-striped table-hover';
@@ -290,7 +289,7 @@ switch ($tab) {
 				$countryCode = $university->country;
 				$countryName = isset($countries[$countryCode]) ? $countries[$countryCode] : $countryCode;
 				
-				// Create action links
+				// Create action URLs
 				$editurl = new moodle_url('/mod/dhbwio/university.php', [
 					'cmid' => $cm->id,
 					'action' => 'edit',
@@ -309,18 +308,37 @@ switch ($tab) {
 					'university' => $university->id
 				]);
 				
-				// Build actions column
-				$actions = html_writer::link($editurl, $OUTPUT->pix_icon('t/edit', get_string('edit')));
-				$actions .= '&nbsp;';
-				$actions .= html_writer::link($deleteurl, $OUTPUT->pix_icon('t/delete', get_string('delete')),
-											['onclick' => 'return confirm("' . get_string('delete_university_confirm', 'mod_dhbwio') . '")']);
-				$actions .= '&nbsp;';
-				$actions .= html_writer::link($viewurl, $OUTPUT->pix_icon('i/preview', get_string('view')));
+				$actions = [];
 				
-				// Active status display
+				// Edit action
+				$actions[] = html_writer::link(
+					$editurl, 
+					$OUTPUT->pix_icon('t/edit', get_string('edit')), 
+					['class' => 'btn btn-sm btn-outline-secondary', 'title' => get_string('edit')]
+				);
+				
+				// View action
+				$actions[] = html_writer::link(
+					$viewurl, 
+					$OUTPUT->pix_icon('i/preview', get_string('view')), 
+					['class' => 'btn btn-sm btn-outline-info', 'title' => get_string('view')]
+				);
+				
+				// Delete action
+				$actions[] = html_writer::link(
+					$deleteurl, 
+					$OUTPUT->pix_icon('t/delete', get_string('delete')), 
+					[
+						'class' => 'btn btn-sm btn-outline-danger',
+						'title' => get_string('delete'),
+						'onclick' => 'return confirm("' . get_string('delete_university_confirm', 'mod_dhbwio') . '")'
+					]
+				);
+				
+				// Active status display using badges like in email templates
 				$activestatus = $university->active ? 
-								$OUTPUT->pix_icon('i/checked', get_string('yes')) : 
-								$OUTPUT->pix_icon('i/unchecked', get_string('no'));
+					'<span class="badge badge-success">' . get_string('active', 'mod_dhbwio') . '</span>' : 
+					'<span class="badge badge-secondary">' . get_string('inactive', 'mod_dhbwio') . '</span>';
 				
 				// Add table row
 				$table->data[] = [
@@ -329,13 +347,15 @@ switch ($tab) {
 					format_string($university->city),
 					$university->available_slots,
 					$activestatus,
-					$actions
+					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>'
 				];
 			}
 			
 			echo html_writer::table($table);
 			echo $OUTPUT->box_end();
 		}
+		
+		echo '</div>'; // End dhbwio-manageuniversities
 		break;
         
     case 'statistics':
@@ -466,5 +486,4 @@ switch ($tab) {
         break;
 }
 
-// Finish the page
 echo $OUTPUT->footer();
