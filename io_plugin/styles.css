@@ -1,6 +1,244 @@
-/* Custom styles for DHBW International Office Map */
+/* DHBW International Office Plugin Styles */
 
-/* Map container enhancements */
+/* Country group styling */
+.dhbwio-country-group {
+    margin-bottom: 2rem;
+}
+
+.dhbwio-country-group h3 {
+    color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+}
+
+.dhbwio-country-group h3::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: #e74c3c;
+}
+
+/* University grid layout */
+.dhbwio-university-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 0;
+}
+
+/* University card styling */
+.dhbwio-university-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.dhbwio-university-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+}
+
+.dhbwio-university-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #3498db;
+}
+
+/* University card header */
+.dhbwio-university-card h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.dhbwio-university-card h4 a {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.dhbwio-university-card h4 a:hover {
+    color: #3498db;
+    text-decoration: none;
+}
+
+/* University info section */
+.dhbwio-university-info {
+    margin-bottom: 1.25rem;
+}
+
+.dhbwio-university-info p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #5a6c7d;
+}
+
+.dhbwio-university-info p strong {
+    color: #2c3e50;
+    font-weight: 600;
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* Available slots highlighting */
+.dhbwio-university-info p:has(strong:contains("Available Slots")),
+.dhbwio-university-info p:nth-child(3) {
+    background: #f8f9fc;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid #27ae60;
+    margin: 0.75rem 0;
+}
+
+/* Reports badge styling */
+.dhbwio-university-card .badge {
+    background-color: #3498db;
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.dhbwio-university-card .badge-info {
+    background-color: #17a2b8;
+}
+
+/* View details button */
+.dhbwio-university-card .btn {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.dhbwio-university-card .btn:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.dhbwio-university-card .btn:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    outline: none;
+}
+
+/* No universities message */
+.dhbwio-no-universities {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7f8c8d;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dhbwio-university-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .dhbwio-university-card {
+        padding: 1.25rem;
+    }
+    
+    .dhbwio-country-group h3 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dhbwio-university-card {
+        padding: 1rem;
+    }
+    
+    .dhbwio-university-info p strong {
+        min-width: 80px;
+        font-size: 0.85rem;
+    }
+    
+    .dhbwio-university-card h4 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Animation for loading states */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dhbwio-university-card {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Stagger animation for multiple cards */
+.dhbwio-university-card:nth-child(1) { animation-delay: 0.1s; }
+.dhbwio-university-card:nth-child(2) { animation-delay: 0.2s; }
+.dhbwio-university-card:nth-child(3) { animation-delay: 0.3s; }
+.dhbwio-university-card:nth-child(4) { animation-delay: 0.4s; }
+.dhbwio-university-card:nth-child(5) { animation-delay: 0.5s; }
+.dhbwio-university-card:nth-child(n+6) { animation-delay: 0.6s; }
+
+/* Enhanced accessibility */
+.dhbwio-university-card:focus-within {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .dhbwio-university-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+    
+    .dhbwio-university-card .btn {
+        display: none;
+    }
+}
+
 #university-map {
     position: relative;
     border-radius: 8px;

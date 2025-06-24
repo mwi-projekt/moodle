@@ -50,16 +50,22 @@
 }}
 
 {{^has_universities}}
-    {{{no_universities_message}}}
+    <div class="dhbwio-no-universities">
+        {{{no_universities_message}}}
+    </div>
 {{/has_universities}}
 
 {{#has_universities}}
-    {{#country_groups}}
-        <h3>{{country_name}}</h3>
-        <div class="dhbwio-university-grid">
-            {{#universities}}
-                {{{html}}}
-            {{/universities}}
-        </div>
-    {{/country_groups}}
+    <div class="dhbwio-universities-container">
+        {{#country_groups}}
+            <div class="dhbwio-country-group">
+                <h3>{{country_name}}</h3>
+                <div class="dhbwio-university-grid">
+                    {{#universities}}
+                        {{{html}}}
+                    {{/universities}}
+                </div>
+            </div>
+        {{/country_groups}}
+    </div>
 {{/has_universities}}
