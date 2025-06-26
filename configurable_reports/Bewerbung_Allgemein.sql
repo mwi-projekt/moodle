@@ -1,16 +1,16 @@
 SELECT
     MAX(CASE WHEN f.name = 'VORNAME' THEN c.content END) AS Vorname,
     MAX(CASE WHEN f.name = 'NACHNAME' THEN c.content END) AS Nachname,
-    MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
-    MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
-    MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch,
-    FROM_UNIXTIME(e.timecreated, '%d.%m.%Y %H:%i') AS Einreichungsdatum,
-    Case e.state
+	Case e.state
         WHEN 0 THEN 'EINGEGANGEN'
         WHEN 1 THEN 'ANGENOMMEN'
         WHEN 2 THEN 'NEUEINZUREICHEN'
         WHEN 3 THEN 'ABGELEHNT'
-    END AS Status
+    END AS aktueller_stand,
+    MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
+    MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
+    MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch,
+    FROM_UNIXTIME(e.timecreated, '%d.%m.%Y %H:%i') AS Einreichungsdatum
 FROM
      prefix_dataform_entries e
 JOIN prefix_dataform_contents c ON c.entryid = e.id

@@ -1,34 +1,27 @@
 SELECT
     MAX(CASE WHEN f.name = 'VORNAME' THEN c.content END) AS Vorname,
     MAX(CASE WHEN f.name = 'NACHNAME' THEN c.content END) AS Nachname,
-    FROM_UNIXTIME(MAX(CASE WHEN f.name = 'GEBURTSDATUM' THEN c.content END), '%d.%m.%Y') AS Geburtsdatum,
-    MAX(CASE WHEN f.name = 'EMAIL' THEN c.content END) AS EMail,
-    MAX(CASE WHEN f.name = 'AKTUELLES_SEMESTER' THEN c.content END) AS Aktuelles_Semester,
-    MAX(CASE WHEN f.name = 'KURSNAME' THEN c.content END) AS kursname,
-    MAX(CASE WHEN f.name = 'STUDIENGANG' THEN studiengang.studiengang END) AS Studiengang,
-    MAX(CASE WHEN f.name = 'STUDIENRICHTUNG' THEN c.content END) AS Studienrichtung,
-    MAX(CASE WHEN f.name = 'STUDIENGANGSLEITUNG' THEN c.content END) AS Studiengangsleitung,
-    MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
-    MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
-    MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch,
-    MAX(CASE WHEN f.name = 'ABSPRACHE_MIT_UNTERNEHMEN' THEN absprache.absprache END) AS Absprache_Unternehmen,
-    MAX(CASE WHEN f.name = 'ABSPRACHE_MIT_STUDIENGANGSLEITUNG' THEN absprache.absprache END) AS Absprache_SL,
-    MAX(CASE WHEN f.name = 'BENACHTEILIGUNG_BILDUNGSCHANCEN' THEN c.content END) AS Benachteiligung,
-    MAX(CASE WHEN f.name = 'VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT' THEN absprache.absprache END) AS Veroeffentlichung_Daten,
-    MAX(CASE WHEN f.name = 'NACHRICHT' THEN c.content END) AS Nachricht,
-    Case e.state
+	Case e.state
         WHEN 0 THEN 'EINGEGANGEN'
         WHEN 1 THEN 'ANGENOMMEN'
         WHEN 2 THEN 'NEUEINZUREICHEN'
         WHEN 3 THEN 'ABGELEHNT'
-    END AS Status,
-    FROM_UNIXTIME(e.timecreated, '%d.%m.%Y %H:%i') AS Einreichungsdatum,
-    MAX(CASE WHEN f.name = 'NATIONALITAET' THEN c.content END) AS Nationalitaet,
-    MAX(CASE WHEN f.name = 'MUTTERSPRACHE' THEN c.content END) AS Muttersprache,
-    MAX(CASE WHEN f.name = 'UNTERNEHMEN' THEN c.content END) AS Partnerunternehmen,
-    MAX(CASE WHEN f.name = 'ANSPRECHPERSON_UNTERNEHMEN' THEN c.content END) AS Ansprechperson,
-    MAX(CASE WHEN f.name = 'ANSPRECHPERSON_EMAIL' THEN c.content END) AS Kontakt,
-    MAX(CASE WHEN f.name = 'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ' THEN absprache.absprache END) AS Datenschutz
+    END AS Aktueller_Stand,
+    FROM_UNIXTIME(MAX(CASE WHEN f.name = 'GEBURTSDATUM' THEN c.content END), '%d.%m.%Y') AS Geburtsdatum,
+    MAX(CASE WHEN f.name = 'EMAIL' THEN c.content END) AS EMail,
+	MAX(CASE WHEN f.name = 'STUDIENGANG' THEN studiengang.studiengang END) AS Studiengang,
+    MAX(CASE WHEN f.name = 'STUDIENRICHTUNG' THEN c.content END) AS Studienrichtung,
+    MAX(CASE WHEN f.name = 'STUDIENGANGSLEITUNG' THEN c.content END) AS Studiengangsleitung,
+    MAX(CASE WHEN f.name = 'AKTUELLES_SEMESTER' THEN c.content END) AS Semester_zum_Zeitpunkt_der_Anmeldung,
+	MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
+    MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
+    MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch,
+	MAX(CASE WHEN f.name = 'ABSPRACHE_MIT_UNTERNEHMEN' THEN absprache.absprache END) AS Absprache_Unternehmen,
+    MAX(CASE WHEN f.name = 'ABSPRACHE_MIT_STUDIENGANGSLEITUNG' THEN absprache.absprache END) AS Absprache_Studiengangsleitung,
+	MAX(CASE WHEN f.name = 'BENACHTEILIGUNG_BILDUNGSCHANCEN' THEN c.content END) AS Benachteiligung,
+    MAX(CASE WHEN f.name = 'VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT' THEN absprache.absprache END) AS Einverständniserklärung_Bericht,
+    MAX(CASE WHEN f.name = 'NACHRICHT' THEN c.content END) AS Nachricht,
+	MAX(CASE WHEN f.name = 'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ' THEN absprache.absprache END) AS Einverständniserklärung_Datenschutz 
 FROM
      prefix_dataform_entries e
 JOIN prefix_dataform_contents c ON c.entryid = e.id
