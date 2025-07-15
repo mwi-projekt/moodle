@@ -20,7 +20,10 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = [
     'local/zuweisungsmatrix:view' => [
         'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => ['manager' => CAP_ALLOW],
-    ]
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
 ];

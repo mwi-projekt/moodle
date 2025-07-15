@@ -19,3 +19,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Assignment Matrix Admin Tool ';
+$string['local/zuweisungsmatrix:view'] = 'Can view the assignment matrix';

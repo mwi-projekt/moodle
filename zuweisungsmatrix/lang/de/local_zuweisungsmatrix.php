@@ -17,3 +17,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Matrix-Zuweisung Admin Tool';
+$string['local/zuweisungsmatrix:view'] = 'Darf die Zuweisungsmatrix anzeigen';

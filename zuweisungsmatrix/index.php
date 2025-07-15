@@ -1,18 +1,20 @@
 <?php
 require_once('../../config.php');
-require_login();
 
-$context = context_system::instance();
+$courseid = required_param('courseid', PARAM_INT);
+$course = get_course($courseid);
+$context = context_course::instance($courseid);
+
+require_login($course);
 require_capability('local/zuweisungsmatrix:view', $context);
 
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/zuweisungsmatrix/index.php'));
+$PAGE->set_url(new moodle_url('/local/zuweisungsmatrix/index.php', ['courseid' => $courseid]));
 $PAGE->set_title('Zuweisung der Bewerbenden');
-$PAGE->set_heading('Zuweisung der Bewerbenden');
+$PAGE->set_heading($course->fullname);
 
 $PAGE->requires->css(new moodle_url('/local/zuweisungsmatrix/styles.css', ['v' => time()]));
 $PAGE->requires->js(new moodle_url('/local/zuweisungsmatrix/scripts.js', ['v' => time()]));
-
 
 echo $OUTPUT->header();
 
