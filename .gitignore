@@ -1,2 +1,4 @@
 .DS_Store
 io_plugin/node_modules/
+.idea/**
+.vscode/**
