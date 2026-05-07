@@ -38,6 +38,8 @@ Sofern die lokale Moodle Instanz nicht unter `../local-moodle` liegt, kann der g
 ```shell
 sh copy-to-local-moodle.sh ../my-moodle-path
 ```
+Es kann auch eine eigene Datei mit dem Namen `copy-to-local-moodle_mine.sh` erstellt werden, indem die `copy-to-local-moodle.sh` kopiert und angepasst wird. Diese Datei wird durch die gitignore Datei ignoriert und kann somit lokal angepasst werden, ohne dass die Änderungen in das Repo übernommen werden.
+In diseser Datei kann dann `BASE_PATH` zur lokalen Moodle Instanz angepasst werden, sodass das Skript ohne Parameter ausgeführt werden kann.
 
 Sofern Änderungen nicht in diesem Repo, sondern direkt im lokalen Moodle-Verzeichnis gemacht wurden, können die Änderungen wie folgt wieder in das Repo übernommen werden:
 ```shell
