@@ -44,6 +44,7 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
+          ini-values: max_input_vars=5000
           coverage: none
 
       # Composer-Paket-Cache beschleunigt den moodle-plugin-ci-Install
@@ -113,6 +114,7 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
+          ini-values: max_input_vars=5000
           coverage: none
 
       - name: Composer-Cache wiederherstellen
