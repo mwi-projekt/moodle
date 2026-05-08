@@ -1,0 +1,162 @@
+name: CI
+
+on:
+  push:
+    branches: [main, teamTestautomation]
+  pull_request:
+    branches: [main]
+
+# ─── Gemeinsame Konstanten ────────────────────────────────────────────────────
+env:
+  MOODLE_BRANCH: MOODLE_405_STABLE
+  DB: pgsql
+  PHP_VERSION: '8.2'
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Job 1: PHPUnit
+# Status-Check-Name in GitHub: "CI / PHPUnit"
+# ══════════════════════════════════════════════════════════════════════════════
+jobs:
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-22.04
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP ${{ env.PHP_VERSION }} einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
+          coverage: none
+
+      # Composer-Paket-Cache beschleunigt den moodle-plugin-ci-Install
+      - name: Composer-Cache wiederherstellen
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-phpunit-${{ env.MOODLE_BRANCH }}
+
+      # moodle-plugin-ci ist das offizielle MoodleHQ-CI-Tool:
+      # Es klont Moodle, führt composer install durch, schreibt config.php,
+      # symlinkt das Plugin und initialisiert PHPUnit & Behat in einem Schritt.
+      - name: moodle-plugin-ci installieren
+        run: composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
+
+      - name: ci/bin zum PATH hinzufügen
+        run: echo "$(cd ci && pwd)/bin" >> $GITHUB_PATH
+
+      # --plugin ./dataform_plugin: relativer Pfad zum Plugin im Repo
+      # --db-host 127.0.0.1: PostgreSQL-Service (nicht "localhost" wegen IPv6)
+      - name: Moodle + Plugin installieren
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+
+      # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
+      - name: PHPUnit ausführen
+        run: moodle-plugin-ci phpunit --fail-on-warning
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Job 2: Behat
+# Status-Check-Name in GitHub: "CI / Behat"
+# ══════════════════════════════════════════════════════════════════════════════
+  behat:
+    name: Behat
+    runs-on: ubuntu-22.04
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # --shm-size=2g ist PFLICHT: Chrome crasht sonst bei komplexen Seiten.
+      # Alle 25 Feature-Dateien haben @javascript → Selenium wird immer benötigt.
+      selenium:
+        image: selenium/standalone-chrome:latest
+        options: --shm-size=2g
+        ports:
+          - 4444:4444
+
+    env:
+      MOODLE_BEHAT_WDHOST: http://localhost:4444/wd/hub
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP ${{ env.PHP_VERSION }} einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
+          coverage: none
+
+      - name: Composer-Cache wiederherstellen
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-behat-${{ env.MOODLE_BRANCH }}
+
+      - name: moodle-plugin-ci installieren
+        run: composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
+
+      - name: ci/bin zum PATH hinzufügen
+        run: echo "$(cd ci && pwd)/bin" >> $GITHUB_PATH
+
+      # Selenium startet asynchron – ohne Warteloop schlagen die ersten Tests
+      # mit Verbindungsfehlern fehl, bevor der Container bereit ist.
+      - name: Auf Selenium warten
+        run: |
+          echo "Warte auf Selenium..."
+          for i in $(seq 1 20); do
+            if curl -sSf http://localhost:4444/status > /dev/null 2>&1; then
+              echo "Selenium bereit (Versuch $i)."
+              break
+            fi
+            echo "  Versuch $i/20 – noch nicht bereit, warte 5s..."
+            sleep 5
+          done
+          curl -sSf http://localhost:4444/status || { echo "Selenium nicht erreichbar!"; exit 1; }
+
+      - name: Moodle + Plugin installieren
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+
+      # --profile chrome: @javascript-Szenarien brauchen das Chrome-Profil
+      # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
+      #                   false negatives durch Selenium-Race-Conditions)
+      - name: Behat ausführen
+        run: moodle-plugin-ci behat --profile chrome --auto-rerun 1
+
+      # Screenshots werden nur bei Fehlern hochgeladen (7 Tage aufbewahrt)
+      - name: Behat-Screenshots hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behat-screenshots
+          path: ${{ env.MOODLE_DATA }}/behat_screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
