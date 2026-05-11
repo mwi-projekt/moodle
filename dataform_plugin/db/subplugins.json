@@ -1,0 +1,7 @@
+{
+    "plugintypes": {
+        "dataformfield": "mod/dataform/field",
+        "dataformview": "mod/dataform/view",
+        "dataformtool": "mod/dataform/tool"
+    }
+}
