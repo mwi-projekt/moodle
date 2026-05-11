@@ -69,26 +69,10 @@ jobs:
         run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
 
       # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
+      # --coverage-clover: Clover-XML im internen Build-Verzeichnis
+      # --coverage-text: gibt Zusammenfassung direkt im Actions-Log aus
       - name: PHPUnit ausführen
-        run: moodle-plugin-ci phpunit --fail-on-warning --coverage-clover ${{ github.workspace }}/coverage.xml
-
-      - name: Coverage-Summary erstellen
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: coverage.xml
-          badge: false
-          format: markdown
-          output: file
-
-      - name: Coverage in Job-Summary schreiben
-        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
-
-      - name: Coverage-Report hochladen
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-clover
-          path: coverage.xml
-          retention-days: 14
+        run: moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Job 2: Behat
@@ -111,17 +95,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
-      # --shm-size=2g ist PFLICHT: Chrome crasht sonst bei komplexen Seiten.
-      # Alle 25 Feature-Dateien haben @javascript → Selenium wird immer benötigt.
-      selenium:
-        image: selenium/standalone-chrome:latest
-        options: --shm-size=2g
-        ports:
-          - 4444:4444
-
-    env:
-      MOODLE_BEHAT_WDHOST: http://localhost:4444/wd/hub
 
     steps:
       - name: Repository auschecken
@@ -147,21 +120,6 @@ jobs:
       - name: ci/bin zum PATH hinzufügen
         run: echo "$(cd ci && pwd)/bin" >> $GITHUB_PATH
 
-      # Selenium startet asynchron – ohne Warteloop schlagen die ersten Tests
-      # mit Verbindungsfehlern fehl, bevor der Container bereit ist.
-      - name: Auf Selenium warten
-        run: |
-          echo "Warte auf Selenium..."
-          for i in $(seq 1 20); do
-            if curl -sSf http://localhost:4444/status > /dev/null 2>&1; then
-              echo "Selenium bereit (Versuch $i)."
-              break
-            fi
-            echo "  Versuch $i/20 – noch nicht bereit, warte 5s..."
-            sleep 5
-          done
-          curl -sSf http://localhost:4444/status || { echo "Selenium nicht erreichbar!"; exit 1; }
-
       - name: Moodle + Plugin installieren
         run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
 
@@ -169,7 +127,7 @@ jobs:
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
       #                   false negatives durch Selenium-Race-Conditions)
       - name: Behat ausführen
-        run: moodle-plugin-ci behat --profile chrome --auto-rerun 1 --selenium http://localhost:4444/wd/hub
+        run: moodle-plugin-ci behat --profile chrome --auto-rerun 1
 
       # Screenshots werden nur bei Fehlern hochgeladen (7 Tage aufbewahrt)
       - name: Behat-Screenshots hochladen
