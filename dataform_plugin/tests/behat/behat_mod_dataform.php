@@ -139,7 +139,7 @@ class behat_mod_dataform extends behat_base {
             array('Course 1', 'C1', '0'),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('courses', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('courses', $table));
 
         // Add users.
         $data = array(
@@ -152,7 +152,7 @@ class behat_mod_dataform extends behat_base {
             array('student3', 'Student', '3', 'student3@asd.com'),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('users', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('users', $table));
 
         // Enrol users in course.
         $teacherrole = \mod_dataform\helper\testing::get_role_shortname('editingteacher');
@@ -167,7 +167,7 @@ class behat_mod_dataform extends behat_base {
             array('student2', 'C1', $studentrole),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('course enrolments', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('course enrolments', $table));
 
         // Add groups.
         $data = array(
@@ -176,7 +176,7 @@ class behat_mod_dataform extends behat_base {
             array('Group 2', 'Anything', 'C1', 'G2'),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('groups', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('groups', $table));
 
         // Add group members.
         $data = array(
@@ -185,7 +185,7 @@ class behat_mod_dataform extends behat_base {
             array('student2', 'G2'),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('group members', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('group members', $table));
     }
 
     /**
@@ -205,7 +205,7 @@ class behat_mod_dataform extends behat_base {
             array('dataform', 'C1', 'dataform1', $name, $name),
         );
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('activities', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('activities', $table));
     }
 
     /**
@@ -306,7 +306,7 @@ class behat_mod_dataform extends behat_base {
         $data = array($headers, $values);
 
         $table = new TableNode($data);
-        $this->execute('behat_data_generators::the_following_exist', array('activities', $table));
+        $this->execute('behat_data_generators::the_following_entities_exist', array('activities', $table));
     }
 
     /**
