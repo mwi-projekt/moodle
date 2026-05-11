@@ -169,7 +169,7 @@ jobs:
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
       #                   false negatives durch Selenium-Race-Conditions)
       - name: Behat ausführen
-        run: moodle-plugin-ci behat --profile chrome --auto-rerun 1
+        run: moodle-plugin-ci behat --profile chrome --auto-rerun 1 --selenium http://localhost:4444/wd/hub
 
       # Screenshots werden nur bei Fehlern hochgeladen (7 Tage aufbewahrt)
       - name: Behat-Screenshots hochladen
