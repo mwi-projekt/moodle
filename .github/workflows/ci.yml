@@ -68,6 +68,9 @@ jobs:
       - name: Moodle + Plugin installieren
         run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
 
+      - name: Benötigte Locales installieren
+        run: sudo locale-gen en_AU.UTF-8
+
       # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
       # --coverage-clover: Clover-XML im internen Build-Verzeichnis
       # --coverage-text: gibt Zusammenfassung direkt im Actions-Log aus
@@ -119,6 +122,9 @@ jobs:
 
       - name: ci/bin zum PATH hinzufügen
         run: echo "$(cd ci && pwd)/bin" >> $GITHUB_PATH
+
+      - name: Benötigte Locales installieren
+        run: sudo locale-gen en_AU.UTF-8
 
       - name: Moodle + Plugin installieren
         run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
