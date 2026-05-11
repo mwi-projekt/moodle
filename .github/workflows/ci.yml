@@ -45,7 +45,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
           ini-values: max_input_vars=5000
-          coverage: none
+          coverage: pcov
 
       # Composer-Paket-Cache beschleunigt den moodle-plugin-ci-Install
       - name: Composer-Cache wiederherstellen
@@ -70,7 +70,25 @@ jobs:
 
       # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
       - name: PHPUnit ausführen
-        run: moodle-plugin-ci phpunit --fail-on-warning
+        run: moodle-plugin-ci phpunit --fail-on-warning --coverage-clover ${{ github.workspace }}/coverage.xml
+
+      - name: Coverage-Summary erstellen
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: false
+          format: markdown
+          output: file
+
+      - name: Coverage in Job-Summary schreiben
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Coverage-Report hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-clover
+          path: coverage.xml
+          retention-days: 14
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Job 2: Behat

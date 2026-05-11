@@ -22,6 +22,13 @@
         <!--<const name="PHPUNIT_LONGTEST" value="1"/> uncomment to execute also slow or otherwise expensive tests-->
     </php>
 
+    <coverage>
+        <include>
+            <directory suffix=".php">classes</directory>
+            <directory suffix=".php">field</directory>
+            <directory suffix=".php">view</directory>
+        </include>
+    </coverage>
 
         <testsuites>
             <testsuite name="mod_dataform">
