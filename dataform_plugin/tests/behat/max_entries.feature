@@ -8,7 +8,7 @@ Feature: Dataform max entries
         And I am on "Course 1" course homepage
 
         When I follow "Max Entries test"
-        And I navigate to "Edit settings" in current page administration
+        And I navigate to "Settings" in current page administration
         And I expand all fieldsets
         And I set the field "Maximum entries" to "1"
         And I press "Save and display"

@@ -31,7 +31,7 @@ Feature: Set a certain number of entries as a completion condition for a datafor
         Then I log in as "teacher1"
         And I am on "Course 1" course homepage
         And I turn editing mode on
-        And I navigate to "Edit settings" in current page administration
+        And I navigate to "Settings" in current page administration
         And I expand all fieldsets
         And I set the following fields to these values:
           | Enable completion tracking | Yes |
@@ -40,7 +40,7 @@ Feature: Set a certain number of entries as a completion condition for a datafor
         # Dataform completion enabling
 
         Then I follow "Dataform completion condition number entries"
-        And I navigate to "Edit settings" in current page administration
+        And I navigate to "Settings" in current page administration
         And I set the following fields to these values:
           | Completion tracking | Show activity as complete when conditions are met |
           | completionentriesenabled | 1 |

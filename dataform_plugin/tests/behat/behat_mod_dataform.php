@@ -334,7 +334,7 @@ class behat_mod_dataform extends behat_base {
     public function i_add_a_dataform_with($data) {
         $this->execute('behat_auth::i_log_in_as', array('teacher1'));
         $this->execute('behat_navigation::i_am_on_course_homepage_with_editing_mode_on', array('Course 1'));
-        $this->execute('behat_course::i_add_to_section', array('Dataform', '1'));
+        $this->execute('behat_course::i_add_to_course_section', array('Dataform', 'Course 1', '1'));
         $this->execute('behat_forms::i_expand_all_fieldsets', array());
 
         $this->dataform_form_fill_steps($data);
@@ -364,7 +364,7 @@ class behat_mod_dataform extends behat_base {
     public function i_add_a_test_dataform() {
         $this->execute('behat_auth::i_log_in_as', array('teacher1'));
         $this->execute('behat_navigation::i_am_on_course_homepage_with_editing_mode_on', array('Course 1'));
-        $this->execute('behat_course::i_add_to_section', array('Dataform', '1'));
+        $this->execute('behat_course::i_add_to_course_section', array('Dataform', 'Course 1', '1'));
 
         $data = array('Name', 'Test Dataform');
         $table = new TableNode($data);
@@ -381,7 +381,7 @@ class behat_mod_dataform extends behat_base {
      * @Given /^I delete this dataform$/
      */
     public function i_delete_this_dataform() {
-        $this->execute('behat_navigation::i_navigate_to_node_in', array('Delete activity', 'Dataform activity administration'));
+        $this->execute('behat_navigation::i_navigate_to_in_current_page_administration', array('Delete activity'));
         $this->execute('behat_forms::press_button', array('Yes'));
     }
 
@@ -394,8 +394,7 @@ class behat_mod_dataform extends behat_base {
      */
     public function i_go_to_manage_dataform($tabname) {
         $node = get_string("dataform:manage$tabname", 'dataform');
-        $path = "Dataform activity administration";
-        $this->execute('behat_navigation::i_navigate_to_node_in', array($node, $path));
+        $this->execute('behat_navigation::i_navigate_to_in_current_page_administration', array($node));
     }
 
     /* FIELD */
@@ -515,7 +514,7 @@ class behat_mod_dataform extends behat_base {
      * @param PyStringNode $content
      */
     public function view_in_dataform_has_the_following_view_template($viewname, $dataformid, PyStringNode $content) {
-        $df = mod_dataform_dataform::instance($dataformid);
+        $df = mod_dataform_dataform::instance($this->get_dataform_id($dataformid));
         $view = $df->view_manager->get_view_by_name($viewname);
         $view->set_default_view_template((string) $content);
         $view->update($view->data);
@@ -531,7 +530,7 @@ class behat_mod_dataform extends behat_base {
      * @param PyStringNode $content
      */
     public function view_in_dataform_has_the_following_entry_template($viewname, $dataformid, PyStringNode $content) {
-        $df = mod_dataform_dataform::instance($dataformid);
+        $df = mod_dataform_dataform::instance($this->get_dataform_id($dataformid));
         $view = $df->view_manager->get_view_by_name($viewname);
         $view->set_default_entry_template((string) $content);
         $view->update($view->data);

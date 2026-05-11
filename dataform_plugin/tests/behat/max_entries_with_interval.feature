@@ -9,7 +9,7 @@ Feature: Dataform max entries
         And I follow "Max entries with interval"
         Then I see "This dataform appears to be new or with incomplete setup"
 
-        When I navigate to "Edit settings" in current page administration
+        When I navigate to "Settings" in current page administration
         And I expand all fieldsets
 
         And the "timeavailable[day]" "select" should be disabled

@@ -11,7 +11,7 @@ Feature: Dataform activity individualized
         # As teacher1 add a dataform and an entry
         Then I see "This dataform appears to be new or with incomplete setup"
 
-        When I navigate to "Edit settings" in current page administration
+        When I navigate to "Settings" in current page administration
         And I expand all fieldsets
         And I set the field "Separate participants" to "Yes"
         And I press "Save and display"
