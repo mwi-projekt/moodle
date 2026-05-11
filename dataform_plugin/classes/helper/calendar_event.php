@@ -41,7 +41,8 @@ class calendar_event {
         if (!empty($data->timeavailable)) {
             $event = new \stdClass;
             $event->name = $data->name;
-            $event->description = format_module_intro('dataform', $data, $data->coursemodule);
+            $event->description = $data->intro ?? '';
+            $event->format = $data->introformat ?? FORMAT_HTML;
             $event->timestart = $data->timeavailable;
 
             if ($event->id = $DB->get_field('event', 'id', array('modulename' => 'dataform', 'instance' => $data->id))) {
@@ -73,7 +74,8 @@ class calendar_event {
         if (!empty($data->timedue)) {
             $event = new \stdClass;
             $event->name = $data->name;
-            $event->description = format_module_intro('dataform', $data, $data->coursemodule);
+            $event->description = $data->intro ?? '';
+            $event->format = $data->introformat ?? FORMAT_HTML;
             $event->timestart = $data->timedue;
 
             if ($event->id = $DB->get_field('event', 'id', array('modulename' => 'dataform', 'instance' => $data->id))) {
