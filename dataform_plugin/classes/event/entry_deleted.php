@@ -54,14 +54,4 @@ class entry_deleted extends entry_base {
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 
-    /**
-     * Get the legacy event log data.
-     *
-     * @return array
-     */
-    public function get_legacy_logdata() {
-        $d = $this->other['dataid'];
-        $viewid = $this->other['viewid'];
-        return array($this->courseid, 'dataform', 'entries delete', "view.php?d=$d&amp;view=$viewid", $this->objectid, $this->contextinstanceid);
-    }
 }

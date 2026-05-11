@@ -47,15 +47,5 @@ class entry_created extends entry_base {
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 
-    /**
-     * Get the legacy event log data.
-     *
-     * @return array
-     */
-    public function get_legacy_logdata() {
-        $d = $this->other['dataid'];
-        $viewid = $this->other['viewid'];
-        return array($this->courseid, 'dataform', 'entries add', "view.php?d=$d&amp;view=$viewid&amp;eids=$this->objectid", $this->objectid, $this->contextinstanceid);
-    }
 
 }

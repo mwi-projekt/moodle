@@ -18,11 +18,16 @@ namespace mod_dataform\grades;
 
 defined('MOODLE_INTERNAL') || die();
 
-class gradeitems extends \core_grades\component_gradeitems {
+class gradeitems extends \core_grades\component_gradeitems
+    implements \core_grades\local\gradeitem\advancedgrading_mapping {
 
     public static function get_itemname_mapping_for_component(string $component): array {
         return [
             0 => '',
         ];
+    }
+
+    public static function get_advancedgrading_itemnames(): array {
+        return [];
     }
 }

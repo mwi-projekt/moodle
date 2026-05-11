@@ -401,7 +401,9 @@ class dataformfilter {
             // Access base params: dataform and view.
             $accessparams = array('dataformid' => $this->dataid, 'viewid' => $viewid);
 
-            $whatuser = ', '. \user_picture::fields('u', array('idnumber', 'username'), 'uid ');
+            $whatuser = ', ' . \core_user\fields::for_userpic()
+                ->including('idnumber', 'username')
+                ->get_sql('u', true, '', 'uid', false)->selects;
             $fromuser = ' JOIN {user} u ON u.id = e.userid ';
             $whereuser = '';
 

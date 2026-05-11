@@ -46,13 +46,4 @@ class view_viewed extends view_base {
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 
-    /**
-     * Get the legacy event log data.
-     *
-     * @return array
-     */
-    public function get_legacy_logdata() {
-        return array($this->courseid, 'dataform', 'views view', 'view.php?d=' . $this->other['dataid'] . '&amp;view=' .
-            $this->objectid, $this->objectid, $this->contextinstanceid);
-    }
 }
