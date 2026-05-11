@@ -504,7 +504,7 @@ class mod_dataform_grade_manager {
                         $roleid,
                         $df->context,
                         true,
-                        user_picture::fields('u'),
+                        \core_user\fields::for_userpic()->get_sql('u', true, '', 'id', false)->selects,
                         'u.lastname ASC',
                         true,
                         $df->currentgroup,
@@ -521,7 +521,7 @@ class mod_dataform_grade_manager {
                     $roleid,
                     $df->context,
                     true,
-                    user_picture::fields('u'),
+                    \core_user\fields::for_userpic()->get_sql('u', true, '', 'id', false)->selects,
                     'u.lastname ASC',
                     true,
                     $df->currentgroup

@@ -119,12 +119,10 @@ class mod_dataform_access_testcase extends advanced_testcase {
         );
         $params = array('dataformid' => $df->id, 'viewid' => $view->id, 'entry' => $entry);
 
-        $dataset = $this->createCsvDataSet(array('cases' => __DIR__.'/fixtures/test_cases_access.csv'));
-        $cases = $dataset->getTable('cases');
-        $columns = $dataset->getTableMetaData('cases')->getColumns();
-
-        for ($r = 0; $r < $cases->getRowCount(); $r++) {
-            $case = (object) array_combine($columns, $cases->getRow($r));
+        $fh = fopen(__DIR__ . '/fixtures/test_cases_access.csv', 'r');
+        $columns = fgetcsv($fh);
+        while (($csvrow = fgetcsv($fh)) !== false) {
+            $case = (object) array_combine($columns, $csvrow);
 
             // Set teacher user for initial setup.
             $this->setUser($this->teacher);
@@ -157,6 +155,7 @@ class mod_dataform_access_testcase extends advanced_testcase {
             $result = $access::validate($params);
             $this->assertEquals(filter_var($case->expected, FILTER_VALIDATE_BOOLEAN), $result);
         }
+        fclose($fh);
 
         $this->setUser($this->teacher);
         $df->delete();

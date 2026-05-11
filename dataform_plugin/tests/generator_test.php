@@ -53,12 +53,10 @@ class mod_dataform_generator_testcase extends advanced_testcase {
         $course = $generator->create_course();
 
         // Add instances.
-        $dataset = $this->createCsvDataSet(array('cases' => __DIR__.'/fixtures/tc_generator.csv'));
-        $cases = $dataset->getTable('cases');
-        $columns = $dataset->getTableMetaData('cases')->getColumns();
-
-        for ($r = 0; $r < $cases->getRowCount(); $r++) {
-            $case = array_combine($columns, $cases->getRow($r));
+        $fh = fopen(__DIR__ . '/fixtures/tc_generator.csv', 'r');
+        $columns = fgetcsv($fh);
+        while (($csvrow = fgetcsv($fh)) !== false) {
+            $case = array_combine($columns, $csvrow);
             $case['course'] = $course->id;
 
             // Create the instance.
@@ -103,6 +101,7 @@ class mod_dataform_generator_testcase extends advanced_testcase {
                 $this->assertEquals(GRADE_TYPE_VALUE, $gitem->gradetype);
             }
         }
+        fclose($fh);
 
         $dataid = array_pop($instances);
         \mod_dataform_dataform::instance($dataid)->delete();
