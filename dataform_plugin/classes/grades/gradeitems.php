@@ -20,7 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class gradeitems extends \core_grades\component_gradeitems {
 
-    public static function get_itemname_mapping_for_component(): array {
+    public static function get_itemname_mapping_for_component(string $component): array {
         return [
             0 => '',
         ];
