@@ -16,7 +16,7 @@ Feature: Dataform access permissions
             | View Aligned  | aligned   | dataform1 | 1         |
 
 
-        And view "View Aligned" in dataform "1" has the following view template:
+        And view "View Aligned" in dataform "dataform1" has the following view template:
             """
             <div>##addnewentry##</div>
             <div>Num entries total: ##numentriestotal##</div>
@@ -39,7 +39,7 @@ Feature: Dataform access permissions
         And I am on "Course 1" course homepage
         And I follow "Test access late"
 
-        Then I navigate to "Edit settings" in current page administration
+        Then I navigate to "Settings" in current page administration
         And I expand all fieldsets
         And I set the field "id_timedue_enabled" to "checked"
         And I set the field "id_timedue_month" to "1"
@@ -129,19 +129,19 @@ Feature: Dataform access permissions
         # ... same for other entries
 
         # Add
-        And I cannot add a new entry in dataform "1" view "1"
+        And I cannot add a new entry in dataform "dataform1" view "View Aligned"
 
         # Update
-        And I cannot edit entry "1" in dataform "1" view "1"
-        And I cannot edit entry "2" in dataform "1" view "1"
-        And I cannot edit entry "3" in dataform "1" view "1"
-        And I cannot edit entry "4" in dataform "1" view "1"
+        And I cannot edit entry "1" in dataform "dataform1" view "View Aligned"
+        And I cannot edit entry "2" in dataform "dataform1" view "View Aligned"
+        And I cannot edit entry "3" in dataform "dataform1" view "View Aligned"
+        And I cannot edit entry "4" in dataform "dataform1" view "View Aligned"
         # ... same for other entries
 
         # Delete
-        And I cannot delete entry "1" with content "1 Entry by Teacher 01" in dataform "1" view "1"
-        And I cannot delete entry "2" with content "2 Entry by Assistant 01" in dataform "1" view "1"
-        And I cannot delete entry "3" with content "3 Entry by Student 01" in dataform "1" view "1"
-        And I cannot delete entry "4" with content "4 Entry by Student 02" in dataform "1" view "1"
+        And I cannot delete entry "1" with content "1 Entry by Teacher 01" in dataform "dataform1" view "View Aligned"
+        And I cannot delete entry "2" with content "2 Entry by Assistant 01" in dataform "dataform1" view "View Aligned"
+        And I cannot delete entry "3" with content "3 Entry by Student 01" in dataform "dataform1" view "View Aligned"
+        And I cannot delete entry "4" with content "4 Entry by Student 02" in dataform "dataform1" view "View Aligned"
         # ... same for other entries
 

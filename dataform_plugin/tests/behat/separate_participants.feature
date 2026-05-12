@@ -93,15 +93,15 @@ Feature: Dataform activity individualized
         And I do not see "student2"
 
         # Try accessing student1's entry
-        Then I go to dataform page "view.php?d=1&view=1&eids=2"
+        Then I go to dataform "dataform1" view "View 01" page "eids=user:student1"
         And I see "student1"
 
         # Try viewing student2's entry
-        Then I go to dataform page "view.php?d=1&view=1&eids=4"
+        Then I go to dataform "dataform1" view "View 01" page "eids=user:student2"
         And I do not see "student2"
 
         # Try editing student2's entry
-        Given I go to dataform page "view.php?d=1&view=1&editentries=4"
+        Given I go to dataform "dataform1" view "View 01" page "editentries=user:student2"
         And I do not see "student2"
         And I do not see "Save"
 

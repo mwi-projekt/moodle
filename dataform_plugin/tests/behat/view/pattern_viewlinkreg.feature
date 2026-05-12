@@ -11,12 +11,12 @@ Feature: Pattern ##viewlink:viewname;some label;some args;##.
             | name     | type      | dataform  | default   |
             | View 01  | aligned   | dataform1 | 1         |
             | View 02  | aligned   | dataform1 |           |
-        And view "View 01" in dataform "1" has the following view template:
+        And view "View 01" in dataform "dataform1" has the following view template:
             """
             <div class="viewlink">##viewlink:View 02;Click me to go to View 02;;##</div>
             ##entries##
             """
-        And view "View 02" in dataform "1" has the following view template:
+        And view "View 02" in dataform "dataform1" has the following view template:
             """
             <h3>I am View 02</h3>
             ##entries##

@@ -12,13 +12,13 @@ Feature: Display after submission.
             | View 01  | aligned   | dataform1 | 1         |
             | View 02  | aligned   | dataform1 |           |
 
-        And view "View 01" in dataform "1" has the following view template:
+        And view "View 01" in dataform "dataform1" has the following view template:
         """
         <p>##viewlink:View 02##</p>
         ##entries##
         """
 
-        And view "View 02" in dataform "1" has the following view template:
+        And view "View 02" in dataform "dataform1" has the following view template:
         """
         <p>##viewlink:View 01##</p>
         ##entries##

@@ -909,10 +909,12 @@ class behat_mod_dataform extends behat_base {
      * @param string $viewid
      */
     public function i_cannot_add_a_new_entry_in_dataform_view($dataformid, $viewid) {
+        $dfid = $this->get_dataform_id($dataformid);
+        $vid = $this->get_dataform_view_id($viewid, $dfid);
         $this->i_do_not_see('Add a new entry');
-        $this->i_go_to_dataform_page("view.php?d=$dataformid&view=$viewid&editentries=-1");
+        $this->i_go_to_dataform_page("view.php?d=$dfid&view=$vid&editentries=-1");
         $this->i_do_not_see('Save');
-        $this->i_go_to_dataform_page("view.php?d=$dataformid&view=$viewid");
+        $this->i_go_to_dataform_page("view.php?d=$dfid&view=$vid");
     }
 
     /**
@@ -924,10 +926,13 @@ class behat_mod_dataform extends behat_base {
      * @param string $viewid
      */
     public function i_cannot_edit_entry_in_dataform_view($entryid, $dataformid, $viewid) {
-        $this->does_not_exist("id_editentry$entryid", 'link');
-        $this->i_go_to_dataform_page("view.php?d=$dataformid&view=$viewid&editentries=$entryid");
+        $dfid = $this->get_dataform_id($dataformid);
+        $vid = $this->get_dataform_view_id($viewid, $dfid);
+        $actualeid = $this->get_entry_id_by_position($entryid, $dfid);
+        $this->does_not_exist("id_editentry$actualeid", 'link');
+        $this->i_go_to_dataform_page("view.php?d=$dfid&view=$vid&editentries=$actualeid");
         $this->does_not_exist('Save', 'button');
-        $this->i_go_to_dataform_page("view.php?d=$dataformid&view=$viewid");
+        $this->i_go_to_dataform_page("view.php?d=$dfid&view=$vid");
     }
 
     /**
@@ -940,10 +945,40 @@ class behat_mod_dataform extends behat_base {
      * @param string $viewid
      */
     public function i_cannot_delete_entry_with_content_in_dataform_view($entryid, $content, $dataformid, $viewid) {
-        $this->does_not_exist("id_deleteentry$entryid", 'link');
-        $url = 'view.php?d='. $dataformid. '&view='. $viewid. '&delete='. $entryid. '&sesskey='. sesskey();
+        $dfid = $this->get_dataform_id($dataformid);
+        $vid = $this->get_dataform_view_id($viewid, $dfid);
+        $actualeid = $this->get_entry_id_by_content($content, $dfid);
+        $this->does_not_exist("id_deleteentry$actualeid", 'link');
+        $url = 'view.php?d='. $dfid. '&view='. $vid. '&delete='. $actualeid. '&sesskey='. sesskey();
         $this->i_go_to_dataform_page($url);
         $this->i_see($content);
+    }
+
+    /**
+     * Navigates to a dataform view page with resolved idnumber, view name, and optional user-based entry params.
+     * Supports 'user:username' syntax in params, e.g. "eids=user:student1".
+     *
+     * @Given /^I go to dataform "(?P<idnumber>[^"]*)" view "(?P<viewname>[^"]*)" page "(?P<params>[^"]*)"$/
+     * @param string $idnumber
+     * @param string $viewname
+     * @param string $params
+     */
+    public function i_go_to_dataform_view_page($idnumber, $viewname, $params) {
+        global $DB;
+        $dfid = $this->get_dataform_id($idnumber);
+        $vid = $this->get_dataform_view_id($viewname, $dfid);
+        $params = preg_replace_callback('/=user:(\w+)/', function($m) use ($dfid, $DB) {
+            $userid = $DB->get_field('user', 'id', ['username' => $m[1]]);
+            if (!$userid) {
+                throw new Exception("User '{$m[1]}' not found");
+            }
+            $eid = $DB->get_field('dataform_entries', 'id', ['dataid' => $dfid, 'userid' => $userid]);
+            if (!$eid) {
+                throw new Exception("Entry for user '{$m[1]}' in dataform $dfid not found");
+            }
+            return '=' . $eid;
+        }, $params);
+        $this->i_go_to_dataform_page("view.php?d=$dfid&view=$vid&$params");
     }
 
     /* REPHRASES */
@@ -1878,6 +1913,29 @@ class behat_mod_dataform extends behat_base {
             throw new Exception('The specified dataform view with name "' . $viewname . '" does not exist');
         }
 
+        return $id;
+    }
+
+    protected function get_entry_id_by_position($position, $dataformid) {
+        global $DB;
+        $entries = $DB->get_records('dataform_entries', ['dataid' => $dataformid], 'id ASC', 'id', (int)$position - 1, 1);
+        $entry = reset($entries);
+        if (!$entry) {
+            throw new Exception("Entry at position $position in dataform $dataformid not found");
+        }
+        return $entry->id;
+    }
+
+    protected function get_entry_id_by_content($content, $dataformid) {
+        global $DB;
+        $sql = "SELECT e.id FROM {dataform_entries} e
+                JOIN {dataform_contents} c ON c.entryid = e.id
+                WHERE e.dataid = :dataid AND " . $DB->sql_compare_text('c.content') . " = :content
+                ORDER BY e.id ASC";
+        $id = $DB->get_field_sql($sql, ['dataid' => $dataformid, 'content' => $content], IGNORE_MULTIPLE);
+        if (!$id) {
+            throw new Exception("Entry with content '$content' in dataform $dataformid not found");
+        }
         return $id;
     }
 

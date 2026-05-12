@@ -16,7 +16,7 @@ Feature: Dataform access permissions
             | View Aligned  | aligned   | dataform1 | 1         |
 
 
-        And view "View Aligned" in dataform "1" has the following view template:
+        And view "View Aligned" in dataform "dataform1" has the following view template:
             """
             <div>##addnewentry##</div>
             <div>Num entries total: ##numentriestotal##</div>
@@ -138,13 +138,13 @@ Feature: Dataform access permissions
         And I do not see "My new entry in standard access - updated"
 
         # Cannot update others' entries
-        And I cannot edit entry "1" in dataform "1" view "1"
-        And I cannot edit entry "2" in dataform "1" view "1"
-        And I cannot edit entry "4" in dataform "1" view "1"
+        And I cannot edit entry "1" in dataform "dataform1" view "View Aligned"
+        And I cannot edit entry "2" in dataform "dataform1" view "View Aligned"
+        And I cannot edit entry "4" in dataform "dataform1" view "View Aligned"
         # ... same for other entries
 
         # Cannot delete others' entries
-        And I cannot delete entry "1" with content "1 Entry by Teacher 01" in dataform "1" view "1"
-        And I cannot delete entry "2" with content "2 Entry by Assistant 01" in dataform "1" view "1"
-        And I cannot delete entry "4" with content "4 Entry by Student 02" in dataform "1" view "1"
+        And I cannot delete entry "1" with content "1 Entry by Teacher 01" in dataform "dataform1" view "View Aligned"
+        And I cannot delete entry "2" with content "2 Entry by Assistant 01" in dataform "dataform1" view "View Aligned"
+        And I cannot delete entry "4" with content "4 Entry by Student 02" in dataform "dataform1" view "View Aligned"
         # ... same for other entries
