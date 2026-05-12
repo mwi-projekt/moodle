@@ -127,7 +127,7 @@ Feature: Dataform access permissions
         And I press "Save"
         And I see "My new entry in standard access"
         And I click on "Edit" "link" in the "My new entry in standard access" "table_row"
-        And I set the field "field_1_6" to "My new entry in standard access - updated"
+        And I set the field "Field Text" to "My new entry in standard access - updated"
         And I press "Save"
         And I see "My new entry in standard access - updated"
         And I see "Num entries total: 6"

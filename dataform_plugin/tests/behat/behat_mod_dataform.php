@@ -955,6 +955,18 @@ class behat_mod_dataform extends behat_base {
     }
 
     /**
+     * Navigates to an arbitrary dataform page with resolved idnumber (appends ?d=ID).
+     *
+     * @Given /^I go to dataform "(?P<idnumber>[^"]*)" page "(?P<page>[^"]*)"$/
+     * @param string $idnumber
+     * @param string $page
+     */
+    public function i_go_to_named_dataform_page($idnumber, $page) {
+        $dfid = $this->get_dataform_id($idnumber);
+        $this->i_go_to_dataform_page("$page?d=$dfid");
+    }
+
+    /**
      * Navigates to a dataform view page with resolved idnumber, view name, and optional user-based entry params.
      * Supports 'user:username' syntax in params, e.g. "eids=user:student1".
      *
