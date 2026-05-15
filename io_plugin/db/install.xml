@@ -136,5 +136,52 @@
 		<INDEX NAME="dhbwio_entry" UNIQUE="false" FIELDS="dhbwio_id, entry_id"/>
 	</INDEXES>
 	</TABLE>
+
+    <TABLE NAME="dhbwio_applications" COMMENT="Student exchange applications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Plugin instance ID"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Applying student"/>
+        <FIELD NAME="dataform_entry_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Linked DataForm entry"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="draft" SEQUENCE="false" COMMENT="Current application status"/>
+        <FIELD NAME="assigned_university" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Assigned university after acceptance"/>
+        <FIELD NAME="semester" TYPE="char" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="WS or SS"/>
+        <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="e.g. 2025/26"/>
+        <FIELD NAME="deadline" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Application deadline timestamp"/>
+        <FIELD NAME="timesubmitted" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="When the application was submitted"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When the draft was created"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modification timestamp"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="fk_university" TYPE="foreign" FIELDS="assigned_university" REFTABLE="dhbwio_universities" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_user" UNIQUE="false" FIELDS="dhbwio, userid"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="dhbwio_application_notes" COMMENT="Audit log and notes for applications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="application_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Related application"/>
+        <FIELD NAME="authorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="IO staff or student who created the entry"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="note, status_change, file_added, file_removed"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Free text or justification"/>
+        <FIELD NAME="status_from" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Previous status on status change"/>
+        <FIELD NAME="status_to" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="New status on status change"/>
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for file_added/file_removed entries"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="When this entry was created"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_application" TYPE="foreign" FIELDS="application_id" REFTABLE="dhbwio_applications" REFFIELDS="id"/>
+        <KEY NAME="fk_author" TYPE="foreign" FIELDS="authorid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
   </TABLES>
 </XMLDB>

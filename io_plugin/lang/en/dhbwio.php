@@ -427,3 +427,19 @@ $string['status_field_help'] = 'The DATAFORM_STATUS_BEWERBUNG field is used to a
 - abgelehnt/rejected/declined → Sends rejection email
 - rückfrage/inquiry/pending → Sends inquiry email
 - eingegangen/received/new → Sends receipt confirmation (only on first submission)';
+
+// Status labels for the new status model (application_status::string_key())
+$string['applicationstatus_draft']            = 'Draft';
+$string['applicationstatus_submitted']        = 'Submitted';
+$string['applicationstatus_under_review']     = 'Under Review';
+$string['applicationstatus_waitlist']         = 'Waitlist';
+$string['applicationstatus_needs_supplement'] = 'Needs Supplement';
+$string['applicationstatus_accepted']         = 'Accepted';
+$string['applicationstatus_rejected']         = 'Rejected';
+$string['applicationstatus_withdrawn']        = 'Withdrawn';
+
+// Application actions and messages
+$string['no_application_yet']         = 'You have not started an application yet.';
+$string['start_application']          = 'Start application';
+$string['application_status_changed'] = 'Status has been changed to "{$a}".';
+$string['invalidstatustransition']    = 'This status transition is not allowed (from "{$a->from}" to "{$a->to}" as "{$a->actor}").';

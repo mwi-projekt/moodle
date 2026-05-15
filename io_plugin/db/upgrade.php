@@ -144,5 +144,56 @@ function xmldb_dhbwio_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
     }
 
+
+    // Add dhbwio_applications and dhbwio_application_notes tables (Sprint 1)
+    if ($oldversion < 2026051500) {
+
+        // --- dhbwio_applications ---
+        $table = new xmldb_table('dhbwio_applications');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('dhbwio', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('dataform_entry_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, 'draft');
+        $table->add_field('assigned_university', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('semester', XMLDB_TYPE_CHAR, '2', null, null, null, null);
+        $table->add_field('academic_year', XMLDB_TYPE_CHAR, '10', null, null, null, null);
+        $table->add_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timesubmitted', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_dhbwio', XMLDB_KEY_FOREIGN, ['dhbwio'], 'dhbwio', ['id']);
+        $table->add_key('fk_user', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_key('fk_university', XMLDB_KEY_FOREIGN, ['assigned_university'], 'dhbwio_universities', ['id']);
+        $table->add_index('dhbwio_user', XMLDB_INDEX_NOTUNIQUE, ['dhbwio', 'userid']);
+        $table->add_index('status', XMLDB_INDEX_NOTUNIQUE, ['status']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // --- dhbwio_application_notes ---
+        $table = new xmldb_table('dhbwio_application_notes');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('application_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('authorid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('type', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('content', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('status_from', XMLDB_TYPE_CHAR, '30', null, null, null, null);
+        $table->add_field('status_to', XMLDB_TYPE_CHAR, '30', null, null, null, null);
+        $table->add_field('filename', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_application', XMLDB_KEY_FOREIGN, ['application_id'], 'dhbwio_applications', ['id']);
+        $table->add_key('fk_author', XMLDB_KEY_FOREIGN, ['authorid'], 'user', ['id']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2026051500, 'dhbwio');
+    }
+
     return true;
 }

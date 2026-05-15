@@ -26,6 +26,9 @@ require_once('../../config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
+use mod_dhbwio\application_manager;
+use mod_dhbwio\application_status;
+
 $id = required_param('id', PARAM_INT); // Course Module ID
 $tab = optional_param('tab', 'universities', PARAM_ALPHA); // Active tab
 
@@ -104,6 +107,24 @@ if (has_capability('mod/dhbwio:managetemplates', $context)) {
         'emailtemplates',
         new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'emailtemplates']),
         get_string('nav_emailtemplates', 'mod_dhbwio')
+    );
+}
+
+// Tab for students: own application
+if (has_capability('mod/dhbwio:apply', $context)) {
+    $tabs[] = new tabobject(
+        'myapplication',
+        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'myapplication']),
+        get_string('nav_myapplications', 'mod_dhbwio')
+    );
+}
+
+// Tab for IO staff: all applications
+if (has_capability('mod/dhbwio:reviewapplications', $context)) {
+    $tabs[] = new tabobject(
+        'applications',
+        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'applications']),
+        get_string('nav_applications', 'mod_dhbwio')
     );
 }
 
@@ -479,6 +500,136 @@ switch ($tab) {
 		echo '</div>'; // End dhbwio-emailtemplates
 		break;
         
+    // ------------------------------------------------------------------
+    // Tab: Meine Bewerbung (Student)
+    // ------------------------------------------------------------------
+    case 'myapplication':
+        require_capability('mod/dhbwio:apply', $context);
+
+        $application = application_manager::get_application_for_user($dhbwio->id, $USER->id);
+
+        echo '<div class="dhbwio-myapplication">';
+
+        if ($application === null) {
+            // No application yet — student has not submitted the DataForm yet
+            echo $OUTPUT->notification(get_string('no_application_yet', 'mod_dhbwio'), 'info');
+        } else {
+            // Application exists — show current status (set automatically via DataForm events)
+            $statuskey   = application_status::string_key($application->status);
+            $statuslabel = get_string($statuskey, 'mod_dhbwio');
+
+            echo '<div class="card mb-4">';
+            echo '<div class="card-header"><h4>' . get_string('application_status', 'mod_dhbwio') . '</h4></div>';
+            echo '<div class="card-body">';
+            echo '<p class="lead"><span class="badge badge-primary">' . htmlspecialchars($statuslabel) . '</span></p>';
+
+            if (!empty($application->timesubmitted)) {
+                echo '<p>' . get_string('application_date', 'mod_dhbwio') . ': '
+                    . userdate($application->timesubmitted) . '</p>';
+            }
+
+            echo '</div></div>'; // card-body, card
+
+            // Audit log — every automatic status change is recorded here
+            $notes = application_manager::get_notes($application->id);
+            if (!empty($notes)) {
+                echo '<h5 class="mt-4">' . get_string('application_history', 'mod_dhbwio') . '</h5>';
+                echo '<ul class="list-group">';
+                foreach ($notes as $note) {
+                    $author = $DB->get_record('user', ['id' => $note->authorid]);
+                    echo '<li class="list-group-item">';
+                    echo '<small class="text-muted">' . userdate($note->timecreated) . ' &mdash; '
+                        . ($author ? fullname($author) : '?') . '</small><br>';
+                    if ($note->type === 'status_change') {
+                        $from = get_string(application_status::string_key($note->status_from), 'mod_dhbwio');
+                        $to   = get_string(application_status::string_key($note->status_to), 'mod_dhbwio');
+                        echo htmlspecialchars($from) . ' &rarr; ' . htmlspecialchars($to);
+                    }
+                    if (!empty($note->content)) {
+                        echo '<br>' . htmlspecialchars($note->content);
+                    }
+                    echo '</li>';
+                }
+                echo '</ul>';
+            }
+        }
+
+        echo '</div>'; // dhbwio-myapplication
+        break;
+
+    // ------------------------------------------------------------------
+    // Tab: Alle Bewerbungen (IO-Mitarbeitende)
+    // ------------------------------------------------------------------
+    case 'applications':
+        require_capability('mod/dhbwio:reviewapplications', $context);
+
+        $applications = application_manager::get_all_applications($dhbwio->id);
+
+        echo '<div class="dhbwio-applications">';
+
+        if (empty($applications)) {
+            echo $OUTPUT->notification(get_string('no_applications', 'mod_dhbwio'), 'info');
+        } else {
+            $table = new html_table();
+            $table->head = [
+                get_string('fullname'),
+                get_string('application_status', 'mod_dhbwio'),
+                get_string('application_date', 'mod_dhbwio'),
+                get_string('actions', 'mod_dhbwio'),
+            ];
+            $table->attributes['class'] = 'table table-striped table-hover';
+
+            foreach ($applications as $app) {
+                $student     = $DB->get_record('user', ['id' => $app->userid]);
+                $statuskey   = application_status::string_key($app->status);
+                $statuslabel = get_string($statuskey, 'mod_dhbwio');
+
+                // Status badge colour
+                $badgeclass = match($app->status) {
+                    application_status::ACCEPTED  => 'badge-success',
+                    application_status::REJECTED,
+                    application_status::WITHDRAWN => 'badge-danger',
+                    application_status::UNDER_REVIEW,
+                    application_status::WAITLIST  => 'badge-warning',
+                    default                        => 'badge-secondary',
+                };
+
+                $statusbadge = '<span class="badge ' . $badgeclass . '">' . htmlspecialchars($statuslabel) . '</span>';
+
+                // IO action buttons
+                $actor   = application_status::ACTOR_IO;
+                $targets = application_status::allowed_targets($app->status, $actor);
+                $actions = [];
+                foreach ($targets as $target) {
+                    $targetlabel = get_string(application_status::string_key($target), 'mod_dhbwio');
+                    $actionurl   = new moodle_url('/mod/dhbwio/application.php', [
+                        'cmid'          => $cm->id,
+                        'action'        => 'transition',
+                        'applicationid' => $app->id,
+                        'to'            => $target,
+                        'sesskey'       => sesskey(),
+                    ]);
+                    $btnclass  = ($target === application_status::WITHDRAWN || $target === application_status::REJECTED)
+                        ? 'btn-outline-danger' : 'btn-outline-primary';
+                    $actions[] = '<form method="post" action="' . $actionurl . '" class="d-inline mr-1">'
+                        . '<button type="submit" class="btn btn-sm ' . $btnclass . '">'
+                        . htmlspecialchars($targetlabel) . '</button></form>';
+                }
+
+                $table->data[] = [
+                    $student ? fullname($student) : '?',
+                    $statusbadge,
+                    !empty($app->timesubmitted) ? userdate($app->timesubmitted) : '—',
+                    implode('', $actions),
+                ];
+            }
+
+            echo html_writer::table($table);
+        }
+
+        echo '</div>'; // dhbwio-applications
+        break;
+
     default:
         // Default to universities view
         $renderer = $PAGE->get_renderer('mod_dhbwio');

@@ -439,6 +439,22 @@ $string['month_11'] = 'November';
 $string['month_12'] = 'Dezember';
 
 
+// Status-Labels für das neue Statusmodell (application_status::string_key())
+$string['applicationstatus_draft']            = 'Entwurf';
+$string['applicationstatus_submitted']        = 'Eingegangen';
+$string['applicationstatus_under_review']     = 'In Prüfung';
+$string['applicationstatus_waitlist']         = 'Warteliste';
+$string['applicationstatus_needs_supplement'] = 'Nachzureichen';
+$string['applicationstatus_accepted']         = 'Angenommen';
+$string['applicationstatus_rejected']         = 'Abgelehnt';
+$string['applicationstatus_withdrawn']        = 'Zurückgezogen';
+
+// Bewerbungs-Aktionen und Meldungen
+$string['no_application_yet']         = 'Sie haben noch keine Bewerbung gestartet.';
+$string['start_application']          = 'Bewerbung starten';
+$string['application_status_changed'] = 'Status wurde auf „{$a}" geändert.';
+$string['invalidstatustransition']    = 'Dieser Statusübergang ist nicht erlaubt (von „{$a->from}" nach „{$a->to}" als „{$a->actor}").';
+
 // Event strings
 $string['event_email_sent'] = 'E-Mail gesendet';
 $string['task_process_email_notifications'] = 'E-Mail für Statusänderungen verarbeiten';

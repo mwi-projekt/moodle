@@ -90,4 +90,25 @@ $capabilities = [
             'manager' => CAP_ALLOW
         ]
     ],
+
+    // Ability for students to create and manage their own application.
+    'mod/dhbwio:apply' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'student' => CAP_ALLOW
+        ]
+    ],
+
+    // Ability for IO staff to review, move, and decide on applications.
+    'mod/dhbwio:reviewapplications' => [
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ]
+    ],
 ];
