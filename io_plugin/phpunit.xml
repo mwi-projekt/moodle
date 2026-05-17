@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../lib/phpunit/phpunit.xsd"
+        bootstrap="../../lib/phpunit/bootstrap.php"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        processIsolation="false"
+        backupGlobals="false"
+        backupStaticAttributes="false"
+        stopOnError="false"
+        stopOnFailure="false"
+        stopOnIncomplete="false"
+        stopOnSkipped="false"
+        verbose="false"
+        >
+
+    <coverage>
+        <include>
+            <directory suffix=".php">classes</directory>
+        </include>
+    </coverage>
+
+    <testsuites>
+        <testsuite name="mod_dhbwio">
+            <directory suffix="_test.php">tests</directory>
+        </testsuite>
+    </testsuites>
+
+</phpunit>

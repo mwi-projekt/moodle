@@ -91,7 +91,7 @@ Feature: Manage Dataform presets
         #Section: Apply in same course.
         And I am on "Course 1" course homepage
         And I turn editing mode on
-        And I add a "Dataform" activity to course "Course 1" section "1"
+        And I go to add dataform to course "C1" section "1"
         And I set the field "Name" to "Dataform Preset Without User Data"
         And I press "Save and display"
         And I do not see "View 01"

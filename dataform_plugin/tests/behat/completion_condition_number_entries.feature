@@ -38,7 +38,7 @@ Feature: Set a certain number of entries as a completion condition for a datafor
         And I press "Save and display"
 
         # Dataform completion enabling
-
+        And I turn editing mode off
         Then I follow "Dataform completion condition number entries"
         And I navigate to "Settings" in current page administration
         And I set the following fields to these values:

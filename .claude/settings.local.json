@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(gh run *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(gh run *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 150)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 300)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

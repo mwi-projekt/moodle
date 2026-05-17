@@ -209,6 +209,26 @@ class behat_mod_dataform extends behat_base {
     }
 
     /**
+     * Navigates directly to the add-dataform form for the given course shortname and section.
+     * Workaround for Moodle 4.5 + PostgreSQL: the standard step passes the display name
+     * 'Dataform' (capital D) to a case-sensitive DB lookup which fails on PostgreSQL.
+     *
+     * @Given /^I go to add dataform to course "(?P<shortname_string>(?:[^"]|\\")*)" section "(?P<section_string>(?:[^"]|\\")*)"$/
+     * @param string $shortname
+     * @param string $section
+     */
+    public function i_go_to_add_dataform_to_course_section($shortname, $section) {
+        global $DB;
+        $courseid = $DB->get_field('course', 'id', array('shortname' => $shortname), MUST_EXIST);
+        $url = new \moodle_url('/course/modedit.php', array(
+            'add'     => 'dataform',
+            'course'  => $courseid,
+            'section' => $section,
+        ));
+        $this->getSession()->visit($this->locate_path($url->out(false)));
+    }
+
+    /**
      * Creates dataform fields.
      *
      * @Given /^the following dataform "(?P<element_string>(?:[^"]|\\")*)" exist:$/

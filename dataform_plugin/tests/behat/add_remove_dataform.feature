@@ -9,7 +9,7 @@ Feature: Add dataform to courses
 
         ## Add a dataform
         Then I turn editing mode on
-        And I add a "Dataform" activity to course "Course 1" section "1"
+        And I go to add dataform to course "C1" section "1"
         And I set the field "Name" to "Dataform activity 01"
         And I press "Save and return to course"
         Then I see "Dataform activity 01"
