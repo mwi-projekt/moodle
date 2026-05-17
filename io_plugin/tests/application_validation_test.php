@@ -103,9 +103,9 @@ class mod_dhbwio_application_validation_testcase extends advanced_testcase {
     public function valid_emails_provider(): array {
         return [
             'standard student mail'   => ['s123456@student.dhbw.de'],
-            'short but valid (5 ch)'  => ['a@dhbw.de'],
+            'short but valid (9 ch)'  => ['a@dhbw.de'],
             'subdomain'               => ['max.muster@ka.dhbw.de'],
-            'exactly 100 chars'       => [str_repeat('x', 88) . '@dhbw.de'],
+            'exactly 100 chars'       => [str_repeat('x', 92) . '@dhbw.de'],  // 92 + 8 = 100
         ];
     }
 
@@ -124,7 +124,7 @@ class mod_dhbwio_application_validation_testcase extends advanced_testcase {
         return [
             'empty string'             => ['',                          'email_required'],
             '4 characters'             => ['a@b.',                      'email_too_short'],
-            '101 characters'           => [str_repeat('x', 89) . '@dhbw.de', 'email_too_long'],
+            '101 characters'           => [str_repeat('x', 93) . '@dhbw.de', 'email_too_long'],  // 93 + 8 = 101
             'no dhbw domain'           => ['max@gmail.com',             'email_not_dhbw'],
             'dhbw in local part only'  => ['dhbw@gmail.com',            'email_not_dhbw'],
             'wrong tld'                => ['max@dhbw.com',              'email_not_dhbw'],

@@ -66,7 +66,7 @@ jobs:
       # --plugin ./dataform_plugin: relativer Pfad zum Plugin im Repo
       # --db-host 127.0.0.1: PostgreSQL-Service (nicht "localhost" wegen IPv6)
       - name: Moodle + Plugin installieren
-        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
 
       - name: Benötigte Locales installieren
         run: sudo locale-gen en_AU.UTF-8
@@ -127,7 +127,7 @@ jobs:
         run: sudo locale-gen en_AU.UTF-8
 
       - name: Moodle + Plugin installieren
-        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
 
       # --profile chrome: @javascript-Szenarien brauchen das Chrome-Profil
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
