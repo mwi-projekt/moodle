@@ -105,7 +105,7 @@ Feature: Manage Dataform presets
 
         #Section: Apply in a different course.
         And I am on "Course 2" course homepage
-        And I add a "Dataform" activity to course "Course 2" section "1"
+        And I go to add dataform to course "C2" section "1"
         And I set the field "Name" to "Dataform Preset Without User Data in another course"
         And I press "Save and display"
         And I do not see "View 01"
@@ -120,7 +120,7 @@ Feature: Manage Dataform presets
         ### APPLY PRESET WITH USER DATA
         #Section: Apply in same course.
         And I am on "Course 1" course homepage
-        And I add a "Dataform" activity to course "Course 1" section "1"
+        And I go to add dataform to course "C1" section "1"
         And I set the field "Name" to "Dataform Preset With User Data"
         And I press "Save and display"
         And I do not see "View 01"
@@ -134,7 +134,7 @@ Feature: Manage Dataform presets
 
         #Section: Apply in a different course.
         And I am on "Course 2" course homepage
-        And I add a "Dataform" activity to course "Course 2" section "1"
+        And I go to add dataform to course "C2" section "1"
         And I set the field "Name" to "Dataform Preset With User Data in another course"
         And I press "Save and display"
         And I do not see "View 01"
@@ -149,7 +149,7 @@ Feature: Manage Dataform presets
         ### APPLY UPLOADED PRESET
         #Section: Apply in same course.
         And I am on "Course 1" course homepage
-        And I add a "Dataform" activity to course "Course 1" section "1"
+        And I go to add dataform to course "C1" section "1"
         And I set the field "Name" to "Dataform Preset uploaded"
         And I press "Save and display"
         And I do not see "View 01"
@@ -163,7 +163,7 @@ Feature: Manage Dataform presets
 
         #Section: Apply in a different course.
         And I am on "Course 2" course homepage
-        And I add a "Dataform" activity to course "Course 2" section "1"
+        And I go to add dataform to course "C2" section "1"
         And I set the field "Name" to "Dataform Preset With User Data in another course"
         And I press "Save and display"
         And I do not see "View 01"

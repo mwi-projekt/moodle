@@ -29,8 +29,8 @@ class application_validator {
     // Allows letters (incl. unicode/umlauts), hyphens, and spaces; min 1, max 100.
     const NAME_PATTERN = '/^[\p{L}\- ]{1,100}$/u';
 
-    // Must end with @dhbw.de; length 5–100.
-    const EMAIL_PATTERN = '/@dhbw\.de$/i';
+    // Must end with @dhbw.de or any subdomain thereof (e.g. @student.dhbw.de); length 5–100.
+    const EMAIL_PATTERN = '/@([a-z0-9-]+\.)*dhbw\.de$/i';
 
     /**
      * Validates a first or last name.

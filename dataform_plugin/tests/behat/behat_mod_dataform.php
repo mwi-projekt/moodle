@@ -125,8 +125,10 @@ class behat_mod_dataform extends behat_base {
         );
 
         $prefix = $DB->get_prefix();
+        $ispgsql = $DB->get_dbtype() === 'pgsql';
         foreach ($tables as $table) {
-            $DB->execute("TRUNCATE TABLE {$prefix}{$table}");
+            $suffix = $ispgsql ? ' RESTART IDENTITY' : '';
+            $DB->execute("TRUNCATE TABLE {$prefix}{$table}{$suffix}");
         }
 
         // Clean up instance store cache.

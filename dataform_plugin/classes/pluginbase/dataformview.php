@@ -1082,7 +1082,7 @@ class dataformview {
         // Escape [ and ] and the pattern rule character *.
         $delims = quotemeta($delims);
 
-        $elements = preg_split("/($delims)/", $subject, null, PREG_SPLIT_DELIM_CAPTURE);
+        $elements = preg_split("/($delims)/", $subject, -1, PREG_SPLIT_DELIM_CAPTURE);
 
         return $elements;
     }
