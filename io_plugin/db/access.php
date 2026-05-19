@@ -90,4 +90,15 @@ $capabilities = [
             'manager' => CAP_ALLOW
         ]
     ],
+    // Ability to view all student applications.
+    'mod/dhbwio:viewallapplications' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
 ];

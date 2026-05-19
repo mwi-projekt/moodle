@@ -1,140 +1,290 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/dhbwio/db" VERSION="20250516" COMMENT="XMLDB file for Moodle mod_dhbwio"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
->
+<?xml version='1.0' encoding='UTF-8'?>
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="20260519" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="dhbwio" COMMENT="Each record represents one dhbwio activity instance">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course dhbwio activity belongs to"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the activity instance"/>
-        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Activity description"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of intro field"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp of when last modified"/>
-        <FIELD NAME="enablemap" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable world map view"/>
-        <FIELD NAME="enablereports" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable experience reports"/>
-        <FIELD NAME="dataform_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of linked DataForm activity"/>
-        <FIELD NAME="dataform_overview_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for applications overview"/>
-        <FIELD NAME="dataform_entry_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for single application entry"/>
-        <FIELD NAME="first_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="first_wish" SEQUENCE="false" COMMENT="Field name for first choice university"/>
-        <FIELD NAME="second_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="second_wish" SEQUENCE="false" COMMENT="Field name for second choice university"/>
-        <FIELD NAME="third_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="third_wish" SEQUENCE="false" COMMENT="Field name for third choice university"/>
-        <FIELD NAME="first_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="100.00" SEQUENCE="false" COMMENT="Weight for first choice in percent"/>
-        <FIELD NAME="second_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="30.00" SEQUENCE="false" COMMENT="Weight for second choice in percent"/>
-        <FIELD NAME="third_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false" COMMENT="Weight for third choice in percent"/>
-        <FIELD NAME="enable_utilisation" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable utilization display"/>
-        <FIELD NAME="utilisation_cache_duration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1800" SEQUENCE="false" COMMENT="Cache duration for utilization calculations in seconds"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course dhbwio activity belongs to" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the activity instance" />
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Activity description" />
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of intro field" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Timestamp of when last modified" />
+        <FIELD NAME="enablemap" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable world map view" />
+        <FIELD NAME="enablereports" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable experience reports" />
+        <FIELD NAME="dataform_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of linked DataForm activity" />
+        <FIELD NAME="dataform_overview_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for applications overview" />
+        <FIELD NAME="dataform_entry_view_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of DataForm view for single application entry" />
+        <FIELD NAME="first_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="first_wish" SEQUENCE="false" COMMENT="Field name for first choice university" />
+        <FIELD NAME="second_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="second_wish" SEQUENCE="false" COMMENT="Field name for second choice university" />
+        <FIELD NAME="third_wish_field" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="third_wish" SEQUENCE="false" COMMENT="Field name for third choice university" />
+        <FIELD NAME="first_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="100.00" SEQUENCE="false" COMMENT="Weight for first choice in percent" />
+        <FIELD NAME="second_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="30.00" SEQUENCE="false" COMMENT="Weight for second choice in percent" />
+        <FIELD NAME="third_wish_weight" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false" COMMENT="Weight for third choice in percent" />
+        <FIELD NAME="enable_utilisation" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable utilization display" />
+        <FIELD NAME="utilisation_cache_duration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1800" SEQUENCE="false" COMMENT="Cache duration for utilization calculations in seconds" />
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="fk_course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
-        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course" />
       </INDEXES>
     </TABLE>
-    
     <TABLE NAME="dhbwio_universities" COMMENT="Information about partner universities">
-	<FIELDS>
-		<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-		<FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
-		<FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of university"/>
-		<FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Country code (ISO)"/>
-		<FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="City of university"/>
-		<FIELD NAME="address" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Street address"/>
-		<FIELD NAME="postal_code" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Postal/ZIP code"/>
-		<FIELD NAME="latitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Latitude coordinates"/>
-		<FIELD NAME="longitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Longitude coordinates"/>
-		<FIELD NAME="website" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Website URL"/>
-		<FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of university"/>
-		<FIELD NAME="descriptionformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of description field"/>
-		<FIELD NAME="requirements" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Requirements for exchange students"/>
-		<FIELD NAME="available_slots" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of available slots"/>
-		<FIELD NAME="semester_start" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Start month of a semester (1-12)"/>
-		<FIELD NAME="semester_end" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="End month of a semester (1-12)"/>
-		<FIELD NAME="semester_fees" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Fees per semester"/>
-		<FIELD NAME="fee_currency" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="EUR" SEQUENCE="false" COMMENT="Currency for fees"/>
-		<FIELD NAME="accommodation_type" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="various" SEQUENCE="false" COMMENT="Type of accommodation available"/>
-		<FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is university active for display"/>
-		<FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
-	</FIELDS>
-	<KEYS>
-		<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-		<KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
-	</KEYS>
-	<INDEXES>
-		<INDEX NAME="dhbwio-country" UNIQUE="false" FIELDS="dhbwio, country"/>
-	</INDEXES>
-	</TABLE>
-    
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of university" />
+        <FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Country code (ISO)" />
+        <FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="City of university" />
+        <FIELD NAME="address" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Street address" />
+        <FIELD NAME="postal_code" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Postal/ZIP code" />
+        <FIELD NAME="latitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Latitude coordinates" />
+        <FIELD NAME="longitude" TYPE="number" LENGTH="10" DECIMALS="6" NOTNULL="false" SEQUENCE="false" COMMENT="Longitude coordinates" />
+        <FIELD NAME="website" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Website URL" />
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of university" />
+        <FIELD NAME="descriptionformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of description field" />
+        <FIELD NAME="requirements" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Requirements for exchange students" />
+        <FIELD NAME="available_slots" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of available slots" />
+        <FIELD NAME="semester_start" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Start month of a semester (1-12)" />
+        <FIELD NAME="semester_end" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="End month of a semester (1-12)" />
+        <FIELD NAME="semester_fees" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Fees per semester" />
+        <FIELD NAME="fee_currency" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="EUR" SEQUENCE="false" COMMENT="Currency for fees" />
+        <FIELD NAME="accommodation_type" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="various" SEQUENCE="false" COMMENT="Type of accommodation available" />
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is university active for display" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio-country" UNIQUE="false" FIELDS="dhbwio, country" />
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="dhbwio_experience_reports" COMMENT="Student experience reports">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
-        <FIELD NAME="university_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="University ID"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Student user ID"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Report title"/>
-        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Report content"/>
-        <FIELD NAME="contentformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of content field"/>
-        <FIELD NAME="rating" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Rating (1-5)"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created"/>
-        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is report visible to students"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID" />
+        <FIELD NAME="university_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="University ID" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Student user ID" />
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Report title" />
+        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Report content" />
+        <FIELD NAME="contentformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of content field" />
+        <FIELD NAME="rating" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Rating (1-5)" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when created" />
+        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is report visible to students" />
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
-        <KEY NAME="fk_university" TYPE="foreign" FIELDS="university_id" REFTABLE="dhbwio_universities" REFFIELDS="id"/>
-        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id" />
+        <KEY NAME="fk_university" TYPE="foreign" FIELDS="university_id" REFTABLE="dhbwio_universities" REFFIELDS="id" />
+        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
-        <INDEX NAME="university_user" UNIQUE="false" FIELDS="university_id, userid"/>
+        <INDEX NAME="university_user" UNIQUE="false" FIELDS="university_id, userid" />
       </INDEXES>
     </TABLE>
-    
     <TABLE NAME="dhbwio_email_templates" COMMENT="Email templates for notifications">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Template name"/>
-        <FIELD NAME="type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Template type (e.g., report_submitted)"/>
-        <FIELD NAME="lang" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="en" SEQUENCE="false" COMMENT="Language code (en, de, etc.)"/>
-        <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Email subject"/>
-        <FIELD NAME="body" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Email body content"/>
-        <FIELD NAME="bodyformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Format of body field"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp"/>
-        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is template enabled"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Template name" />
+        <FIELD NAME="type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Template type (e.g., report_submitted)" />
+        <FIELD NAME="lang" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="en" SEQUENCE="false" COMMENT="Language code (en, de, etc.)" />
+        <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Email subject" />
+        <FIELD NAME="body" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Email body content" />
+        <FIELD NAME="bodyformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Format of body field" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified timestamp" />
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is template enabled" />
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
-        <INDEX NAME="dhbwio_type_lang" UNIQUE="true" FIELDS="dhbwio, type, lang" COMMENT="Each type and language can only have one template per instance"/>
+        <INDEX NAME="dhbwio_type_lang" UNIQUE="true" FIELDS="dhbwio, type, lang" COMMENT="Each type and language can only have one template per instance" />
       </INDEXES>
     </TABLE>
-
-	<TABLE NAME="dhbwio_email_log" COMMENT="Log of emails sent for dataform entries">
-	<FIELDS>
-		<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-		<FIELD NAME="dhbwio_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dhbwio instance"/>
-		<FIELD NAME="entry_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dataform entry"/>
-		<FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user who received the email"/>
-		<FIELD NAME="email_type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type of email sent"/>
-		<FIELD NAME="status" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Status at time of sending"/>
-		<FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Time when email was sent"/>
-	</FIELDS>
-	<KEYS>
-		<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-		<KEY NAME="dhbwio_id" TYPE="foreign" FIELDS="dhbwio_id" REFTABLE="dhbwio" REFFIELDS="id"/>
-		<KEY NAME="user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
-	</KEYS>
-	<INDEXES>
-		<INDEX NAME="entry_id" UNIQUE="false" FIELDS="entry_id"/>
-		<INDEX NAME="dhbwio_entry" UNIQUE="false" FIELDS="dhbwio_id, entry_id"/>
-	</INDEXES>
-	</TABLE>
+    <TABLE NAME="dhbwio_email_log" COMMENT="Log of emails sent for dataform entries">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dhbwio_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dhbwio instance" />
+        <FIELD NAME="entry_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the dataform entry" />
+        <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user who received the email" />
+        <FIELD NAME="email_type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type of email sent" />
+        <FIELD NAME="status" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Status at time of sending" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Time when email was sent" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="dhbwio_id" TYPE="foreign" FIELDS="dhbwio_id" REFTABLE="dhbwio" REFFIELDS="id" />
+        <KEY NAME="user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="entry_id" UNIQUE="false" FIELDS="entry_id" />
+        <INDEX NAME="dhbwio_entry" UNIQUE="false" FIELDS="dhbwio_id, entry_id" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform" COMMENT="The DHBWIO internal Dataform activity settings.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The name of the activity." />
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The description of the activity. Used by feature MOD_INTRO." />
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the description of the activity. Used by feature MOD_INTRO." />
+        <FIELD NAME="inlineview" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Id of a dhbwio dhbwio internal dataform view of the activity. If set, the content of the view will be displayed on the course page instead of the activity link." />
+        <FIELD NAME="embedded" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If true and inline view is set, the inline view display on the course page will be embedded in an iframe." />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time when the settings of the activity were last modified." />
+        <FIELD NAME="timeavailable" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time when the activity should start. If set, the event will appear in the calendar and early activity actions will be consrained by permissions." />
+        <FIELD NAME="timedue" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time when the activity should end. If set, the event will appear in the calendar and late activity actions will be consrained by permissions." />
+        <FIELD NAME="timeinterval" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time duration in seconds as activity interval. Requires timeavailable." />
+        <FIELD NAME="intervalcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of intervals for the activity. If there are multiple intervals, activity start time and end time are calculated for each interval." />
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The maximum grade for the activity. A negative grade indicates the use of a scale." />
+        <FIELD NAME="gradeitems" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A list of grade calculation formulae for direct grading. Allows grade calculation for each user based on entries' content." />
+        <FIELD NAME="entrytypes" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="maxentries" TYPE="int" LENGTH="8" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="entriesrequired" TYPE="int" LENGTH="8" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="individualized" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="grouped" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="anonymous" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="timelimit" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="-1" SEQUENCE="false" />
+        <FIELD NAME="css" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="cssincludes" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="js" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="jsincludes" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="defaultview" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="defaultfilter" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="completionentries" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of entries are required to mark this activity complete for a user." />
+        <FIELD NAME="completionspecificgrade" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain grade is required to mark this activity complete for a user." />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform_fields" COMMENT="the available activity fields">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dataid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="visible" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="2" SEQUENCE="false" />
+        <FIELD NAME="editable" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" />
+        <FIELD NAME="label" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="defaultcontentmode" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="defaultcontent" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param1" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param2" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param3" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param4" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param5" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param6" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param7" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param8" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param9" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param10" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="type-dataid" UNIQUE="false" FIELDS="type, dataid" COMMENT="used by dhbwio internal dataform linking filter" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform_views" COMMENT="the available activity views">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dataid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="entrytype" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="perpage" TYPE="int" LENGTH="8" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="groupby" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="filterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="patterns" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="submission" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="section" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param1" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param2" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param3" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param4" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param5" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param6" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param7" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param8" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param9" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="param10" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="type-dataid" UNIQUE="false" FIELDS="type, dataid" COMMENT="used by dhbwio internal dataform linking filter" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform_filters" COMMENT="the available activity filters">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="dataid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="visible" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" />
+        <FIELD NAME="entrytype" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="perpage" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="10" SEQUENCE="false" />
+        <FIELD NAME="selection" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="groupby" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="search" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="customsort" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="customsearch" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform_entries" COMMENT="the activity entries">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="dataid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="state" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_dataform_contents" COMMENT="the content of each entry">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="entryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="content1" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="content2" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="content3" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="content4" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="entryid" TYPE="foreign" FIELDS="entryid" REFTABLE="dhbwio_dataform_entries" REFFIELDS="id" />
+        <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="dhbwio_dataform_fields" REFFIELDS="id" />
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>
