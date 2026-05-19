@@ -200,3 +200,105 @@ function updateEmptyInfoVisibility() {
     const hasStudents = studentList.querySelectorAll('.student').length > 0;
     emptyInfo.style.display = hasStudents ? 'none' : 'block';
 }
+
+/**
+ * Liest die aktuell sichtbare Zuweisungsmatrix aus dem HTML aus
+ * und erstellt daraus eine saubere Datenstruktur für die Datenbank.
+ *
+ * Ergebnis-Beispiel:
+ * [
+ *   {
+ *     studentid: 5,
+ *     universityid: 2,
+ *     platz: 1
+ *   },
+ *   {
+ *     studentid: 8,
+ *     universityid: 3,
+ *     platz: 2
+ *   }
+ * ]
+ */
+function collectMatrixData() {
+    const details = [];
+
+    document.querySelectorAll("#matrix tbody tr").forEach(row => {
+        const cells = row.querySelectorAll("td.drop-cell");
+
+        cells.forEach(cell => {
+            if (cell.classList.contains("disabled")) return;
+
+            const student = cell.querySelector(".student");
+            if (!student) return;
+
+            details.push({
+                studentid: student.dataset.studentid,
+                universityid: cell.dataset.universityid
+            });
+        });
+    });
+
+    return details;
+}
+
+
+/**
+ * Sendet die aktuelle Matrix per AJAX an Moodle/PHP,
+ * damit die Zuweisungen dauerhaft in der Datenbank gespeichert werden.
+ */
+async function saveMatrixToDatabase() {
+
+    // Namen der Zuweisungsrunde abfragen
+    const input = prompt(
+        "Bitte Namen für die Zuweisungsrunde eingeben:",
+        "Sommersemester 2026"
+    );
+
+    // Speichern abbrechen, wenn der Nutzer auf "Abbrechen" klickt
+    if (input === null) {
+        return;
+    }
+
+    // Leerzeichen am Anfang und Ende entfernen
+    const matrixName = input.trim();
+
+    // Leere Namen verhindern
+    if (matrixName === "") {
+        alert("Bitte einen gültigen Namen eingeben.");
+        return;
+    }
+
+    // Aktuelle Matrix aus dem HTML auslesen
+    const details = collectMatrixData();
+
+    // Nicht speichern, wenn keine Zuweisungen vorhanden sind
+    if (details.length === 0) {
+        alert("Es gibt keine Zuweisungen zum Speichern.");
+        return;
+    }
+
+    try {
+        const response = await fetch("save_matrix.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: matrixName,
+                details: details
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert("Zuweisungsmatrix wurde gespeichert.");
+        } else {
+            alert("Fehler: " + (result.message || "Unbekannter Fehler."));
+        }
+
+    } catch (error) {
+        console.error("Fehler beim Speichern:", error);
+        alert("Beim Speichern ist ein technischer Fehler aufgetreten.");
+    }
+}
