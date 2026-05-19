@@ -149,15 +149,38 @@ $studenten = $DB->get_records_sql($entriesql);
 </div>
 
 <!--Buttons: Reset, Zuweiungs, Export-->
-<div style="margin-top: 20px; display: flex; gap: 10px;">
-    <button id="resetBtn" class="red-button" onclick="resetZuweisung()">Reset</button>
-    <button id="submitBtn" class="red-button" onclick="automatischZuteilen()">Zuteilung</button>
+<div id="buttonRow" style="margin-top: 20px; display: flex; gap: 12px;">
+    <button id="submitBtn" class="red-button red-button-primary" onclick="automatischZuteilen()">Zuteilung</button>
+    <button id="saveBtn" type="button" class="red-button red-button-secondary" onclick="saveMatrixToDatabase()">Speichern</button>
+    <button id="openBtnInline" type="button" class="red-button red-button-secondary" onclick="openSavedMatrix()">Öffnen</button>
     <form id="exportForm" method="post" action="export.php" style="display:inline;">
         <input type="hidden" name="matrixdata" id="matrixdata">
         <input type="hidden" name="hochschulnamen" id="hochschulnamen">
-        <button type="submit" class="red-button" onclick="prepareExport()">Export</button>
-        <button type="button" class="red-button" onclick="saveMatrixToDatabase()">Speichern</button>
+        <button id="exportBtn" type="submit" class="red-button red-button-tertiary" onclick="prepareExport()">Export</button>
     </form>
+    <button id="resetBtn" class="red-button red-button-tertiary" onclick="resetZuweisung()">Reset</button>
+</div>
+
+<div id="matrixOpenModal" class="matrix-modal" hidden>
+    <div class="matrix-modal-content" role="dialog" aria-modal="true" aria-labelledby="matrixOpenTitle">
+        <div class="matrix-modal-header">
+            <h3 id="matrixOpenTitle">Gespeicherte Matrix öffnen</h3>
+            <button type="button" class="matrix-modal-close" onclick="closeMatrixOpenModal()" aria-label="Dialog schließen">×</button>
+        </div>
+
+        <label for="matrixSearchInput" class="matrix-modal-label">Nach Name suchen</label>
+        <input id="matrixSearchInput" type="text" class="matrix-search-input" placeholder="z. B. Sommersemester 2026">
+
+        <label for="matrixSelect" class="matrix-modal-label">Matrix auswählen</label>
+        <select id="matrixSelect" class="matrix-select" size="10"></select>
+
+        <div id="matrixOpenStatus" class="matrix-modal-status"></div>
+
+        <div class="matrix-modal-actions">
+            <button type="button" class="red-button" onclick="confirmOpenSelectedMatrix()">Öffnen</button>
+            <button type="button" class="red-button" onclick="closeMatrixOpenModal()">Abbrechen</button>
+        </div>
+    </div>
 </div>
 
 

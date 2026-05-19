@@ -128,11 +128,11 @@ function automatischZuteilen() {
     const studenten = Array.from(document.querySelectorAll(".student"));
     studenten.forEach(student => {
         const wuensche = Array.from(student.querySelectorAll(".wuensche small"))[0].innerText.split('\n');
-        const wünsche = wuensche.map(w => w.replace(/^\d\.\s*/, '').trim());
+        const wunsche = wuensche.map(w => w.replace(/^\d\.\s*/, '').trim());
 
         let zugewiesen = false;
-        for (let i = 0; i < wünsche.length; i++) {
-            const hochschule = wünsche[i];
+        for (let i = 0; i < wunsche.length; i++) {
+            const hochschule = wunsche[i];
             if (!hochschulNamen.includes(hochschule)) continue;
 
             if (belegung[hochschule] < kapazitaet[hochschule]) {
@@ -200,6 +200,247 @@ function updateEmptyInfoVisibility() {
     const hasStudents = studentList.querySelectorAll('.student').length > 0;
     emptyInfo.style.display = hasStudents ? 'none' : 'block';
 }
+
+let matrixOpenSearchTimer = null;
+let matrixOpenCurrentList = [];
+
+function getMatrixOpenModalElements() {
+    return {
+        modal: document.getElementById('matrixOpenModal'),
+        searchInput: document.getElementById('matrixSearchInput'),
+        select: document.getElementById('matrixSelect'),
+        status: document.getElementById('matrixOpenStatus')
+    };
+}
+
+function setMatrixOpenStatus(message) {
+    const { status } = getMatrixOpenModalElements();
+    if (status) {
+        status.textContent = message || '';
+    }
+}
+
+function renderMatrixOptions(matrices) {
+    const { select } = getMatrixOpenModalElements();
+    if (!select) return;
+
+    select.innerHTML = '';
+    matrixOpenCurrentList = Array.isArray(matrices) ? matrices : [];
+
+    if (matrixOpenCurrentList.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Keine passenden Matrizen gefunden';
+        option.disabled = true;
+        option.selected = true;
+        select.appendChild(option);
+        return;
+    }
+
+    matrixOpenCurrentList.forEach((matrix, index) => {
+        const option = document.createElement('option');
+        option.value = String(matrix.id);
+        const dateText = formatMatrixTimestamp(matrix.timecreated);
+        option.textContent = `${matrix.name}${dateText ? ` — ${dateText}` : ''} — ID ${matrix.id} — ${matrix.detailcount} Zuweisungen`;
+        if (index === 0) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+}
+
+async function loadMatrixList(search = '') {
+    const params = new URLSearchParams({ action: 'list' });
+    if (search.trim() !== '') {
+        params.set('search', search.trim());
+    }
+
+    const response = await fetch(`load_matrix.php?${params.toString()}`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Unbekannter Fehler beim Laden der Matrizenliste.');
+    }
+
+    return result.matrices || [];
+}
+
+async function refreshMatrixOpenList(search = '') {
+    setMatrixOpenStatus('Lade Matrizen...');
+
+    try {
+        const matrices = await loadMatrixList(search);
+        renderMatrixOptions(matrices);
+
+        if (matrices.length === 0) {
+            setMatrixOpenStatus('Keine gespeicherten Matrizen gefunden.');
+        } else {
+            setMatrixOpenStatus(`${matrices.length} Matrizen gefunden.`);
+        }
+    } catch (error) {
+        console.error('Fehler beim Laden der Matrizenliste:', error);
+        renderMatrixOptions([]);
+        setMatrixOpenStatus('Fehler beim Laden der Matrizenliste.');
+    }
+}
+
+function openSavedMatrix() {
+    const { modal, searchInput } = getMatrixOpenModalElements();
+    if (!modal) return;
+
+    modal.hidden = false;
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    refreshMatrixOpenList('');
+    if (searchInput) {
+        searchInput.focus();
+    }
+}
+
+function closeMatrixOpenModal() {
+    const { modal } = getMatrixOpenModalElements();
+    if (!modal) return;
+
+    modal.hidden = true;
+    setMatrixOpenStatus('');
+}
+
+async function confirmOpenSelectedMatrix() {
+    const { select } = getMatrixOpenModalElements();
+    if (!select || !select.value) {
+        alert('Bitte zuerst eine Matrix auswählen.');
+        return;
+    }
+
+    const masterid = parseInt(select.value, 10);
+    if (Number.isNaN(masterid) || masterid <= 0) {
+        alert('Bitte eine gültige Matrix auswählen.');
+        return;
+    }
+
+    try {
+        const loadResponse = await fetch(`load_matrix.php?action=load&masterid=${masterid}`);
+        const loadResult = await loadResponse.json();
+
+        if (!loadResponse.ok || !loadResult.success) {
+            alert('Fehler beim Öffnen der Matrix: ' + (loadResult.message || 'Unbekannter Fehler.'));
+            return;
+        }
+
+        const restoreResult = restoreMatrixDetails(loadResult.matrix.details || []);
+        closeMatrixOpenModal();
+
+        let message = `Matrix "${loadResult.matrix.name}" wurde geöffnet.`;
+        if (restoreResult.missingStudents.length > 0) {
+            message += `\nNicht gefundene Studierende: ${restoreResult.missingStudents.join(', ')}`;
+        }
+        if (restoreResult.missingUniversities.length > 0) {
+            message += `\nNicht genügend freie Plätze für Hochschul-IDs: ${restoreResult.missingUniversities.join(', ')}`;
+        }
+
+        alert(message);
+    } catch (error) {
+        console.error('Fehler beim Öffnen der Matrix:', error);
+        alert('Beim Öffnen der Matrix ist ein technischer Fehler aufgetreten.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const { searchInput, select, modal } = getMatrixOpenModalElements();
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            window.clearTimeout(matrixOpenSearchTimer);
+            matrixOpenSearchTimer = window.setTimeout(() => {
+                refreshMatrixOpenList(searchInput.value || '');
+            }, 250);
+        });
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeMatrixOpenModal();
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                confirmOpenSelectedMatrix();
+            }
+        });
+    }
+
+    if (select) {
+        select.addEventListener('dblclick', () => {
+            confirmOpenSelectedMatrix();
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeMatrixOpenModal();
+            }
+        });
+    }
+});
+
+function formatMatrixTimestamp(timestamp) {
+    if (!timestamp) return '';
+    try {
+        return new Date(timestamp * 1000).toLocaleString('de-DE');
+    } catch (error) {
+        return '';
+    }
+}
+
+function restoreMatrixDetails(details) {
+    resetZuweisung();
+
+    const studentMap = {};
+    document.querySelectorAll('.student').forEach(student => {
+        studentMap[String(student.dataset.studentid)] = student;
+    });
+
+    const cellsByUniversity = {};
+    document.querySelectorAll('#matrix tbody td.drop-cell:not(.disabled)').forEach(cell => {
+        const universityId = String(cell.dataset.universityid);
+        if (!cellsByUniversity[universityId]) {
+            cellsByUniversity[universityId] = [];
+        }
+        cellsByUniversity[universityId].push(cell);
+    });
+
+    const missingStudents = [];
+    const missingUniversities = [];
+
+    details.forEach(detail => {
+        const student = studentMap[String(detail.studentid)];
+        if (!student) {
+            missingStudents.push(detail.studentid);
+            return;
+        }
+
+        const targetCells = cellsByUniversity[String(detail.universityid)] || [];
+        const targetCell = targetCells.find(cell => cell.children.length === 0);
+
+        if (!targetCell) {
+            missingUniversities.push(detail.universityid);
+            return;
+        }
+
+        targetCell.appendChild(student);
+    });
+
+    toggleWunschAnzeige();
+    updateEmptyInfoVisibility();
+
+    return {
+        missingStudents,
+        missingUniversities
+    };
+}
+
+// openSavedMatrix() wird jetzt als Dialog-Öffner verwendet.
 
 /**
  * Liest die aktuell sichtbare Zuweisungsmatrix aus dem HTML aus
