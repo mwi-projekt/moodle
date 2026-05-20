@@ -6,8 +6,8 @@ function allowDrop(event){
 function drop(event) {
     event.preventDefault();
     event.target.classList.remove("over");
-    var id = event.dataTransfer.getData("text/plain");
-    var dragged = document.getElementById(id);
+    const id = event.dataTransfer.getData("text/plain");
+    const dragged = document.getElementById(id);
 
     // Direktes Ziel
     let dropTarget = event.target;
@@ -295,7 +295,7 @@ function openSavedMatrix() {
         searchInput.value = '';
     }
 
-    refreshMatrixOpenList('');
+    void refreshMatrixOpenList('');
     if (searchInput) {
         searchInput.focus();
     }
@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => {
             window.clearTimeout(matrixOpenSearchTimer);
             matrixOpenSearchTimer = window.setTimeout(() => {
-                refreshMatrixOpenList(searchInput.value || '');
+                void refreshMatrixOpenList(searchInput.value || '');
             }, 250);
         });
 
@@ -366,14 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (event.key === 'Enter') {
                 event.preventDefault();
-                confirmOpenSelectedMatrix();
+                void confirmOpenSelectedMatrix();
             }
         });
     }
 
     if (select) {
         select.addEventListener('dblclick', () => {
-            confirmOpenSelectedMatrix();
+            void confirmOpenSelectedMatrix();
         });
     }
 
