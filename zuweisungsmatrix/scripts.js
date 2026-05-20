@@ -241,7 +241,9 @@ function renderMatrixOptions(matrices) {
         const option = document.createElement('option');
         option.value = String(matrix.id);
         const dateText = formatMatrixTimestamp(matrix.timecreated);
-        option.textContent = `${matrix.name}${dateText ? ` — ${dateText}` : ''} — ID ${matrix.id} — ${matrix.detailcount} Zuweisungen`;
+        option.textContent = dateText
+            ? `${matrix.name} — erstellt am: ${dateText}`
+            : matrix.name;
         if (index === 0) {
             option.selected = true;
         }
@@ -387,7 +389,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function formatMatrixTimestamp(timestamp) {
     if (!timestamp) return '';
     try {
-        return new Date(timestamp * 1000).toLocaleString('de-DE');
+        return new Intl.DateTimeFormat('de-DE', {
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }).format(new Date(timestamp * 1000));
     } catch (error) {
         return '';
     }
