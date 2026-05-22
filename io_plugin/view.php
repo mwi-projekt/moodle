@@ -28,6 +28,7 @@ require_once(dirname(__FILE__) . '/locallib.php');
 
 use mod_dhbwio\local\dataform\entry_manager;
 use mod_dhbwio\local\dataform\field_manager;
+use mod_dhbwio\local\dataform\status_manager;
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $tab = optional_param('tab', 'universities', PARAM_ALPHA); // Active tab
@@ -525,7 +526,7 @@ if ($canviewallapplications) {
 }
 
 $erstwunschfield = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
-$statusfield = field_manager::get_field_by_name($dataid, 'STATUS_BEWERBUNG');
+#$statusfield = field_manager::get_field_by_name($dataid, 'STATUS_BEWERBUNG');
 $vornamefield = field_manager::get_field_by_name($dataid, 'VORNAME');
 $nachnamefield = field_manager::get_field_by_name($dataid, 'NACHNAME');
 $emailfield = field_manager::get_field_by_name($dataid, 'EMAIL');
@@ -555,28 +556,50 @@ if (empty($entries)) {
 	}
 	foreach ($entries as $entry) {
 		$erstwunsch = '-';
-		$status = '-';
 
 		if ($erstwunschfield) {
 			$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
 		}
 
-		if ($statusfield) {
-			$status = entry_manager::get_content_value($entry->id, (int) $statusfield->id) ?? '-';
-		}
+		$statusrecord = status_manager::get_status((int) $entry->statusid);
+		$status = $statusrecord ? $statusrecord->label : '-';
 
 		if ($canviewallapplications) {
-			$viewurl = new moodle_url('/mod/dhbwio/application_review.php', [
+			$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
 				'id' => $cm->id,
 				'dataid' => $dataid,
 				'entryid' => $entry->id,
 			]);
+
+			$reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
+				'id' => $cm->id,
+				'dataid' => $dataid,
+				'entryid' => $entry->id,
+			]);
+
+			$actions = html_writer::link($viewurl, 'Anzeigen') . ' | ' .
+				html_writer::link($reviewurl, 'Prüfen');
 		} else {
 			$viewurl = new moodle_url('/mod/dhbwio/application.php', [
 				'id' => $cm->id,
 				'dataid' => $dataid,
 				'entryid' => $entry->id,
 			]);
+
+			$actions = html_writer::link($viewurl, 'Anzeigen');
+
+			if (status_manager::is_accepted((int) $entry->statusid)) {
+				$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+					'id' => $cm->id,
+					'dataid' => $dataid,
+					'entryid' => $entry->id,
+				]);
+
+				$actions .= ' | ' . html_writer::link(
+					$laurl,
+					'Learning Agreement hinzufügen'
+				);
+			}
 		}
 		if ($canviewallapplications) {
 			$vorname = $vornamefield ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id) : '';
@@ -590,7 +613,7 @@ if (empty($entries)) {
 				userdate($entry->timemodified),
 				s($erstwunsch),
 				s($status),
-				html_writer::link($viewurl, 'Anzeigen'),
+				$actions,
 			];
 		} else {
 			$table->data[] = [
@@ -598,7 +621,7 @@ if (empty($entries)) {
 				userdate($entry->timemodified),
 				s($erstwunsch),
 				s($status),
-				html_writer::link($viewurl, 'Anzeigen'),
+				$actions,
 			];
 		}
 	}

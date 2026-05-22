@@ -4,6 +4,7 @@ require_once(__DIR__ . '/../../config.php');
 use mod_dhbwio\form\application_review_form;
 use mod_dhbwio\local\dataform\entry_manager;
 use mod_dhbwio\local\dataform\field_manager;
+use mod_dhbwio\local\dataform\status_manager;
 
 $id = required_param('id', PARAM_INT);
 $dataid = required_param('dataid', PARAM_INT);
@@ -36,7 +37,7 @@ if (!$entry || (int) $entry->dataid !== $dataid) {
 
 $fields = field_manager::get_fields($dataid);
 
-$getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+$getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
     $field = field_manager::get_field_by_name($dataid, $fieldname);
 
     if (!$field) {
@@ -63,8 +64,11 @@ if ($mform->is_cancelled()) {
 }
 
 if ($formdata = $mform->get_data()) {
+    if (!empty($formdata->statusid)) {
+        $entry->statusid = (int) $formdata->statusid;
+    }
+
     $reviewfields = [
-        'STATUS_BEWERBUNG',
         'KOMMENTAR_IO',
         'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST',
         'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT',
@@ -83,7 +87,9 @@ if ($formdata = $mform->get_data()) {
         entry_manager::save_content($entryid, (int) $field->id, (string) $value);
     }
 
-    entry_manager::update_entry($entryid);
+    $entry->timemodified = time();
+
+    $DB->update_record('dhbwio_dataform_entries', $entry);
 
     redirect(
         new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id]),
@@ -97,7 +103,7 @@ $mform->set_data([
     'id' => $cm->id,
     'dataid' => $dataid,
     'entryid' => $entryid,
-    'STATUS_BEWERBUNG' => $getvalue('STATUS_BEWERBUNG'),
+    'statusid' => $entry->statusid,
     'KOMMENTAR_IO' => $getvalue('KOMMENTAR_IO'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT'),

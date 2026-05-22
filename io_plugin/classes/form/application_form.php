@@ -87,7 +87,7 @@ class application_form extends \moodleform
                 break;
 
             case 'file':
-                // File-Handling hat vorerst niedrige Priorität.
+                // File-Handling bearbeitet Team-Learning Agreement.
                 break;
 
             default:

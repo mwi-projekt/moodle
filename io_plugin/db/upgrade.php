@@ -24,7 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_dhbwio_upgrade($oldversion) {
+function xmldb_dhbwio_upgrade($oldversion)
+{
     global $DB;
 
     $dbman = $DB->get_manager();
@@ -88,9 +89,9 @@ function xmldb_dhbwio_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
     }
 
-	// Add email log table
+    // Add email log table
     if ($oldversion < 2025062000) {
-        
+
         // Define table dhbwio_email_log to be created
         $table = new xmldb_table('dhbwio_email_log');
 
@@ -143,7 +144,7 @@ function xmldb_dhbwio_upgrade($oldversion) {
 
         upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
     }
-        
+
     if ($oldversion < 2026051900) {
 
         // Define table dhbwio_dataform.
@@ -304,6 +305,115 @@ function xmldb_dhbwio_upgrade($oldversion) {
         }
 
         upgrade_mod_savepoint(true, 2026051900, 'dhbwio');
+    }
+    if ($oldversion < 2026052201) {
+
+        // Define table dhbwio_application_status.
+        $table = new xmldb_table('dhbwio_application_status');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('label', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('isinitial', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('isaccepted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('isrejected', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('shortname_unique', XMLDB_KEY_UNIQUE, ['shortname']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Insert default statuses.
+        $now = time();
+
+        $statuses = [
+            [
+                'shortname' => 'eingereicht',
+                'label' => 'Eingereicht',
+                'description' => 'Die Bewerbung wurde eingereicht.',
+                'sortorder' => 10,
+                'active' => 1,
+                'isinitial' => 1,
+                'isaccepted' => 0,
+                'isrejected' => 0,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ],
+            [
+                'shortname' => 'in_pruefung',
+                'label' => 'In Prüfung',
+                'description' => 'Die Bewerbung wird geprüft.',
+                'sortorder' => 20,
+                'active' => 1,
+                'isinitial' => 0,
+                'isaccepted' => 0,
+                'isrejected' => 0,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ],
+            [
+                'shortname' => 'angenommen',
+                'label' => 'Angenommen',
+                'description' => 'Die Bewerbung wurde angenommen.',
+                'sortorder' => 30,
+                'active' => 1,
+                'isinitial' => 0,
+                'isaccepted' => 1,
+                'isrejected' => 0,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ],
+            [
+                'shortname' => 'abgelehnt',
+                'label' => 'Abgelehnt',
+                'description' => 'Die Bewerbung wurde abgelehnt.',
+                'sortorder' => 40,
+                'active' => 1,
+                'isinitial' => 0,
+                'isaccepted' => 0,
+                'isrejected' => 1,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ],
+        ];
+
+        foreach ($statuses as $status) {
+            if (!$DB->record_exists('dhbwio_application_status', ['shortname' => $status['shortname']])) {
+                $DB->insert_record('dhbwio_application_status', (object) $status);
+            }
+        }
+
+        // Add statusid to dhbwio_dataform_entries.
+        $entrytable = new xmldb_table('dhbwio_dataform_entries');
+        $field = new xmldb_field('statusid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'state');
+
+        if (!$dbman->field_exists($entrytable, $field)) {
+            $dbman->add_field($entrytable, $field);
+        }
+
+        // Set all existing entries to initial status.
+        $initialstatus = $DB->get_record('dhbwio_application_status', ['isinitial' => 1], '*', MUST_EXIST);
+
+        $DB->set_field(
+            'dhbwio_dataform_entries',
+            'statusid',
+            $initialstatus->id,
+            ['statusid' => 0]
+        );
+
+        // Add foreign key after data was migrated.
+        $key = new xmldb_key('statusid_fk', XMLDB_KEY_FOREIGN, ['statusid'], 'dhbwio_application_status', ['id']);
+
+        $dbman->add_key($entrytable, $key);
+
+        upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
     }
 
     return true;

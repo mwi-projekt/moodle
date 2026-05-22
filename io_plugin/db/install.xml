@@ -168,6 +168,25 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course" />
       </INDEXES>
     </TABLE>
+    <TABLE NAME="dhbwio_application_status" COMMENT="Application status definitions for DHBW IO applications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="isinitial" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="isaccepted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="isrejected" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="shortname_unique" TYPE="unique" FIELDS="shortname"/>
+      </KEYS>
+    </TABLE>
     <TABLE NAME="dhbwio_dataform_fields" COMMENT="the available activity fields">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
@@ -263,10 +282,12 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="state" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
+        <FIELD NAME="statusid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
         <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
+        <KEY NAME="statusid_fk" TYPE="foreign" FIELDS="statusid" REFTABLE="dhbwio_application_status" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="dhbwio_dataform_contents" COMMENT="the content of each entry">

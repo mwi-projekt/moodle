@@ -10,8 +10,10 @@ class entry_manager
     public static function create_entry(int $dataid, int $userid, int $groupid = 0): int
     {
         global $DB;
-
+        
         $now = time();
+        
+        $initialstatus = status_manager::get_initial_status();
 
         $entry = (object) [
             'dataid' => $dataid,
@@ -20,6 +22,7 @@ class entry_manager
             'timecreated' => $now,
             'timemodified' => $now,
             'state' => 0,
+            'statusid' => $initialstatus->id,
         ];
 
         return $DB->insert_record('dhbwio_dataform_entries', $entry);

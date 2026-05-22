@@ -1,13 +1,18 @@
 <?php
+
 namespace mod_dhbwio\form;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-class application_review_form extends \moodleform {
+use mod_dhbwio\local\dataform\status_manager;
 
-    public function definition(): void {
+class application_review_form extends \moodleform
+{
+
+    public function definition(): void
+    {
         $mform = $this->_form;
 
         $id = $this->_customdata['id'] ?? 0;
@@ -23,16 +28,11 @@ class application_review_form extends \moodleform {
         $mform->addElement('hidden', 'entryid', $entryid);
         $mform->setType('entryid', PARAM_INT);
 
-        $statusoptions = [
-            'EINGEREICHT' => 'Eingereicht',
-            'IN_PRUEFUNG' => 'In Prüfung',
-            'ANGENOMMEN' => 'Angenommen',
-            'ABGELEHNT' => 'Abgelehnt',
-        ];
+        $statusoptions = status_manager::get_options();
 
-        $mform->addElement('select', 'STATUS_BEWERBUNG', 'Status der Bewerbung', $statusoptions);
-        $mform->setType('STATUS_BEWERBUNG', PARAM_TEXT);
-        $mform->addRule('STATUS_BEWERBUNG', get_string('required'), 'required', null, 'client');
+        $mform->addElement('select', 'statusid', 'Status der Bewerbung', $statusoptions);
+        $mform->setType('statusid', PARAM_INT);
+        $mform->addRule('statusid', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('textarea', 'KOMMENTAR_IO', 'Kommentar', [
             'rows' => 4,
