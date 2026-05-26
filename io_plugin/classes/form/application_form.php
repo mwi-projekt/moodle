@@ -5,7 +5,9 @@ namespace mod_dhbwio\form;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
+
 use mod_dhbwio\local\dataform\validation_manager;
+use mod_dhbwio\local\dataform\field_manager;
 
 
 class application_form extends \moodleform
@@ -40,6 +42,10 @@ class application_form extends \moodleform
         $name = 'field_' . $field->id;
         $label = $field->name;
 
+        if (field_manager::is_internal_field($field->name)) {
+            return;
+        }
+
         if (!empty($field->description)) {
             $label .= ' - ' . strip_tags($field->description);
         }
@@ -59,9 +65,16 @@ class application_form extends \moodleform
                 break;
 
             case 'select':
-                $options = $this->get_options_from_field($field);
+
+                if (in_array($field->name, ['ERSTWUNSCH', 'ZWEITWUNSCH', 'DRITTWUNSCH'], true)) {
+                    $options = $this->get_university_options($field->name);
+                } else {
+                    $options = $this->get_options_from_field($field);
+                }
+
                 $mform->addElement('select', $name, $label, $options);
                 $mform->setType($name, PARAM_TEXT);
+
                 break;
 
             case 'radiobutton':
@@ -116,6 +129,30 @@ class application_form extends \moodleform
             }
 
             $options[$line] = $line;
+        }
+
+        return $options;
+    }
+
+    private function get_university_options(string $fieldname): array
+    {
+        global $DB;
+
+        $options = [];
+
+        if ($fieldname === 'ZWEITWUNSCH' || $fieldname === 'DRITTWUNSCH') {
+            $options['Keine'] = 'Keine';
+        }
+
+        $universities = $DB->get_records(
+            'dhbwio_universities',
+            ['active' => 1],
+            'country ASC, name ASC'
+        );
+
+        foreach ($universities as $university) {
+            $label = trim($university->country . ' - ' . $university->name);
+            $options[$label] = $label;
         }
 
         return $options;
