@@ -14,10 +14,10 @@ class validation_manager
         $errors = [];
 
         foreach ($fields as $field) {
-            if (field_manager::is_internal_field($field->name)) {
+            if (!field_manager::is_student_field($field)) {
                 continue;
             }
-            
+
             $fieldname = self::get_form_field_name($field);
             $value = $data->{$fieldname} ?? null;
             if ($field->name === 'STATUS_BEWERBUNG') {

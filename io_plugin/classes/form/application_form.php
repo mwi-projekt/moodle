@@ -28,11 +28,35 @@ class application_form extends \moodleform
         $mform->addElement('hidden', 'entryid', $entryid);
         $mform->setType('entryid', PARAM_INT);
 
+        $currentgroup = null;
+
         foreach ($fields as $field) {
+            if (!field_manager::is_student_field($field)) {
+                continue;
+            }
+
+            $fieldgroup = $field->fieldgroup ?? field_manager::GROUP_GENERAL;
+
+            if ($fieldgroup !== $currentgroup) {
+                $this->add_group_header($fieldgroup);
+                $currentgroup = $fieldgroup;
+            }
+
             $this->add_field($field);
         }
 
         $this->add_action_buttons(true, get_string('submit'));
+    }
+
+    private function add_group_header(string $fieldgroup): void
+    {
+        $mform = $this->_form;
+
+        $titles = field_manager::get_group_titles();
+
+        $title = $titles[$fieldgroup] ?? ucfirst($fieldgroup);
+
+        $mform->addElement('header', 'group_' . $fieldgroup, $title);
     }
 
     private function add_field(\stdClass $field): void
@@ -42,7 +66,7 @@ class application_form extends \moodleform
         $name = 'field_' . $field->id;
         $label = $field->name;
 
-        if (field_manager::is_internal_field($field->name)) {
+        if (!field_manager::is_student_field($field)) {
             return;
         }
 

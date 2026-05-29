@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_dhbwio\local\dataform\field_manager;
+
 function xmldb_dhbwio_upgrade($oldversion)
 {
     global $DB;
@@ -414,6 +416,78 @@ function xmldb_dhbwio_upgrade($oldversion)
         $dbman->add_key($entrytable, $key);
 
         upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
+    }
+
+    if ($oldversion < 2026052301) {
+
+        $table = new xmldb_table('dhbwio_dataform_fields');
+
+        $scopefield = new xmldb_field('scope', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, field_manager::SCOPE_STUDENT, 'editable');
+        if (!$dbman->field_exists($table, $scopefield)) {
+            $dbman->add_field($table, $scopefield);
+        }
+
+        $groupfield = new xmldb_field('fieldgroup', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, field_manager::GROUP_GENERAL, 'scope');
+        if (!$dbman->field_exists($table, $groupfield)) {
+            $dbman->add_field($table, $groupfield);
+        }
+
+        $sortorderfield = new xmldb_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'fieldgroup');
+        if (!$dbman->field_exists($table, $sortorderfield)) {
+            $dbman->add_field($table, $sortorderfield);
+        }
+
+        $fieldmetadata = [
+            'NACHNAME' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 10],
+            'VORNAME' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 20],
+            'GEBURTSDATUM' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 30],
+            'NATIONALITAET' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 40],
+            'MUTTERSPRACHE' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 50],
+            'EMAIL' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_PERSONAL, 60],
+
+            'STUDIENGANG' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 10],
+            'STUDIENRICHTUNG' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 20],
+            'KURSNAME' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 30],
+            'STUDIENGANGSLEITUNG' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 40],
+            'ABSPRACHE_MIT_STUDIENGANGSLEITUNG' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 50],
+            'AKTUELLES_SEMESTER' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STUDY, 60],
+
+            'UNTERNEHMEN' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_COMPANY, 10],
+            'ANSPRECHPERSON_UNTERNEHMEN' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_COMPANY, 20],
+            'ANSPRECHPERSON_EMAIL' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_COMPANY, 30],
+            'ABSPRACHE_MIT_UNTERNEHMEN' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_COMPANY, 40],
+
+            'ERSTWUNSCH' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_CHOICES, 10],
+            'ZWEITWUNSCH' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_CHOICES, 20],
+            'DRITTWUNSCH' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_CHOICES, 30],
+
+            'BENACHTEILIGUNG_BILDUNGSCHANCEN' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STATEMENTS, 10],
+            'NACHRICHT' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STATEMENTS, 20],
+            'VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STATEMENTS, 30],
+            'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STATEMENTS, 40],
+
+            'KOMMENTAR_IO' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 10],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 20],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 30],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 40],
+
+            'STRASSE' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 90],
+            'HAUSNUMMER' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 100],
+            'ORT' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 110],
+            'PLZ' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 120],
+            'HANDYNUMMER' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 130],
+            'DATEIEN' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 140],
+            'ADRESSEZUSATZ' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 150],
+            'STATUS_BEWERBUNG' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 160],
+        ];
+
+        foreach ($fieldmetadata as $name => [$scope, $fieldgroup, $sortorder]) {
+            $DB->set_field('dhbwio_dataform_fields', 'scope', $scope, ['name' => $name]);
+            $DB->set_field('dhbwio_dataform_fields', 'fieldgroup', $fieldgroup, ['name' => $name]);
+            $DB->set_field('dhbwio_dataform_fields', 'sortorder', $sortorder, ['name' => $name]);
+        }
+
+        upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
     }
 
     return true;

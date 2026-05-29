@@ -196,6 +196,9 @@
         <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="visible" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="2" SEQUENCE="false" />
         <FIELD NAME="editable" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" />
+        <FIELD NAME="scope" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="student" SEQUENCE="false"/>
+        <FIELD NAME="fieldgroup" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="general" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="label" TYPE="text" NOTNULL="false" SEQUENCE="false" />
         <FIELD NAME="defaultcontentmode" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="defaultcontent" TYPE="text" NOTNULL="false" SEQUENCE="false" />

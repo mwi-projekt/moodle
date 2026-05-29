@@ -29,6 +29,7 @@ require_once(dirname(__FILE__) . '/locallib.php');
 use mod_dhbwio\local\dataform\entry_manager;
 use mod_dhbwio\local\dataform\field_manager;
 use mod_dhbwio\local\dataform\status_manager;
+use mod_dhbwio\local\dataform\dataform_manager;
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $tab = optional_param('tab', 'universities', PARAM_ALPHA); // Active tab
@@ -508,7 +509,15 @@ echo html_writer::link($url, 'Bewerbung anlegen', [
 	'class' => 'btn btn-primary',
 ]);
 
-$dataid = 1; // Später dynamisch ermitteln.
+
+$dataforms = dataform_manager::get_dataforms_by_course((int) $course->id);
+$dataform = reset($dataforms);
+
+if (!$dataform) {
+	throw new moodle_exception('missingdataform', 'mod_dhbwio');
+}
+
+$dataid = (int) $dataform->id;
 
 $canviewallapplications = has_capability(
 	'mod/dhbwio:viewallapplications',

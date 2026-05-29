@@ -103,7 +103,7 @@ if ($formdata = $mform->get_data()) {
     }
 
     foreach ($fields as $field) {
-        if (field_manager::is_internal_field($field->name)) {
+        if (!field_manager::is_student_field($field)) {
             continue;
         }
         $formfieldname = 'field_' . $field->id;
