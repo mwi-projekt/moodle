@@ -28,6 +28,18 @@ use mod_dhbwio\local\dataform\field_manager;
  * - Trennung von Formularlogik und Datenmodell
  */
 
+/**
+ * Deprecated Moodleform-based application form.
+ *
+ * This form was used before the application form rendering was migrated
+ * to a Mustache-based implementation. It is kept as a fallback during
+ * the transition phase and should not be used for new development.
+ *
+ * @deprecated since 2026-06-02. Use templates/application_form.mustache
+ *             with mod_dhbwio\local\form\form_renderer instead.
+ */
+
+// TODO: Remove after Mustache-based application form is fully stable.
 class application_form extends \moodleform
 {
     /**

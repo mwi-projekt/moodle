@@ -94,7 +94,7 @@ class application_review_form extends \moodleform
         $mform = $this->_form;
 
         $name = $field->name;
-        $label = $field->description ?: $field->name;
+        $label = $this->get_display_label($field);
 
         switch ($field->type) {
             case 'textarea':
@@ -129,7 +129,17 @@ class application_review_form extends \moodleform
                 break;
         }
     }
+    // Diese Function dient als Übergang bevor tatsächliche Datenbankänderungen der Description vorgenommen werden.
+    private function get_display_label(\stdClass $field): string {
+    $labels = [
+        'KOMMENTAR_IO' => 'Kommentar des International Office',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => 'Freigabe Erstwunsch',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => 'Freigabe Zweitwunsch',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => 'Freigabe Drittwunsch',
+    ];
 
+    return $labels[$field->name] ?? $field->description ?: $field->name;
+}
     /**
      * Extracts selectable options from a field definition.
      *

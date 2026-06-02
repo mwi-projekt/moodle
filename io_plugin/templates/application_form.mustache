@@ -1,22 +1,22 @@
-<div class="dhbwio-application-container dhbwio-application-view">
-<div class="dhbwio-application-status">
-    <span class="dhbwio-status-badge {{statusclass}}">
-        {{status}}
-    </span>
-</div>
-{{#showreviewresult}}
-<section class="dhbwio-form-section dhbwio-review-result-section">
-    <div class="dhbwio-form-section-header">
-        <span class="dhbwio-form-step-number">✓</span>
-        <h3>Rückmeldung des International Office</h3>
-    </div>
+<div class="dhbwio-application-container">
+<form method="post" action="{{actionurl}}" class="dhbwio-application-form">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="dataid" value="{{dataid}}">
+    <input type="hidden" name="entryid" value="{{entryid}}">
+    {{#showreviewresult}}
+    <section class="dhbwio-form-section dhbwio-review-result-section">
+        <div class="dhbwio-form-section-header">
+            <span class="dhbwio-form-step-number">✓</span>
+            <h3>Rückmeldung des International Office</h3>
+        </div>
 
-    {{{reviewfields.KOMMENTAR_IO.html}}}
-    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST.html}}}
-    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT.html}}}
-    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT.html}}}
-</section>
-{{/showreviewresult}}
+        {{{reviewfields.KOMMENTAR_IO.html}}}
+        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST.html}}}
+        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT.html}}}
+        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT.html}}}
+    </section>
+    {{/showreviewresult}}
 
     <section class="dhbwio-form-section">
         <div class="dhbwio-form-section-header">
@@ -24,13 +24,16 @@
             <h3>Persönliche Informationen</h3>
         </div>
 
+        <h4>Persönliche Informationen</h4>
+
         {{{fields.NACHNAME.html}}}
         {{{fields.VORNAME.html}}}
         {{{fields.GEBURTSDATUM.html}}}
         {{{fields.NATIONALITAET.html}}}
         {{{fields.MUTTERSPRACHE.html}}}
 
-        <h4 class="dhbwio-subsection-title">Kontaktdaten</h4>
+        <h4>Kontaktdaten</h4>
+
         {{{fields.EMAIL.html}}}
     </section>
 
@@ -40,7 +43,8 @@
             <h3>Informationen zum Studium</h3>
         </div>
 
-        <h4 class="dhbwio-subsection-title">Studium</h4>
+        <h4>Studium</h4>
+
         {{{fields.STUDIENGANG.html}}}
         {{{fields.STUDIENRICHTUNG.html}}}
         {{{fields.KURSNAME.html}}}
@@ -48,7 +52,8 @@
         {{{fields.ABSPRACHE_MIT_STUDIENGANGSLEITUNG.html}}}
         {{{fields.AKTUELLES_SEMESTER.html}}}
 
-        <h4 class="dhbwio-subsection-title">Partnerunternehmen</h4>
+        <h4>Partnerunternehmen</h4>
+
         {{{fields.UNTERNEHMEN.html}}}
         {{{fields.ANSPRECHPERSON_UNTERNEHMEN.html}}}
         {{{fields.ANSPRECHPERSON_EMAIL.html}}}
@@ -61,12 +66,21 @@
             <h3>Informationen zum Auslandssemester</h3>
         </div>
 
-        <h4 class="dhbwio-subsection-title">Länder- bzw. Hochschulwahl</h4>
+        <div class="dhbwio-form-info-box">
+            <strong>Hinweis zur Länder- bzw. Hochschulwahl:</strong><br>
+            Bitte wähle jede Hochschule nur einmal aus. Solltest du lediglich ein oder zwei Hochschulwünsche haben,
+            wähle bei den anderen Feldern <strong>„Keine“</strong> aus.
+        <br></br>
+        </div>
+
+        <h4>Länder- bzw. Hochschulwahl</h4>
+
         {{{fields.ERSTWUNSCH.html}}}
         {{{fields.ZWEITWUNSCH.html}}}
         {{{fields.DRITTWUNSCH.html}}}
 
-        <h4 class="dhbwio-subsection-title">Sonstige Angaben</h4>
+        <h4>Sonstige Angaben</h4>
+
         {{{fields.BENACHTEILIGUNG_BILDUNGSCHANCEN.html}}}
         {{{fields.NACHRICHT.html}}}
         {{{fields.VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT.html}}}
@@ -74,8 +88,8 @@
     </section>
 
     <div class="dhbwio-application-actions">
-        <a href="{{reviewurl}}" class="btn btn-primary">Bewerbung prüfen</a>
+        <button type="submit" name="submitbutton" value="1" class="btn btn-primary">Speichern</button>
         <a href="{{backurl}}" class="btn btn-secondary">Zurück zur Übersicht</a>
     </div>
-
+</form>
 </div>

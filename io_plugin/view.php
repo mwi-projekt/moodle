@@ -525,7 +525,7 @@ if ($canviewallapplications) {
 }
 
 $erstwunschfield = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
-// $statusfield = field_manager::get_field_by_name($dataid, 'STATUS_BEWERBUNG');
+$studiengangfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
 $vornamefield = field_manager::get_field_by_name($dataid, 'VORNAME');
 $nachnamefield = field_manager::get_field_by_name($dataid, 'NACHNAME');
 $emailfield = field_manager::get_field_by_name($dataid, 'EMAIL');
@@ -533,86 +533,100 @@ $emailfield = field_manager::get_field_by_name($dataid, 'EMAIL');
 if (empty($entries)) {
 	echo html_writer::tag('p', 'Du hast noch keine Bewerbung angelegt.');
 } else {
-$applications = [];
+	$applications = [];
 
-foreach ($entries as $entry) {
-    $erstwunsch = '-';
+	foreach ($entries as $entry) {
+		$erstwunsch = '-';
 
-    if ($erstwunschfield) {
-        $erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
-    }
+		if ($erstwunschfield) {
+			$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
+		}
 
-    $statusrecord = status_manager::get_status((int) $entry->statusid);
-    $status = $statusrecord ? $statusrecord->label : '-';
+		$statusrecord = status_manager::get_status((int) $entry->statusid);
+		$status = $statusrecord ? $statusrecord->label : '-';
 
-    if ($canviewallapplications) {
-        $viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
-            'id' => $cm->id,
-            'dataid' => $dataid,
-            'entryid' => $entry->id,
-        ]);
+		$statusclass = match (mb_strtolower($status)) {
+			'eingereicht' => 'status-submitted',
+			'in prüfung' => 'status-review',
+			'angenommen' => 'status-approved',
+			'abgelehnt' => 'status-rejected',
+			default => 'status-default',
+		};
 
-        $reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
-            'id' => $cm->id,
-            'dataid' => $dataid,
-            'entryid' => $entry->id,
-        ]);
+		if ($canviewallapplications) {
+			$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
+				'id' => $cm->id,
+				'dataid' => $dataid,
+				'entryid' => $entry->id,
+			]);
 
-        $actions = html_writer::link($viewurl, 'Anzeigen') . ' | ' .
-            html_writer::link($reviewurl, 'Prüfen');
+			$reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
+				'id' => $cm->id,
+				'dataid' => $dataid,
+				'entryid' => $entry->id,
+			]);
 
-        $vorname = $vornamefield ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id) : '';
-        $nachname = $nachnamefield ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id) : '';
-        $email = $emailfield ? entry_manager::get_content_value($entry->id, (int) $emailfield->id) : '';
+			$actions = html_writer::link($viewurl, 'Anzeigen') . ' | ' .
+				html_writer::link($reviewurl, 'Prüfen');
 
-        $applications[] = [
-            'applicantname' => s(trim($vorname . ' ' . $nachname)),
-            'email' => s($email),
-            'timecreated' => userdate($entry->timecreated),
-            'timemodified' => userdate($entry->timemodified),
-            'firstchoice' => s($erstwunsch),
-            'status' => s($status),
-            'actions' => $actions,
-        ];
-    } else {
-        $viewurl = new moodle_url('/mod/dhbwio/application.php', [
-            'id' => $cm->id,
-            'dataid' => $dataid,
-            'entryid' => $entry->id,
-        ]);
+			$vorname = $vornamefield ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id) : '';
+			$nachname = $nachnamefield ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id) : '';
+			$email = $emailfield ? entry_manager::get_content_value($entry->id, (int) $emailfield->id) : '';
+			$studiengang = $studiengangfield
+				? entry_manager::get_content_value($entry->id, (int) $studiengangfield->id)
+				: '';
 
-        $actions = html_writer::link($viewurl, 'Anzeigen');
+			$applications[] = [
+				'applicantname' => s(trim($vorname . ' ' . $nachname)),
+				'email' => s($email),
+				'timecreated' => userdate($entry->timecreated),
+				'timemodified' => userdate($entry->timemodified),
+				'firstchoice' => s($erstwunsch),
+				'status' => s($status),
+				'statusclass' => $statusclass,
+				'actions' => $actions,
+				'studyprogram' => s($studiengang),
+			];
+		} else {
+			$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+				'id' => $cm->id,
+				'dataid' => $dataid,
+				'entryid' => $entry->id,
+			]);
 
-        if (status_manager::is_accepted((int) $entry->statusid)) {
-            $laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
-                'id' => $cm->id,
-                'dataid' => $dataid,
-                'entryid' => $entry->id,
-            ]);
+			$actions = html_writer::link($viewurl, 'Anzeigen');
 
-            $actions .= ' | ' . html_writer::link($laurl, 'Learning Agreement hinzufügen');
-        }
+			if (status_manager::is_accepted((int) $entry->statusid)) {
+				$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+					'id' => $cm->id,
+					'dataid' => $dataid,
+					'entryid' => $entry->id,
+				]);
 
-        $applications[] = [
-            'timecreated' => userdate($entry->timecreated),
-            'timemodified' => userdate($entry->timemodified),
-            'firstchoice' => s($erstwunsch),
-            'status' => s($status),
-            'actions' => $actions,
-        ];
-    }
-}
+				$actions .= ' | ' . html_writer::link($laurl, 'Learning Agreement hinzufügen');
+			}
 
-$templatecontext = [
-    'title' => $canviewallapplications ? 'Alle Bewerbungen' : 'Meine Bewerbungen',
-    'isadmin' => $canviewallapplications,
-    'hasapplications' => !empty($applications),
-    'applications' => $applications,
-    'emptytext' => $canviewallapplications
-        ? 'Es liegen noch keine Bewerbungen vor.'
-        : 'Du hast noch keine Bewerbung angelegt.',
-];
+			$applications[] = [
+				'timecreated' => userdate($entry->timecreated),
+				'timemodified' => userdate($entry->timemodified),
+				'firstchoice' => s($erstwunsch),
+				'status' => s($status),
+				'statusclass' => $statusclass,
+				'actions' => $actions,
+			];
+		}
+	}
 
-echo $OUTPUT->render_from_template('mod_dhbwio/application_overview', $templatecontext);
+	$templatecontext = [
+		'title' => $canviewallapplications ? 'Alle Bewerbungen' : 'Meine Bewerbungen',
+		'isadmin' => $canviewallapplications,
+		'hasapplications' => !empty($applications),
+		'applications' => $applications,
+		'emptytext' => $canviewallapplications
+			? 'Es liegen noch keine Bewerbungen vor.'
+			: 'Du hast noch keine Bewerbung angelegt.',
+	];
+
+	echo $OUTPUT->render_from_template('mod_dhbwio/application_overview', $templatecontext);
 }
 echo $OUTPUT->footer();

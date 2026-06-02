@@ -1,4 +1,4 @@
-<div class="dhbwio-application-overview">
+<div class="dhbwio-application-overview container-fluid">
 
     <h3>{{title}}</h3>
 
@@ -8,7 +8,7 @@
                 <tr>
                     {{#isadmin}}
                         <th>Bewerber</th>
-                        <th>E-Mail</th>
+                        <th>Studiengang</th>
                     {{/isadmin}}
                     <th>Erstellt</th>
                     <th>Geändert</th>
@@ -22,12 +22,16 @@
                     <tr>
                         {{#isadmin}}
                             <td>{{applicantname}}</td>
-                            <td>{{email}}</td>
+                            <td>{{studyprogram}}</td>
                         {{/isadmin}}
                         <td>{{timecreated}}</td>
                         <td>{{timemodified}}</td>
                         <td>{{firstchoice}}</td>
-                        <td>{{status}}</td>
+                        <td>
+                            <span class="dhbwio-status-badge {{statusclass}}">
+                                {{status}}
+                            </span>
+                        </td>
                         <td>
                             {{{actions}}}
                         </td>
