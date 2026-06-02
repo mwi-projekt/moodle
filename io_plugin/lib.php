@@ -61,6 +61,9 @@ function dhbwio_add_instance(stdClass $dhbwio, mod_dhbwio_mod_form $mform = null
     // Create default email templates
     dhbwio_create_default_email_templates($id);
 
+     // Create default application form for this course.
+    \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $dhbwio->course);
+
     return $id;
 }
 

@@ -1,0 +1,48 @@
+<div class="dhbwio-application-overview container-fluid">
+
+    <h3>{{title}}</h3>
+
+    {{#hasapplications}}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    {{#isadmin}}
+                        <th>Bewerber</th>
+                        <th>Studiengang</th>
+                    {{/isadmin}}
+                    <th>Erstellt</th>
+                    <th>Geändert</th>
+                    <th>Erstwunsch</th>
+                    <th>Status</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#applications}}
+                    <tr>
+                        {{#isadmin}}
+                            <td>{{applicantname}}</td>
+                            <td>{{studyprogram}}</td>
+                        {{/isadmin}}
+                        <td>{{timecreated}}</td>
+                        <td>{{timemodified}}</td>
+                        <td>{{firstchoice}}</td>
+                        <td>
+                            <span class="dhbwio-status-badge {{statusclass}}">
+                                {{status}}
+                            </span>
+                        </td>
+                        <td>
+                            {{{actions}}}
+                        </td>
+                    </tr>
+                {{/applications}}
+            </tbody>
+        </table>
+    {{/hasapplications}}
+
+    {{^hasapplications}}
+        <p>{{emptytext}}</p>
+    {{/hasapplications}}
+
+</div>
