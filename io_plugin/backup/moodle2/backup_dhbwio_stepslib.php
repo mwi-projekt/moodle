@@ -27,41 +27,84 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Define the complete dhbwio structure for backup, with file and id annotations
  */
-class backup_dhbwio_activity_structure_step extends backup_activity_structure_step {
+class backup_dhbwio_activity_structure_step extends backup_activity_structure_step
+{
 
-    protected function define_structure() {
+    protected function define_structure()
+    {
 
         // To know if we are including userinfo
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
         $dhbwio = new backup_nested_element('dhbwio', array('id'), array(
-            'name', 'intro', 'introformat', 'timecreated', 'timemodified',
-            'enablemap', 'enablereports', 'dataform_id', 'first_wish_field',
-            'second_wish_field', 'third_wish_field', 'first_wish_weight',
-            'second_wish_weight', 'third_wish_weight', 'enable_utilisation',
+            'course',
+            'name',
+            'intro',
+            'introformat',
+            'timecreated',
+            'timemodified',
+            'enablemap',
+            'enablereports',
+            'dataform_id',
+            'dataform_overview_view_id',
+            'dataform_entry_view_id',
+            'first_wish_field',
+            'second_wish_field',
+            'third_wish_field',
+            'first_wish_weight',
+            'second_wish_weight',
+            'third_wish_weight',
+            'enable_utilisation',
             'utilisation_cache_duration'
         ));
 
         $universities = new backup_nested_element('universities');
         $university = new backup_nested_element('university', array('id'), array(
-            'name', 'country', 'city', 'address', 'postal_code',
-            'latitude', 'longitude', 'website', 'description', 'descriptionformat',
-            'requirements', 'available_slots', 'semester_start', 'semester_end',
-            'semester_fees', 'fee_currency', 'accommodation_type', 'active',
+            'name',
+            'country',
+            'city',
+            'address',
+            'postal_code',
+            'latitude',
+            'longitude',
+            'website',
+            'description',
+            'descriptionformat',
+            'requirements',
+            'available_slots',
+            'semester_start',
+            'semester_end',
+            'semester_fees',
+            'fee_currency',
+            'accommodation_type',
+            'active',
             'timemodified'
         ));
 
         $email_templates = new backup_nested_element('email_templates');
         $email_template = new backup_nested_element('email_template', array('id'), array(
-            'name', 'type', 'lang', 'subject', 'body', 'bodyformat',
-            'timemodified', 'enabled'
+            'name',
+            'type',
+            'lang',
+            'subject',
+            'body',
+            'bodyformat',
+            'timemodified',
+            'enabled'
         ));
 
         $experience_reports = new backup_nested_element('experience_reports');
         $experience_report = new backup_nested_element('experience_report', array('id'), array(
-            'university_id', 'userid', 'title', 'content', 'contentformat',
-            'rating', 'timemodified', 'timecreated', 'visible'
+            'university_id',
+            'userid',
+            'title',
+            'content',
+            'contentformat',
+            'rating',
+            'timemodified',
+            'timecreated',
+            'visible'
         ));
 
         // Build the tree

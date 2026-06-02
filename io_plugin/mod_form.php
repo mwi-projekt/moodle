@@ -73,12 +73,12 @@ class mod_dhbwio_mod_form extends moodleform_mod {
         $mform->setDefault('enablereports', 1);
 
         // DataForm Integration Settings.
-        $mform->addElement('header', 'utilization_settings', get_string('utilization_settings', 'mod_dhbwio'));
+        //$mform->addElement('header', 'utilization_settings', get_string('utilization_settings', 'mod_dhbwio'));
 
 		 // DataForm Activity Selection.
-        $dataforms = $this->get_dataform_activities();
-        $mform->addElement('select', 'dataform_id', get_string('dataform_activity', 'mod_dhbwio'), $dataforms);
-        $mform->addHelpButton('dataform_id', 'dataform_activity', 'mod_dhbwio');
+        //$dataforms = $this->get_dataform_activities();
+        //$mform->addElement('select', 'dataform_id', get_string('dataform_activity', 'mod_dhbwio'), $dataforms);
+        //$mform->addHelpButton('dataform_id', 'dataform_activity', 'mod_dhbwio');
 
         // Overview View
         $overviewviews = $this->get_dataform_views();
