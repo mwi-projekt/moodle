@@ -44,23 +44,38 @@ echo html_writer::link(
 
 echo $OUTPUT->heading('Bewerbung anzeigen', 3);
 
-$table = new html_table();
-$table->head = ['Feld', 'Wert'];
+$groupedfields = [];
 
 foreach ($fields as $field) {
-    if ($field->type === 'file') {
+    if (!field_manager::is_student_field($field) && !field_manager::is_review_field($field)) {
         continue;
     }
 
-    $value = entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
-
-    $table->data[] = [
-        s($field->name),
-        s($value),
-    ];
+    $group = $field->fieldgroup ?? field_manager::GROUP_GENERAL;
+    $groupedfields[$group][] = $field;
 }
 
-echo html_writer::table($table);
+$grouptitles = field_manager::get_group_titles();
+
+foreach ($groupedfields as $group => $groupfields) {
+    $title = $grouptitles[$group] ?? ucfirst($group);
+
+    echo $OUTPUT->heading($title, 4);
+
+    $table = new html_table();
+    $table->head = ['Feld', 'Wert'];
+
+    foreach ($groupfields as $field) {
+        $value = entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
+
+        $table->data[] = [
+            s($field->name),
+            s($value),
+        ];
+    }
+
+    echo html_writer::table($table);
+}
 
 $reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
     'id' => $cm->id,

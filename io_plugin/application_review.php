@@ -57,6 +57,7 @@ $mform = new application_review_form($formurl, [
     'id' => $cm->id,
     'dataid' => $dataid,
     'entryid' => $entryid,
+    'fields' => $fields,
 ]);
 
 if ($mform->is_cancelled()) {
@@ -134,5 +135,16 @@ $table->data = [
 echo html_writer::table($table);
 
 $mform->display();
+
+$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
+    'id' => $cm->id,
+    'dataid' => $dataid,
+    'entryid' => $entryid,
+]);
+
+echo html_writer::empty_tag('br');
+echo html_writer::link($viewurl, 'Zurück zur Anzeige', [
+    'class' => 'btn btn-secondary',
+]);
 
 echo $OUTPUT->footer();

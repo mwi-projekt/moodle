@@ -510,13 +510,7 @@ echo html_writer::link($url, 'Bewerbung anlegen', [
 ]);
 
 
-$dataforms = dataform_manager::get_dataforms_by_course((int) $course->id);
-$dataform = reset($dataforms);
-
-if (!$dataform) {
-	throw new moodle_exception('missingdataform', 'mod_dhbwio');
-}
-
+$dataform = dataform_manager::get_course_dataform((int) $course->id);
 $dataid = (int) $dataform->id;
 
 $canviewallapplications = has_capability(
@@ -535,7 +529,7 @@ if ($canviewallapplications) {
 }
 
 $erstwunschfield = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
-#$statusfield = field_manager::get_field_by_name($dataid, 'STATUS_BEWERBUNG');
+// $statusfield = field_manager::get_field_by_name($dataid, 'STATUS_BEWERBUNG');
 $vornamefield = field_manager::get_field_by_name($dataid, 'VORNAME');
 $nachnamefield = field_manager::get_field_by_name($dataid, 'NACHNAME');
 $emailfield = field_manager::get_field_by_name($dataid, 'EMAIL');

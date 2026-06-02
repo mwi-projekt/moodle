@@ -6,9 +6,35 @@ use mod_dhbwio\local\dataform\field_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Verwaltungsklasse zur Erstellung des Standard-Bewerbungsformulars.
+ *
+ * Diese Klasse erzeugt automatisch eine vorkonfigurierte Dataform für
+ * Auslandssemesterbewerbungen. Dabei werden sowohl die Dataform selbst
+ * als auch sämtliche benötigten Standardfelder angelegt.
+ *
+ * Die Definition der Standardfelder erfolgt zentral innerhalb dieser
+ * Klasse, sodass neue Installationen oder Kurse jederzeit eine
+ * einheitliche Formularstruktur erhalten.
+ *
+ * Nutzen:
+ * - Automatische Einrichtung neuer Bewerbungsformulare
+ * - Einheitliche Feldstruktur für alle Bewerbungen
+ * - Zentrale Pflege der Standardkonfiguration
+ * - Vereinfachung von Installation und Kursanlage
+ */
 class default_form_manager
 {
-
+    /**
+     * Erstellt eine neue Standard-Dataform für einen Kurs.
+     *
+     * Legt einen neuen Dataform-Datensatz mit den vordefinierten
+     * Grundeinstellungen an und erzeugt anschließend alle
+     * benötigten Standardfelder.
+     *
+     * @param int $courseid ID des zugehörigen Moodle-Kurses.
+     * @return int ID der neu angelegten Dataform.
+     */
     public static function create_default_form(int $courseid): int
     {
         global $DB;
@@ -29,7 +55,17 @@ class default_form_manager
 
         return $dataid;
     }
-
+    /**
+     * Erstellt die Standardfelder einer Dataform.
+     *
+     * Die Felddefinitionen werden aus der zentralen Konfiguration geladen
+     * und als Datensätze in der Datenbank gespeichert. Dabei werden
+     * Standardwerte für Sichtbarkeit, Bearbeitbarkeit und Gruppierung
+     * ergänzt.
+     *
+     * @param int $dataid ID der Dataform, für die die Felder angelegt werden.
+     * @return void
+     */
     private static function create_default_fields(int $dataid): void
     {
         global $DB;
@@ -62,7 +98,19 @@ class default_form_manager
             $DB->insert_record('dhbwio_dataform_fields', $record);
         }
     }
-
+    /**
+     * Liefert die Definition aller Standardfelder.
+     *
+     * Die Methode enthält die vollständige Konfiguration der im
+     * Bewerbungsprozess benötigten Felder. Dazu gehören persönliche Daten,
+     * Studieninformationen, Hochschulwünsche, Einverständniserklärungen
+     * sowie interne Felder für die Bearbeitung durch das International Office.
+     *
+     * Die zurückgegebenen Definitionen dienen als Vorlage für die
+     * automatische Erstellung neuer Bewerbungsformulare.
+     *
+     * @return array Liste der Standardfelddefinitionen.
+     */
     private static function get_default_fields(): array
     {
         return [

@@ -4,9 +4,34 @@ namespace mod_dhbwio\local\dataform;
 
 defined('MOODLE_INTERNAL') || die();
 
-class status_manager {
+/**
+ * Verwaltungsklasse für Bewerbungsstatus.
+ *
+ * Diese Klasse stellt zentrale Funktionen zur Verwaltung und
+ * Auswertung von Bewerbungsstatus bereit. Sie ermöglicht das
+ * Laden einzelner Statuswerte, das Ermitteln des Initialstatus
+ * sowie die Bereitstellung aktiver Statusoptionen für Formulare.
+ *
+ * Die Statuswerte bilden den Bearbeitungsfortschritt einer
+ * Bewerbung ab und werden im gesamten Bewerbungsprozess genutzt.
+ *
+ * Nutzen:
+ * - Zentrale Verwaltung von Bewerbungsstatus
+ * - Einheitliche Statusabfragen im System
+ * - Bereitstellung von Formularoptionen
+ * - Unterstützung des Bewerbungs-Workflows
+ */
+class status_manager
+{
 
-    public static function get_status(int $statusid): ?\stdClass {
+    /**
+     * Lädt einen Bewerbungsstatus anhand seiner ID.
+     *
+     * @param int $statusid ID des Status.
+     * @return \stdClass|null Statusdatensatz oder null.
+     */
+    public static function get_status(int $statusid): ?\stdClass
+    {
         global $DB;
 
         return $DB->get_record(
@@ -14,8 +39,18 @@ class status_manager {
             ['id' => $statusid]
         ) ?: null;
     }
-
-    public static function get_initial_status(): \stdClass {
+    /**
+     * Ermittelt den initialen Status einer neuen Bewerbung.
+     *
+     * Der Initialstatus wird automatisch beim Anlegen einer
+     * Bewerbung vergeben und kennzeichnet den Einstiegspunkt
+     * im Bewerbungsprozess.
+     *
+     * @return \stdClass Initialer Statusdatensatz.
+     * @throws \dml_missing_record_exception Wenn kein Initialstatus existiert.
+     */
+    public static function get_initial_status(): \stdClass
+    {
         global $DB;
 
         return $DB->get_record(
@@ -25,8 +60,16 @@ class status_manager {
             MUST_EXIST
         );
     }
-
-    public static function get_active_statuses(): array {
+    /**
+     * Lädt alle aktiven Bewerbungsstatus.
+     *
+     * Die Statuswerte werden entsprechend ihrer konfigurierten
+     * Sortierreihenfolge zurückgegeben.
+     *
+     * @return array Liste aller aktiven Status.
+     */
+    public static function get_active_statuses(): array
+    {
         global $DB;
 
         return $DB->get_records(
@@ -35,8 +78,19 @@ class status_manager {
             'sortorder ASC'
         );
     }
-
-    public static function get_options(): array {
+    /**
+     * Erstellt eine Auswahlliste aktiver Statuswerte.
+     *
+     * Die Methode bereitet die Statusdaten für die Verwendung
+     * in Moodle-Auswahlfeldern auf.
+     *
+     * Rückgabeformat:
+     * [Status-ID => Statusbezeichnung]
+     *
+     * @return array Verfügbare Statusoptionen.
+     */
+    public static function get_options(): array
+    {
         $statuses = self::get_active_statuses();
 
         $options = [];
@@ -47,8 +101,18 @@ class status_manager {
 
         return $options;
     }
-
-    public static function is_accepted(int $statusid): bool {
+    /**
+     * Prüft, ob ein Status als akzeptiert markiert ist.
+     *
+     * Diese Information kann genutzt werden, um Bewerbungen
+     * automatisch als angenommen oder erfolgreich bewertet
+     * zu behandeln.
+     *
+     * @param int $statusid ID des zu prüfenden Status.
+     * @return bool True, wenn der Status als akzeptiert definiert ist.
+     */
+    public static function is_accepted(int $statusid): bool
+    {
         $status = self::get_status($statusid);
 
         return $status && (int) $status->isaccepted === 1;
