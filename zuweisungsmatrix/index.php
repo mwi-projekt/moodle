@@ -48,27 +48,24 @@ foreach ($hochschulen_raw as $record) {
     ];
 }
 
+// === STUDIERENDE AUS DHBWIO-DATAFORM HOLEN ===
+$dataformid = 1;
+
 $entriesql = "
     SELECT e.id AS entryid,
-           MAX(CASE WHEN f.name = 'VORNAME' THEN c.content ELSE NULL END) AS vorname,
-           MAX(CASE WHEN f.name = 'NACHNAME' THEN c.content ELSE NULL END) AS nachname,
-           MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
-           MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
-           MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch
-    FROM {dataform_entries} e
-    JOIN {dataform_contents} c ON c.entryid = e.id
-    JOIN {dataform_fields} f ON f.id = c.fieldid
-    LEFT JOIN {dhbwio_universities} uniw1 
-        ON uniw1.id = c.content AND f.name = 'ERSTWUNSCH'
-    LEFT JOIN {dhbwio_universities} uniw2 
-        ON uniw2.id = c.content AND f.name = 'ZWEITWUNSCH'
-    LEFT JOIN {dhbwio_universities} uniw3 
-        ON uniw3.id = c.content AND f.name = 'DRITTWUNSCH'
-    WHERE e.state <> 3
+           MAX(CASE WHEN c.fieldid = 15 THEN c.content END) AS vorname,
+           MAX(CASE WHEN c.fieldid = 16 THEN c.content END) AS nachname,
+           MAX(CASE WHEN c.fieldid = 5  THEN c.content END) AS Erstwunsch,
+           MAX(CASE WHEN c.fieldid = 6  THEN c.content END) AS Zweitwunsch,
+           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS Drittwunsch
+    FROM {dhbwio_dataform_entries} e
+    JOIN {dhbwio_dataform_contents} c ON c.entryid = e.id
+    WHERE e.dataid = ?
+      AND e.state <> 3
     GROUP BY e.id
 ";
 
-$studenten = $DB->get_records_sql($entriesql);
+$studenten = $DB->get_records_sql($entriesql, [$dataformid]);
 // Bestehende Zuweisungen abrufen
 //$zuweisungen = $DB->get_records('local_matrixzuweisung', null, '', 'studentid, hochschule');
 
