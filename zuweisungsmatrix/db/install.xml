@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/zuweisungsmatrix/db" VERSION="2026050702" COMMENT="Install XML für Zuweisungsmatrix"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd">
+
+    <TABLES>
+
+        <!-- Master-Tabelle -->
+        <TABLE NAME="local_matrixzuweisung_master" COMMENT="Master-Tabelle für Zuweisungsrunden">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Primärschlüssel"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Name der Zuweisungsrunde"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Erstellungszeit"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Letzte Änderung"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <!-- Details-Tabelle -->
+        <TABLE NAME="local_matrixzuweisung_details" COMMENT="Einzelne Zuweisungen der Studenten zu Hochschulen">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Primärschlüssel"/>
+                <FIELD NAME="masterid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Referenz auf master-Tabelle"/>
+                <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID des Studenten"/>
+                <FIELD NAME="universityid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID der Hochschule"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="masterfk" TYPE="foreign" FIELDS="masterid" REFTABLE="local_matrixzuweisung_master" REFFIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="studentidx" UNIQUE="false" FIELDS="studentid"/>
+                <INDEX NAME="universityidx" UNIQUE="false" FIELDS="universityid"/>
+            </INDEXES>
+        </TABLE>
+
+    </TABLES>
+
+</XMLDB>
