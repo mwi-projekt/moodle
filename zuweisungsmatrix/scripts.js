@@ -93,7 +93,10 @@ function prepareExport() {
 }
 
 function automatischZuteilen() {
-    // Hochschulkapazitäten aus HTML-Tabelle ermitteln
+    const ROUND_ID = "bewerbungsrunde-1";
+    const NON_ASSIGN_COST = 1000000;
+    const TIE_SCALE = 0.000001;
+
     const headerCells = document.querySelectorAll("#matrix thead th:not(:first-child)");
     const hochschulNamen = Array.from(headerCells).map(th => th.innerText.trim());
 
@@ -101,68 +104,111 @@ function automatischZuteilen() {
     hochschulNamen.forEach((name, i) => {
         const colIndex = i + 1;
         const zellen = document.querySelectorAll(`#matrix tbody td:nth-child(${colIndex + 1})`);
-        kapazitaet[name] = Array.from(zellen).filter(td => !td.classList.contains('disabled')).length;
+        kapazitaet[name] = Array.from(zellen).filter(td => !td.classList.contains("disabled")).length;
     });
 
+    document.querySelectorAll("#matrix tbody tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        for (let i = 1; i < cells.length; i++) {
+            const td = cells[i];
+            if (!td.classList.contains("disabled")) {
+                const student = td.querySelector(".student");
+                if (student) {
+                    document.getElementById("studentList").appendChild(student);
+                    const wishes = student.querySelector(".wuensche");
+                    if (wishes) wishes.style.display = "block";
+                }
+            }
+        }
+    });
+
+    const studenten = Array.from(document.querySelectorAll("#studentList .student"));
+
+    function stableHash(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0) / 4294967295;
+    }
+
+    function studentId(student, index) {
+        return (
+            student.dataset.id ||
+            student.id ||
+            student.querySelector(".name")?.innerText?.trim() ||
+            student.innerText.trim() ||
+            String(index)
+        );
+    }
+
+    function getWunsche(student) {
+        const text = student.querySelector(".wuensche small")?.innerText || "";
+        return text
+            .split("\n")
+            .map(w => w.replace(/^\d\.\s*/, "").trim())
+            .filter(Boolean);
+    }
+
+    const angebote = [];
+
+    studenten.forEach((student, index) => {
+        const id = studentId(student, index);
+        const lottery = stableHash(`${id}|${ROUND_ID}`);
+        const wunsche = getWunsche(student);
+
+        wunsche.forEach((hochschule, rang) => {
+            if (hochschulNamen.includes(hochschule)) {
+                angebote.push({
+                    student,
+                    hochschule,
+                    cost: rang + lottery * TIE_SCALE
+                });
+            }
+        });
+
+        angebote.push({
+            student,
+            hochschule: null,
+            cost: NON_ASSIGN_COST + lottery * TIE_SCALE
+        });
+    });
+
+    const assignedStudents = new Set();
     const belegung = {};
     hochschulNamen.forEach(name => belegung[name] = 0);
 
-    // Nur Studierende aus den Zellen entfernen, nicht alles löschen
-    document.querySelectorAll("#matrix tbody tr").forEach(row => {
-    const cells = row.querySelectorAll("td");
-    for (let i = 1; i < cells.length; i++) {
-        const td = cells[i];
-        if (!td.classList.contains('disabled')) {
-            const student = td.querySelector(".student");
-            if (student) {
-                document.getElementById("studentList").appendChild(student);
+    angebote.sort((a, b) => a.cost - b.cost);
 
-                // Wünsche wieder anzeigen
-                const wishes = student.querySelector(".wuensche");
-                if (wishes) wishes.style.display = 'block';
+    for (const angebot of angebote) {
+        if (assignedStudents.has(angebot.student)) continue;
+
+        if (angebot.hochschule === null) {
+            assignedStudents.add(angebot.student);
+            continue;
+        }
+
+        if (belegung[angebot.hochschule] < kapazitaet[angebot.hochschule]) {
+            const spaltenIndex = hochschulNamen.indexOf(angebot.hochschule) + 1;
+            const zellen = document.querySelectorAll(`#matrix tbody td:nth-child(${spaltenIndex + 1})`);
+
+            for (let td of zellen) {
+                if (!td.classList.contains("disabled") && td.innerHTML.trim() === "") {
+                    td.appendChild(angebot.student);
+
+                    const showWishes = document.getElementById("showWishes")?.checked;
+                    const wishes = angebot.student.querySelector(".wuensche");
+                    if (wishes) wishes.style.display = showWishes ? "block" : "none";
+
+                    belegung[angebot.hochschule]++;
+                    assignedStudents.add(angebot.student);
+                    break;
+                }
             }
         }
     }
-});
 
-
-
-    // Studierendenliste durchgehen
-    const studenten = Array.from(document.querySelectorAll(".student"));
-    studenten.forEach(student => {
-        const wuensche = Array.from(student.querySelectorAll(".wuensche small"))[0].innerText.split('\n');
-        const wunsche = wuensche.map(w => w.replace(/^\d\.\s*/, '').trim());
-
-        let zugewiesen = false;
-        for (let i = 0; i < wunsche.length; i++) {
-            const hochschule = wunsche[i];
-            if (!hochschulNamen.includes(hochschule)) continue;
-
-            if (belegung[hochschule] < kapazitaet[hochschule]) {
-                // Freies Feld finden und einfügen
-                const spaltenIndex = hochschulNamen.indexOf(hochschule) + 1;
-                const zellen = document.querySelectorAll(`#matrix tbody td:nth-child(${spaltenIndex + 1})`);
-                for (let td of zellen) {
-                    if (!td.classList.contains('disabled') && td.innerHTML.trim() === "") {
-                        //td.appendChild(student);
-                        const showWishes = document.getElementById("showWishes")?.checked;
-                        // Originales Element einfügen
-                        td.appendChild(student);
-
-                        // Wünsche anzeigen oder ausblenden, je nach Checkbox
-                        const wishes = student.querySelector(".wuensche");
-                        if (wishes) {
-                            wishes.style.display = showWishes ? 'block' : 'none';
-                        }
-                        belegung[hochschule]++;
-                        zugewiesen = true;
-                        break;
-                    }
-                }
-                if (zugewiesen) break;
-            }
-        }
-    });
     markAsChanged();
     updateEmptyInfoVisibility();
 }
