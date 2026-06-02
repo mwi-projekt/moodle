@@ -30,6 +30,7 @@ use mod_dhbwio\local\dataform\entry_manager;
 use mod_dhbwio\local\dataform\field_manager;
 use mod_dhbwio\local\dataform\status_manager;
 use mod_dhbwio\local\dataform\dataform_manager;
+use mod_dhbwio\local\dataform\default_form_manager;
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $tab = optional_param('tab', 'universities', PARAM_ALPHA); // Active tab
@@ -510,7 +511,12 @@ echo html_writer::link($url, 'Bewerbung anlegen', [
 ]);
 
 
-$dataform = dataform_manager::get_course_dataform((int) $course->id);
+try {
+    $dataform = dataform_manager::get_course_dataform((int) $course->id);
+} catch (moodle_exception $e) {
+    $dataid = \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $course->id);
+    $dataform = dataform_manager::get_course_dataform((int) $course->id);
+}
 $dataid = (int) $dataform->id;
 
 $canviewallapplications = has_capability(
