@@ -26,7 +26,8 @@ function drop(event) {
     if (dropTarget.classList.contains('drop-cell')) {
         if (dropTarget.children.length === 0) {
             dropTarget.appendChild(dragged);
-            // Wünsche ausblenden
+            markAsChanged();
+            // ...existing code...
             let wishes = dragged.querySelector('.wuensche');
             if (wishes) {
                 const inMatrix = dropTarget.closest("#matrix");
@@ -38,7 +39,8 @@ function drop(event) {
     // Drop zurück in Studentenliste
     else if (dropTarget.id === 'studentList') {
         dropTarget.appendChild(dragged);
-        // Wünsche einblenden
+        markAsChanged();
+        // ...existing code...
         let wishes = dragged.querySelector('.wuensche');
         if (wishes) {
             const showWishes = document.getElementById("showWishes")?.checked;
@@ -63,6 +65,7 @@ function resetZuweisung() {
             wishes.style.display = 'block';
         }
     });
+    markAsChanged();
     updateEmptyInfoVisibility();
 }
 
@@ -160,6 +163,7 @@ function automatischZuteilen() {
             }
         }
     });
+    markAsChanged();
     updateEmptyInfoVisibility();
 }
 
@@ -203,6 +207,32 @@ function updateEmptyInfoVisibility() {
 
 let matrixOpenSearchTimer = null;
 let matrixOpenCurrentList = [];
+let currentLoadedMatrixId = null;  // ID der derzeit geöffneten Matrix (null wenn neu)
+let hasUnsavedChanges = false;     // Flag für ungespeicherte Änderungen
+
+function markAsChanged() {
+    if (!hasUnsavedChanges) {
+        hasUnsavedChanges = true;
+        updateStatusDisplay();
+    }
+}
+
+function updateStatusDisplay() {
+    const statusEl = document.getElementById('matrixStatus');
+    if (!statusEl) return;
+
+    if (hasUnsavedChanges) {
+        statusEl.textContent = '⚠ Ungespeicherte Änderungen';
+        statusEl.style.color = '#e1001a';
+        statusEl.style.fontWeight = 'bold';
+    } else if (currentLoadedMatrixId) {
+        statusEl.textContent = '✓ Matrix gespeichert';
+        statusEl.style.color = '#0a8c0a';
+        statusEl.style.fontWeight = 'normal';
+    } else {
+        statusEl.textContent = '';
+    }
+}
 
 function getMatrixOpenModalElements() {
     return {
@@ -240,9 +270,9 @@ function renderMatrixOptions(matrices) {
     matrixOpenCurrentList.forEach((matrix, index) => {
         const option = document.createElement('option');
         option.value = String(matrix.id);
-        const dateText = formatMatrixTimestamp(matrix.timecreated);
+        const dateText = formatMatrixTimestamp(matrix.timemodified);
         option.textContent = dateText
-            ? `${matrix.name} — erstellt am: ${dateText}`
+            ? `${matrix.name} — gespeichert am: ${dateText}`
             : matrix.name;
         if (index === 0) {
             option.selected = true;
@@ -331,7 +361,7 @@ async function confirmOpenSelectedMatrix() {
             return;
         }
 
-        const restoreResult = restoreMatrixDetails(loadResult.matrix.details || []);
+        const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid);
         closeMatrixOpenModal();
 
         let message = `Matrix "${loadResult.matrix.name}" wurde geöffnet.`;
@@ -402,8 +432,13 @@ function formatMatrixTimestamp(timestamp) {
     }
 }
 
-function restoreMatrixDetails(details) {
+function restoreMatrixDetails(details, masterid = null) {
     resetZuweisung();
+
+    // Setze die Matrix-ID wenn eine geladen wurde
+    if (masterid) {
+        currentLoadedMatrixId = masterid;
+    }
 
     const studentMap = {};
     document.querySelectorAll('.student').forEach(student => {
@@ -442,6 +477,10 @@ function restoreMatrixDetails(details) {
 
     toggleWunschAnzeige();
     updateEmptyInfoVisibility();
+
+    // Nach dem Laden: keine ungespeicherten Änderungen
+    hasUnsavedChanges = false;
+    updateStatusDisplay();
 
     return {
         missingStudents,
@@ -495,36 +534,44 @@ function collectMatrixData() {
 /**
  * Sendet die aktuelle Matrix per AJAX an Moodle/PHP,
  * damit die Zuweisungen dauerhaft in der Datenbank gespeichert werden.
+ *
+ * Falls currentLoadedMatrixId gesetzt: UPDATE des bestehenden Eintrags
+ * Falls currentLoadedMatrixId null: INSERT mit Namensdialog
  */
 async function saveMatrixToDatabase() {
-
-    // Namen der Zuweisungsrunde abfragen
-    const input = prompt(
-        "Bitte Namen für die Zuweisungsrunde eingeben:",
-        "Sommersemester 2026"
-    );
-
-    // Speichern abbrechen, wenn der Nutzer auf "Abbrechen" klickt
-    if (input === null) {
-        return;
-    }
-
-    // Leerzeichen am Anfang und Ende entfernen
-    const matrixName = input.trim();
-
-    // Leere Namen verhindern
-    if (matrixName === "") {
-        alert("Bitte einen gültigen Namen eingeben.");
-        return;
-    }
-
-    // Aktuelle Matrix aus dem HTML auslesen
     const details = collectMatrixData();
 
     // Nicht speichern, wenn keine Zuweisungen vorhanden sind
     if (details.length === 0) {
         alert("Es gibt keine Zuweisungen zum Speichern.");
         return;
+    }
+
+    let matrixName = null;
+    let masterid = null;
+
+    // Wenn Matrix geladen: direkt Update ohne Dialog
+    if (currentLoadedMatrixId) {
+        masterid = currentLoadedMatrixId;
+    } else {
+        // Neue Matrix: Dialog für Namen
+        const input = prompt(
+            "Bitte Namen für die Zuweisungsrunde eingeben:",
+            "Sommersemester 2026"
+        );
+
+        // Speichern abbrechen, wenn der Nutzer auf "Abbrechen" klickt
+        if (input === null) {
+            return;
+        }
+
+        matrixName = input.trim();
+
+        // Leere Namen verhindern
+        if (matrixName === "") {
+            alert("Bitte einen gültigen Namen eingeben.");
+            return;
+        }
     }
 
     try {
@@ -535,6 +582,7 @@ async function saveMatrixToDatabase() {
             },
             body: JSON.stringify({
                 name: matrixName,
+                masterid: masterid,
                 details: details
             })
         });
@@ -542,6 +590,14 @@ async function saveMatrixToDatabase() {
         const result = await response.json();
 
         if (response.ok && result.success) {
+            // Bei erfolgreicher Speicherung (INSERT): die neue ID speichern
+            if (result.masterid && !currentLoadedMatrixId) {
+                currentLoadedMatrixId = result.masterid;
+            }
+
+            hasUnsavedChanges = false;
+            updateStatusDisplay();
+
             alert("Zuweisungsmatrix wurde gespeichert.");
         } else {
             alert("Fehler: " + (result.message || "Unbekannter Fehler."));

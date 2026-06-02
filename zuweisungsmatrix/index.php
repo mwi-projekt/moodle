@@ -149,7 +149,7 @@ $studenten = $DB->get_records_sql($entriesql);
 </div>
 
 <!--Buttons: Reset, Zuweiungs, Export-->
-<div id="buttonRow" style="margin-top: 20px; display: flex; gap: 12px;">
+<div id="buttonRow" style="margin-top: 20px; display: flex; gap: 12px; align-items: center;">
     <button id="submitBtn" class="red-button red-button-primary" onclick="automatischZuteilen()">Zuteilung</button>
     <button id="saveBtn" type="button" class="red-button red-button-secondary" onclick="saveMatrixToDatabase()">Speichern</button>
     <button id="openBtnInline" type="button" class="red-button red-button-secondary" onclick="openSavedMatrix()">Öffnen</button>
@@ -159,6 +159,7 @@ $studenten = $DB->get_records_sql($entriesql);
         <button id="exportBtn" type="submit" class="red-button red-button-tertiary" onclick="prepareExport()">Export</button>
     </form>
     <button id="resetBtn" class="red-button red-button-tertiary" onclick="resetZuweisung()">Reset</button>
+    <div id="matrixStatus" style="margin-left: auto; font-size: 14px; font-weight: normal;"></div>
 </div>
 
 <div id="matrixOpenModal" class="matrix-modal" hidden>

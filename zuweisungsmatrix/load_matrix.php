@@ -30,7 +30,7 @@ try {
 
         $sql .= "
             GROUP BY m.id, m.name, m.timecreated, m.timemodified
-            ORDER BY m.timecreated DESC, m.id DESC
+            ORDER BY m.timemodified DESC, m.id DESC
         ";
 
         $matrices = $DB->get_records_sql($sql, $params);

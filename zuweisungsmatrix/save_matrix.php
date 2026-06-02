@@ -18,56 +18,90 @@ try {
         throw new Exception('Ungültige JSON-Daten.');
     }
 
-    // Prüfen, ob ein Name für die Zuweisungsrunde vorhanden ist.
-    if (empty($data->name) || trim($data->name) === '') {
-        throw new Exception('Kein Name für die Zuweisungsrunde angegeben.');
-    }
-
     // Prüfen, ob Zuweisungsdetails vorhanden sind.
     if (empty($data->details) || !is_array($data->details)) {
         throw new Exception('Keine Zuweisungen empfangen.');
     }
 
-    // Master-Datensatz anlegen.
-    // Entspricht Tabelle: local_matrixzuweisung_master
-    $master = new stdClass();
-    $master->name = trim($data->name);
-    $master->timecreated = time();
-    $master->timemodified = time();
+    $masterid = null;
 
-    $masterid = $DB->insert_record(
-        'local_matrixzuweisung_master',
-        $master
-    );
+    // === START TRANSAKTION ===
+    $transaction = $DB->start_delegated_transaction();
 
-    // Jede einzelne Student-Hochschule-Zuweisung speichern.
-    // Entspricht Tabelle: local_matrixzuweisung_details
-    foreach ($data->details as $entry) {
+    try {
+        // === CASE 1: UPDATE einer existierenden Matrix ===
+        if (!empty($data->masterid) && $data->masterid > 0) {
+            $masterid = (int)$data->masterid;
 
-        // Ungültige Einträge überspringen.
-        if (
-            empty($entry->studentid) ||
-            empty($entry->universityid)
-        ) {
-            continue;
+            // Prüfen, ob die Matrix existiert
+            $master = $DB->get_record('local_matrixzuweisung_master', ['id' => $masterid]);
+            if (!$master) {
+                throw new Exception('Die ausgewählte Matrix wurde nicht gefunden.');
+            }
+
+            // Alte Details löschen
+            $DB->delete_records('local_matrixzuweisung_details', ['masterid' => $masterid]);
+
+            // Master aktualisieren (nur timemodified)
+            $master->timemodified = time();
+            $DB->update_record('local_matrixzuweisung_master', $master);
+        }
+        // === CASE 2: INSERT einer neuen Matrix ===
+        else {
+            // Prüfen, ob ein Name für die Zuweisungsrunde vorhanden ist.
+            if (empty($data->name) || trim($data->name) === '') {
+                throw new Exception('Kein Name für die Zuweisungsrunde angegeben.');
+            }
+
+            // Master-Datensatz anlegen.
+            // Entspricht Tabelle: local_matrixzuweisung_master
+            $master = new stdClass();
+            $master->name = trim($data->name);
+            $master->timecreated = time();
+            $master->timemodified = time();
+
+            $masterid = $DB->insert_record(
+                'local_matrixzuweisung_master',
+                $master
+            );
         }
 
-        $detail = new stdClass();
-        $detail->masterid = $masterid;
-        $detail->studentid = (int)$entry->studentid;
-        $detail->universityid = (int)$entry->universityid;
+        // Jede einzelne Student-Hochschule-Zuweisung speichern.
+        // Entspricht Tabelle: local_matrixzuweisung_details
+        foreach ($data->details as $entry) {
 
-        $DB->insert_record(
-            'local_matrixzuweisung_details',
-            $detail
-        );
+            // Ungültige Einträge überspringen.
+            if (
+                empty($entry->studentid) ||
+                empty($entry->universityid)
+            ) {
+                continue;
+            }
+
+            $detail = new stdClass();
+            $detail->masterid = $masterid;
+            $detail->studentid = (int)$entry->studentid;
+            $detail->universityid = (int)$entry->universityid;
+
+            $DB->insert_record(
+                'local_matrixzuweisung_details',
+                $detail
+            );
+        }
+
+        // === TRANSAKTION ERFOLGREICH COMMITEN ===
+        $transaction->allow_commit();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Zuweisungsmatrix wurde gespeichert.',
+            'masterid' => $masterid
+        ]);
+
+    } catch (Exception $e) {
+        // === TRANSAKTION ROLLBACK BEI FEHLER ===
+        $transaction->rollback($e);
     }
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Zuweisungsmatrix wurde gespeichert.',
-        'masterid' => $masterid
-    ]);
 
 } catch (Exception $e) {
 
