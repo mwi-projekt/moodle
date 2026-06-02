@@ -1,0 +1,44 @@
+<div class="dhbwio-application-overview">
+
+    <h3>{{title}}</h3>
+
+    {{#hasapplications}}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    {{#isadmin}}
+                        <th>Bewerber</th>
+                        <th>E-Mail</th>
+                    {{/isadmin}}
+                    <th>Erstellt</th>
+                    <th>Geändert</th>
+                    <th>Erstwunsch</th>
+                    <th>Status</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#applications}}
+                    <tr>
+                        {{#isadmin}}
+                            <td>{{applicantname}}</td>
+                            <td>{{email}}</td>
+                        {{/isadmin}}
+                        <td>{{timecreated}}</td>
+                        <td>{{timemodified}}</td>
+                        <td>{{firstchoice}}</td>
+                        <td>{{status}}</td>
+                        <td>
+                            {{{actions}}}
+                        </td>
+                    </tr>
+                {{/applications}}
+            </tbody>
+        </table>
+    {{/hasapplications}}
+
+    {{^hasapplications}}
+        <p>{{emptytext}}</p>
+    {{/hasapplications}}
+
+</div>

@@ -37,11 +37,6 @@ $fields = field_manager::get_fields($dataid);
 
 echo $OUTPUT->header();
 
-echo html_writer::link(
-    new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id]),
-    'Zurück zur Liste'
-);
-
 echo $OUTPUT->heading('Bewerbung anzeigen', 3);
 
 $groupedfields = [];
@@ -56,25 +51,24 @@ foreach ($fields as $field) {
 }
 
 $grouptitles = field_manager::get_group_titles();
+$groups = [];
 
 foreach ($groupedfields as $group => $groupfields) {
-    $title = $grouptitles[$group] ?? ucfirst($group);
-
-    echo $OUTPUT->heading($title, 4);
-
-    $table = new html_table();
-    $table->head = ['Feld', 'Wert'];
+    $fieldscontext = [];
 
     foreach ($groupfields as $field) {
         $value = entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
 
-        $table->data[] = [
-            s($field->name),
-            s($value),
+        $fieldscontext[] = [
+            'label' => $field->description ?: $field->name,
+            'value' => $value,
         ];
     }
 
-    echo html_writer::table($table);
+    $groups[] = [
+        'title' => $grouptitles[$group] ?? ucfirst($group),
+        'fields' => $fieldscontext,
+    ];
 }
 
 $reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
@@ -83,19 +77,16 @@ $reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
     'entryid' => $entryid,
 ]);
 
-echo html_writer::link($reviewurl, 'Bewerbung prüfen', [
-    'class' => 'btn btn-primary',
-]);
-
-echo html_writer::empty_tag('br');
-echo html_writer::empty_tag('br');
-
 $backurl = new moodle_url('/mod/dhbwio/view.php', [
     'id' => $cm->id,
 ]);
 
-echo html_writer::link($backurl, 'Zurück zur Übersicht', [
-    'class' => 'btn btn-secondary',
-]);
+$templatecontext = [
+    'groups' => $groups,
+    'reviewurl' => $reviewurl->out(false),
+    'backurl' => $backurl->out(false),
+];
+
+echo $OUTPUT->render_from_template('mod_dhbwio/application_view', $templatecontext);
 
 echo $OUTPUT->footer();

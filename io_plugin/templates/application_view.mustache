@@ -1,0 +1,31 @@
+<div class="dhbwio-application-view">
+<div class="mt-3">
+    <a href="{{backurl}}" class="btn btn-secondary">Zurück zur Übersicht</a>
+</div>
+    {{#groups}}
+        <section class="card mb-3">
+            <div class="card-header">
+                <h4 class="mb-0">{{title}}</h4>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-striped">
+                    <tbody>
+                        {{#fields}}
+                            <tr>
+                                <th scope="row" style="width: 30%;">{{label}}</th>
+                                <td>{{value}}</td>
+                            </tr>
+                        {{/fields}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {{/groups}}
+
+    <div class="mt-3">
+        <a href="{{reviewurl}}" class="btn btn-primary">Bewerbung prüfen</a>
+        <a href="{{backurl}}" class="btn btn-secondary">Zurück zur Übersicht</a>
+    </div>
+
+</div>
