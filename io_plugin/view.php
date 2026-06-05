@@ -113,6 +113,14 @@ if (has_capability('mod/dhbwio:managetemplates', $context)) {
 	);
 }
 
+if (has_capability('mod/dhbwio:manageuniversities', $context)) {
+	$tabs[] = new tabobject(
+		'fristen',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'fristen']),
+		get_string('nav_fristen', 'mod_dhbwio')
+	);
+}
+
 echo $OUTPUT->tabtree($tabs, $tab);
 
 // Display the content based on the selected tab
@@ -368,6 +376,90 @@ switch ($tab) {
 		// Check capability
 		require_capability('mod/dhbwio:viewreports', $context);
 		echo $OUTPUT->notification("Statistics feature is coming soon", 'info');
+		break;
+
+	case 'fristen':
+		require_capability('mod/dhbwio:manageuniversities', $context);
+
+		echo '<div class="dhbwio-fristen">';
+
+		// "Frist anlegen" button — nur für Manager
+		if (has_capability('mod/dhbwio:manageuniversities', $context)) {
+			$addurl = new moodle_url('/mod/dhbwio/frist.php', ['cmid' => $cm->id, 'action' => 'add']);
+			echo '<div class="dhbwio-actions mb-4">';
+			echo '<a href="' . $addurl . '" class="btn btn-primary">'
+				. get_string('frist_add', 'mod_dhbwio') . '</a>';
+			echo '</div>';
+		}
+
+		$fristen = $DB->get_records('dhbwio_fristen', ['dhbwio' => $dhbwio->id], 'jahrgang DESC, art');
+
+		if (empty($fristen)) {
+			echo $OUTPUT->notification(get_string('no_fristen', 'mod_dhbwio'), 'info');
+		} else {
+			$artlabels = [
+				'stipendium'         => get_string('frist_art_stipendium', 'mod_dhbwio'),
+				'bewerbung'          => get_string('frist_art_bewerbung', 'mod_dhbwio'),
+				'learning_agreement' => get_string('frist_art_learning_agreement', 'mod_dhbwio'),
+			];
+
+			echo $OUTPUT->box_start('generalbox');
+			$table = new html_table();
+			$table->head = [
+				get_string('frist_art', 'mod_dhbwio'),
+				get_string('frist_studiengang', 'mod_dhbwio'),
+				get_string('frist_jahrgang', 'mod_dhbwio'),
+				get_string('frist_deadline', 'mod_dhbwio'),
+				get_string('frist_kommentar', 'mod_dhbwio'),
+				get_string('actions', 'mod_dhbwio'),
+			];
+			$table->attributes['class'] = 'table table-striped table-hover';
+
+			foreach ($fristen as $frist) {
+				$artlabel = $artlabels[$frist->art] ?? $frist->art;
+				$sgLabel  = $frist->studiengang === 'alle'
+					? get_string('frist_alle_studiengaenge', 'mod_dhbwio')
+					: format_string($frist->studiengang);
+
+				$editurl = new moodle_url('/mod/dhbwio/frist.php', [
+					'cmid'    => $cm->id,
+					'action'  => 'edit',
+					'fristid' => $frist->id,
+				]);
+				$deleteurl = new moodle_url('/mod/dhbwio/frist.php', [
+					'cmid'    => $cm->id,
+					'action'  => 'delete',
+					'fristid' => $frist->id,
+					'sesskey' => sesskey(),
+				]);
+
+				$actions = [
+					html_writer::link($editurl,
+						$OUTPUT->pix_icon('t/edit', get_string('edit')),
+						['class' => 'btn btn-sm btn-outline-secondary']),
+					html_writer::link($deleteurl,
+						$OUTPUT->pix_icon('t/delete', get_string('delete')),
+						[
+							'class'   => 'btn btn-sm btn-outline-danger',
+							'onclick' => 'return confirm("' . get_string('frist_delete_confirm', 'mod_dhbwio') . '")',
+						]),
+				];
+
+				$table->data[] = [
+					$artlabel,
+					$sgLabel,
+					$frist->jahrgang,
+					!empty($frist->deadline) ? userdate($frist->deadline, get_string('strftimedate', 'langconfig')) : '—',
+					!empty($frist->kommentar) ? format_string($frist->kommentar) : '—',
+					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>',
+				];
+			}
+
+			echo html_writer::table($table);
+			echo $OUTPUT->box_end();
+		}
+
+		echo '</div>';
 		break;
 
 	case 'emailtemplates':

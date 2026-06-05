@@ -158,6 +158,27 @@ $string['nav_reports'] = 'Erfahrungsberichte';
 $string['nav_statistics'] = 'Statistiken';
 $string['nav_emailtemplates'] = 'E-Mail Vorlagen';
 $string['nav_applications'] = 'Bewerbungen';
+$string['nav_fristen']                    = 'Fristen';
+$string['fristen_coming_soon']            = 'Fristen-Verwaltung folgt in Kürze.';
+$string['frist_add']                      = 'Frist anlegen';
+$string['frist_edit']                     = 'Frist bearbeiten';
+$string['frist_manage']                   = 'Frist verwalten';
+$string['frist_save']                     = 'Speichern';
+$string['frist_saved']                    = 'Frist gespeichert.';
+$string['frist_deleted']                  = 'Frist gelöscht.';
+$string['frist_delete_confirm']           = 'Möchten Sie diese Frist wirklich löschen?';
+$string['no_fristen']                     = 'Keine Fristen vorhanden.';
+$string['frist_art']                      = 'Art der Frist';
+$string['frist_art_stipendium']           = 'Stipendienanmeldung';
+$string['frist_art_bewerbung']            = 'Bewerbung Auslandsaufenthalt';
+$string['frist_art_learning_agreement']   = 'Abgabe finales Learning Agreement';
+$string['frist_studiengang']              = 'Studiengang';
+$string['frist_alle_studiengaenge']       = 'Alle Studiengänge';
+$string['frist_jahrgang']                 = 'Jahrgang';
+$string['frist_jahrgang_placeholder']     = 'z. B. 2024 oder WS 2024/25';
+$string['frist_deadline']                 = 'Datum der Frist';
+$string['frist_kommentar']                = 'Kommentar';
+$string['frist_kommentar_placeholder']    = 'Zusätzliche Informationen zur Frist...';
 $string['nav_myapplications'] = 'Meine Bewerbungen';
 
 // Hochschulen

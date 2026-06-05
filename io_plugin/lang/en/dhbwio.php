@@ -132,6 +132,27 @@ $string['nav_statistics'] = 'Statistics';
 $string['nav_emailtemplates'] = 'Email Templates';
 $string['nav_applications'] = 'Applications';
 $string['nav_myapplications'] = 'My Applications';
+$string['nav_fristen']                    = 'Deadlines';
+$string['fristen_coming_soon']            = 'Deadline management coming soon.';
+$string['frist_add']                      = 'Add Deadline';
+$string['frist_edit']                     = 'Edit Deadline';
+$string['frist_manage']                   = 'Manage Deadline';
+$string['frist_save']                     = 'Save';
+$string['frist_saved']                    = 'Deadline saved.';
+$string['frist_deleted']                  = 'Deadline deleted.';
+$string['frist_delete_confirm']           = 'Are you sure you want to delete this deadline?';
+$string['no_fristen']                     = 'No deadlines found.';
+$string['frist_art']                      = 'Type of Deadline';
+$string['frist_art_stipendium']           = 'Scholarship Registration';
+$string['frist_art_bewerbung']            = 'Application Abroad';
+$string['frist_art_learning_agreement']   = 'Submission of Final Learning Agreement';
+$string['frist_studiengang']              = 'Study Programme';
+$string['frist_alle_studiengaenge']       = 'All Study Programmes';
+$string['frist_jahrgang']                 = 'Cohort Year';
+$string['frist_jahrgang_placeholder']     = 'e.g. 2024 or WS 2024/25';
+$string['frist_deadline']                 = 'Deadline Date';
+$string['frist_kommentar']                = 'Comment';
+$string['frist_kommentar_placeholder']    = 'Additional information about this deadline...';
 
 // Universities
 $string['university_name'] = 'University Name';

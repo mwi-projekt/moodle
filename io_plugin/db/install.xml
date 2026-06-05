@@ -310,5 +310,27 @@
         <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="dhbwio_dataform_fields" REFFIELDS="id" />
       </KEYS>
     </TABLE>
+    <TABLE NAME="dhbwio_fristen" COMMENT="Deadlines managed by IO staff">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="art" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type: stipendium|bewerbung|learning_agreement"/>
+        <FIELD NAME="studiengang" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Study programme or alle"/>
+        <FIELD NAME="jahrgang" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Cohort year (free text)"/>
+        <FIELD NAME="deadline" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp of the deadline date"/>
+        <FIELD NAME="kommentar" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional comment"/>
+        <FIELD NAME="authorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who created the record"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_authorid" TYPE="foreign" FIELDS="authorid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_jahrgang" UNIQUE="false" FIELDS="dhbwio, jahrgang"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

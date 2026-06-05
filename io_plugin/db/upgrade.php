@@ -490,5 +490,65 @@ function xmldb_dhbwio_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
     }
 
+    if ($oldversion < 2026060501) {
+
+        // Create dhbwio_fristen table.
+        $table = new xmldb_table('dhbwio_fristen');
+        $table->add_field('id',           XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('dhbwio',       XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('art',          XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('studiengang',  XMLDB_TYPE_CHAR,    '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('jahrgang',     XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('deadline',     XMLDB_TYPE_INTEGER, '10',  null, null,           null, null);
+        $table->add_field('kommentar',    XMLDB_TYPE_TEXT,    null,  null, null,           null, null);
+        $table->add_field('authorid',     XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated',  XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary',    XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_dhbwio',  XMLDB_KEY_FOREIGN, ['dhbwio'],   'dhbwio', ['id']);
+        $table->add_key('fk_author',  XMLDB_KEY_FOREIGN, ['authorid'], 'user',   ['id']);
+
+        $table->add_index('dhbwio_jahrgang', XMLDB_INDEX_NOTUNIQUE, ['dhbwio', 'jahrgang']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2026060501, 'dhbwio');
+    }
+
+    if ($oldversion < 2026060502) {
+
+        // Add deadline column to dhbwio_fristen (missed in 2026060501).
+        $table = new xmldb_table('dhbwio_fristen');
+
+        // Change jahrgang from int to char if needed.
+        $jagfield = new xmldb_field('jahrgang', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        if ($dbman->field_exists($table, $jagfield)) {
+            $dbman->change_field_type($table, $jagfield);
+        }
+
+        // Add deadline field.
+        $deadlinefield = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
+        if (!$dbman->field_exists($table, $deadlinefield)) {
+            $dbman->add_field($table, $deadlinefield);
+        }
+
+        upgrade_mod_savepoint(true, 2026060502, 'dhbwio');
+    }
+
+    if ($oldversion < 2026060503) {
+
+        // Ensure deadline column exists in dhbwio_fristen.
+        $table = new xmldb_table('dhbwio_fristen');
+        $field = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026060503, 'dhbwio');
+    }
+
     return true;
 }
