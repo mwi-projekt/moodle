@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="20260519" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="2026060506" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="dhbwio" COMMENT="Each record represents one dhbwio activity instance">
       <FIELDS>
