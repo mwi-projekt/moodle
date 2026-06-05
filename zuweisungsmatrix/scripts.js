@@ -6,8 +6,8 @@ function allowDrop(event){
 function drop(event) {
     event.preventDefault();
     event.target.classList.remove("over");
-    var id = event.dataTransfer.getData("text/plain");
-    var dragged = document.getElementById(id);
+    const id = event.dataTransfer.getData("text/plain");
+    const dragged = document.getElementById(id);
 
     // Direktes Ziel
     let dropTarget = event.target;
@@ -26,7 +26,8 @@ function drop(event) {
     if (dropTarget.classList.contains('drop-cell')) {
         if (dropTarget.children.length === 0) {
             dropTarget.appendChild(dragged);
-            // Wünsche ausblenden
+            markAsChanged();
+            // ...existing code...
             let wishes = dragged.querySelector('.wuensche');
             if (wishes) {
                 const inMatrix = dropTarget.closest("#matrix");
@@ -38,7 +39,8 @@ function drop(event) {
     // Drop zurück in Studentenliste
     else if (dropTarget.id === 'studentList') {
         dropTarget.appendChild(dragged);
-        // Wünsche einblenden
+        markAsChanged();
+        // ...existing code...
         let wishes = dragged.querySelector('.wuensche');
         if (wishes) {
             const showWishes = document.getElementById("showWishes")?.checked;
@@ -63,6 +65,7 @@ function resetZuweisung() {
             wishes.style.display = 'block';
         }
     });
+    markAsChanged();
     updateEmptyInfoVisibility();
 }
 
@@ -128,11 +131,11 @@ function automatischZuteilen() {
     const studenten = Array.from(document.querySelectorAll(".student"));
     studenten.forEach(student => {
         const wuensche = Array.from(student.querySelectorAll(".wuensche small"))[0].innerText.split('\n');
-        const wünsche = wuensche.map(w => w.replace(/^\d\.\s*/, '').trim());
+        const wunsche = wuensche.map(w => w.replace(/^\d\.\s*/, '').trim());
 
         let zugewiesen = false;
-        for (let i = 0; i < wünsche.length; i++) {
-            const hochschule = wünsche[i];
+        for (let i = 0; i < wunsche.length; i++) {
+            const hochschule = wunsche[i];
             if (!hochschulNamen.includes(hochschule)) continue;
 
             if (belegung[hochschule] < kapazitaet[hochschule]) {
@@ -160,6 +163,7 @@ function automatischZuteilen() {
             }
         }
     });
+    markAsChanged();
     updateEmptyInfoVisibility();
 }
 
@@ -199,4 +203,408 @@ function updateEmptyInfoVisibility() {
 
     const hasStudents = studentList.querySelectorAll('.student').length > 0;
     emptyInfo.style.display = hasStudents ? 'none' : 'block';
+}
+
+let matrixOpenSearchTimer = null;
+let matrixOpenCurrentList = [];
+let currentLoadedMatrixId = null;  // ID der derzeit geöffneten Matrix (null wenn neu)
+let hasUnsavedChanges = false;     // Flag für ungespeicherte Änderungen
+
+function markAsChanged() {
+    if (!hasUnsavedChanges) {
+        hasUnsavedChanges = true;
+        updateStatusDisplay();
+    }
+}
+
+function updateStatusDisplay() {
+    const statusEl = document.getElementById('matrixStatus');
+    if (!statusEl) return;
+
+    if (hasUnsavedChanges) {
+        statusEl.textContent = '⚠ Ungespeicherte Änderungen';
+        statusEl.style.color = '#e1001a';
+        statusEl.style.fontWeight = 'bold';
+    } else if (currentLoadedMatrixId) {
+        statusEl.textContent = '✓ Matrix gespeichert';
+        statusEl.style.color = '#0a8c0a';
+        statusEl.style.fontWeight = 'normal';
+    } else {
+        statusEl.textContent = '';
+    }
+}
+
+function getMatrixOpenModalElements() {
+    return {
+        modal: document.getElementById('matrixOpenModal'),
+        searchInput: document.getElementById('matrixSearchInput'),
+        select: document.getElementById('matrixSelect'),
+        status: document.getElementById('matrixOpenStatus')
+    };
+}
+
+function setMatrixOpenStatus(message) {
+    const { status } = getMatrixOpenModalElements();
+    if (status) {
+        status.textContent = message || '';
+    }
+}
+
+function renderMatrixOptions(matrices) {
+    const { select } = getMatrixOpenModalElements();
+    if (!select) return;
+
+    select.innerHTML = '';
+    matrixOpenCurrentList = Array.isArray(matrices) ? matrices : [];
+
+    if (matrixOpenCurrentList.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Keine passenden Matrizen gefunden';
+        option.disabled = true;
+        option.selected = true;
+        select.appendChild(option);
+        return;
+    }
+
+    matrixOpenCurrentList.forEach((matrix, index) => {
+        const option = document.createElement('option');
+        option.value = String(matrix.id);
+        const dateText = formatMatrixTimestamp(matrix.timemodified);
+        option.textContent = dateText
+            ? `${matrix.name} — gespeichert am: ${dateText}`
+            : matrix.name;
+        if (index === 0) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+}
+
+async function loadMatrixList(search = '') {
+    const params = new URLSearchParams({ action: 'list' });
+    if (search.trim() !== '') {
+        params.set('search', search.trim());
+    }
+
+    const response = await fetch(`load_matrix.php?${params.toString()}`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Unbekannter Fehler beim Laden der Matrizenliste.');
+    }
+
+    return result.matrices || [];
+}
+
+async function refreshMatrixOpenList(search = '') {
+    setMatrixOpenStatus('Lade Matrizen...');
+
+    try {
+        const matrices = await loadMatrixList(search);
+        renderMatrixOptions(matrices);
+
+        if (matrices.length === 0) {
+            setMatrixOpenStatus('Keine gespeicherten Matrizen gefunden.');
+        } else {
+            setMatrixOpenStatus(`${matrices.length} Matrizen gefunden.`);
+        }
+    } catch (error) {
+        console.error('Fehler beim Laden der Matrizenliste:', error);
+        renderMatrixOptions([]);
+        setMatrixOpenStatus('Fehler beim Laden der Matrizenliste.');
+    }
+}
+
+function openSavedMatrix() {
+    const { modal, searchInput } = getMatrixOpenModalElements();
+    if (!modal) return;
+
+    modal.hidden = false;
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    void refreshMatrixOpenList('');
+    if (searchInput) {
+        searchInput.focus();
+    }
+}
+
+function closeMatrixOpenModal() {
+    const { modal } = getMatrixOpenModalElements();
+    if (!modal) return;
+
+    modal.hidden = true;
+    setMatrixOpenStatus('');
+}
+
+async function confirmOpenSelectedMatrix() {
+    const { select } = getMatrixOpenModalElements();
+    if (!select || !select.value) {
+        alert('Bitte zuerst eine Matrix auswählen.');
+        return;
+    }
+
+    const masterid = parseInt(select.value, 10);
+    if (Number.isNaN(masterid) || masterid <= 0) {
+        alert('Bitte eine gültige Matrix auswählen.');
+        return;
+    }
+
+    try {
+        const loadResponse = await fetch(`load_matrix.php?action=load&masterid=${masterid}`);
+        const loadResult = await loadResponse.json();
+
+        if (!loadResponse.ok || !loadResult.success) {
+            alert('Fehler beim Öffnen der Matrix: ' + (loadResult.message || 'Unbekannter Fehler.'));
+            return;
+        }
+
+        const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid);
+        closeMatrixOpenModal();
+
+        let message = `Matrix "${loadResult.matrix.name}" wurde geöffnet.`;
+        if (restoreResult.missingStudents.length > 0) {
+            message += `\nNicht gefundene Studierende: ${restoreResult.missingStudents.join(', ')}`;
+        }
+        if (restoreResult.missingUniversities.length > 0) {
+            message += `\nNicht genügend freie Plätze für Hochschul-IDs: ${restoreResult.missingUniversities.join(', ')}`;
+        }
+
+        alert(message);
+    } catch (error) {
+        console.error('Fehler beim Öffnen der Matrix:', error);
+        alert('Beim Öffnen der Matrix ist ein technischer Fehler aufgetreten.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const { searchInput, select, modal } = getMatrixOpenModalElements();
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            window.clearTimeout(matrixOpenSearchTimer);
+            matrixOpenSearchTimer = window.setTimeout(() => {
+                void refreshMatrixOpenList(searchInput.value || '');
+            }, 250);
+        });
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeMatrixOpenModal();
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                void confirmOpenSelectedMatrix();
+            }
+        });
+    }
+
+    if (select) {
+        select.addEventListener('dblclick', () => {
+            void confirmOpenSelectedMatrix();
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeMatrixOpenModal();
+            }
+        });
+    }
+});
+
+function formatMatrixTimestamp(timestamp) {
+    if (!timestamp) return '';
+    try {
+        return new Intl.DateTimeFormat('de-DE', {
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }).format(new Date(timestamp * 1000));
+    } catch (error) {
+        return '';
+    }
+}
+
+function restoreMatrixDetails(details, masterid = null) {
+    resetZuweisung();
+
+    // Setze die Matrix-ID wenn eine geladen wurde
+    if (masterid) {
+        currentLoadedMatrixId = masterid;
+    }
+
+    const studentMap = {};
+    document.querySelectorAll('.student').forEach(student => {
+        studentMap[String(student.dataset.studentid)] = student;
+    });
+
+    const cellsByUniversity = {};
+    document.querySelectorAll('#matrix tbody td.drop-cell:not(.disabled)').forEach(cell => {
+        const universityId = String(cell.dataset.universityid);
+        if (!cellsByUniversity[universityId]) {
+            cellsByUniversity[universityId] = [];
+        }
+        cellsByUniversity[universityId].push(cell);
+    });
+
+    const missingStudents = [];
+    const missingUniversities = [];
+
+    details.forEach(detail => {
+        const student = studentMap[String(detail.studentid)];
+        if (!student) {
+            missingStudents.push(detail.studentid);
+            return;
+        }
+
+        const targetCells = cellsByUniversity[String(detail.universityid)] || [];
+        const targetCell = targetCells.find(cell => cell.children.length === 0);
+
+        if (!targetCell) {
+            missingUniversities.push(detail.universityid);
+            return;
+        }
+
+        targetCell.appendChild(student);
+    });
+
+    toggleWunschAnzeige();
+    updateEmptyInfoVisibility();
+
+    // Nach dem Laden: keine ungespeicherten Änderungen
+    hasUnsavedChanges = false;
+    updateStatusDisplay();
+
+    return {
+        missingStudents,
+        missingUniversities
+    };
+}
+
+// openSavedMatrix() wird jetzt als Dialog-Öffner verwendet.
+
+/**
+ * Liest die aktuell sichtbare Zuweisungsmatrix aus dem HTML aus
+ * und erstellt daraus eine saubere Datenstruktur für die Datenbank.
+ *
+ * Ergebnis-Beispiel:
+ * [
+ *   {
+ *     studentid: 5,
+ *     universityid: 2,
+ *     platz: 1
+ *   },
+ *   {
+ *     studentid: 8,
+ *     universityid: 3,
+ *     platz: 2
+ *   }
+ * ]
+ */
+function collectMatrixData() {
+    const details = [];
+
+    document.querySelectorAll("#matrix tbody tr").forEach(row => {
+        const cells = row.querySelectorAll("td.drop-cell");
+
+        cells.forEach(cell => {
+            if (cell.classList.contains("disabled")) return;
+
+            const student = cell.querySelector(".student");
+            if (!student) return;
+
+            details.push({
+                studentid: student.dataset.studentid,
+                universityid: cell.dataset.universityid
+            });
+        });
+    });
+
+    return details;
+}
+
+
+/**
+ * Sendet die aktuelle Matrix per AJAX an Moodle/PHP,
+ * damit die Zuweisungen dauerhaft in der Datenbank gespeichert werden.
+ *
+ * Falls currentLoadedMatrixId gesetzt: UPDATE des bestehenden Eintrags
+ * Falls currentLoadedMatrixId null: INSERT mit Namensdialog
+ */
+async function saveMatrixToDatabase() {
+    const details = collectMatrixData();
+
+    // Nicht speichern, wenn keine Zuweisungen vorhanden sind
+    if (details.length === 0) {
+        alert("Es gibt keine Zuweisungen zum Speichern.");
+        return;
+    }
+
+    let matrixName = null;
+    let masterid = null;
+
+    // Wenn Matrix geladen: direkt Update ohne Dialog
+    if (currentLoadedMatrixId) {
+        masterid = currentLoadedMatrixId;
+    } else {
+        // Neue Matrix: Dialog für Namen
+        const input = prompt(
+            "Bitte Namen für die Zuweisungsrunde eingeben:",
+            "Sommersemester 2026"
+        );
+
+        // Speichern abbrechen, wenn der Nutzer auf "Abbrechen" klickt
+        if (input === null) {
+            return;
+        }
+
+        matrixName = input.trim();
+
+        // Leere Namen verhindern
+        if (matrixName === "") {
+            alert("Bitte einen gültigen Namen eingeben.");
+            return;
+        }
+    }
+
+    try {
+        const response = await fetch("save_matrix.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: matrixName,
+                masterid: masterid,
+                details: details
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Bei erfolgreicher Speicherung (INSERT): die neue ID speichern
+            if (result.masterid && !currentLoadedMatrixId) {
+                currentLoadedMatrixId = result.masterid;
+            }
+
+            hasUnsavedChanges = false;
+            updateStatusDisplay();
+
+            alert("Zuweisungsmatrix wurde gespeichert.");
+        } else {
+            alert("Fehler: " + (result.message || "Unbekannter Fehler."));
+        }
+
+    } catch (error) {
+        console.error("Fehler beim Speichern:", error);
+        alert("Beim Speichern ist ein technischer Fehler aufgetreten.");
+    }
 }

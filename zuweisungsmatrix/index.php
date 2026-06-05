@@ -33,7 +33,7 @@ echo $OUTPUT->header();
 
 // Abruf der Hoschulen über dhbwio-Plugin
 $hochschulen_raw = $DB->get_records_sql("
-    SELECT name, available_slots
+    SELECT id, name, available_slots
     FROM {dhbwio_universities}
     WHERE active = 1
     ORDER BY name
@@ -42,36 +42,33 @@ $hochschulen_raw = $DB->get_records_sql("
 $hochschulen = [];
 foreach ($hochschulen_raw as $record) {
     $hochschulen[] = [
+        'id' => (int) $record->id,
         'name' => $record->name,
         'plätze' => (int) $record->available_slots
     ];
 }
-
-// === STUDIERENDE AUS DATAFORM HOLEN ===
-$dataformid = 1;
 
 $entriesql = "
     SELECT e.id AS entryid,
            MAX(CASE WHEN f.name = 'VORNAME' THEN c.content ELSE NULL END) AS vorname,
            MAX(CASE WHEN f.name = 'NACHNAME' THEN c.content ELSE NULL END) AS nachname,
            MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
-	       MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
-	       MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch
+           MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
+           MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch
     FROM {dataform_entries} e
     JOIN {dataform_contents} c ON c.entryid = e.id
     JOIN {dataform_fields} f ON f.id = c.fieldid
     LEFT JOIN {dhbwio_universities} uniw1 
-    ON uniw1.id = c.content AND f.name = 'ERSTWUNSCH'
+        ON uniw1.id = c.content AND f.name = 'ERSTWUNSCH'
     LEFT JOIN {dhbwio_universities} uniw2 
-    ON uniw2.id = c.content AND f.name = 'ZWEITWUNSCH'
+        ON uniw2.id = c.content AND f.name = 'ZWEITWUNSCH'
     LEFT JOIN {dhbwio_universities} uniw3 
-    ON uniw3.id = c.content AND f.name = 'DRITTWUNSCH'
-    WHERE e.dataid = ?
-    AND e.state <> 3
+        ON uniw3.id = c.content AND f.name = 'DRITTWUNSCH'
+    WHERE e.state <> 3
     GROUP BY e.id
 ";
 
-$studenten = $DB->get_records_sql($entriesql, [$dataformid]);
+$studenten = $DB->get_records_sql($entriesql);
 // Bestehende Zuweisungen abrufen
 //$zuweisungen = $DB->get_records('local_matrixzuweisung', null, '', 'studentid, hochschule');
 
@@ -89,8 +86,10 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
             <?php
             $idx = 0;
             foreach ($studenten as $s) {
-                $id = "student-$idx";
-                echo "<div class='student' id='$id' draggable='true' 
+                $id = "student-" . (int)$s->entryid;
+
+                echo "<div class='student' id='$id' draggable='true'
+                    data-studentid='" . (int)$s->entryid . "'
                     ondragstart=\"event.dataTransfer.setData('text/plain', '$id')\">
                     <strong>" . htmlspecialchars($s->vorname . ' ' . $s->nachname) . "</strong><br>
                     <div class='wuensche'>
@@ -101,7 +100,6 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
                     </small>
                     </div>
                     </div>";
-                $idx++;
             }
             ?>
         </div>
@@ -133,8 +131,12 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
                         <td>Platz <?= $i + 1 ?></td>
                         <?php foreach ($hochschulen as $h): ?>
                             <?php if ($i < $h['plätze']): ?>
-                                <td class="drop-cell" ondragover="allowDrop(event)" ondragleave="this.classList.remove('over')"
-                                    ondrop="drop(event)" ondragenter="this.classList.add('over')"></td>
+                                <td class="drop-cell"
+                                    data-universityid="<?= (int)$h['id'] ?>"
+                                    ondragover="allowDrop(event)"
+                                    ondragleave="this.classList.remove('over')"
+                                    ondrop="drop(event)"
+                                    ondragenter="this.classList.add('over')"></td>
                             <?php else: ?>
                                 <td class="drop-cell disabled"></td>
                             <?php endif; ?>
@@ -147,14 +149,39 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
 </div>
 
 <!--Buttons: Reset, Zuweiungs, Export-->
-<div style="margin-top: 20px; display: flex; gap: 10px;">
-    <button id="resetBtn" class="red-button" onclick="resetZuweisung()">Reset</button>
-    <button id="submitBtn" class="red-button" onclick="automatischZuteilen()">Zuteilung</button>
+<div id="buttonRow" style="margin-top: 20px; display: flex; gap: 12px; align-items: center;">
+    <button id="submitBtn" class="red-button red-button-primary" onclick="automatischZuteilen()">Zuteilung</button>
+    <button id="saveBtn" type="button" class="red-button red-button-secondary" onclick="saveMatrixToDatabase()">Speichern</button>
+    <button id="openBtnInline" type="button" class="red-button red-button-secondary" onclick="openSavedMatrix()">Öffnen</button>
     <form id="exportForm" method="post" action="export.php" style="display:inline;">
         <input type="hidden" name="matrixdata" id="matrixdata">
         <input type="hidden" name="hochschulnamen" id="hochschulnamen">
-        <button type="submit" class="red-button" onclick="prepareExport()">Export</button>
+        <button id="exportBtn" type="submit" class="red-button red-button-tertiary" onclick="prepareExport()">Export</button>
     </form>
+    <button id="resetBtn" class="red-button red-button-tertiary" onclick="resetZuweisung()">Reset</button>
+    <div id="matrixStatus" style="margin-left: auto; font-size: 14px; font-weight: normal;"></div>
+</div>
+
+<div id="matrixOpenModal" class="matrix-modal" hidden>
+    <div class="matrix-modal-content" role="dialog" aria-modal="true" aria-labelledby="matrixOpenTitle">
+        <div class="matrix-modal-header">
+            <h3 id="matrixOpenTitle">Gespeicherte Matrix öffnen</h3>
+            <button type="button" class="matrix-modal-close" onclick="closeMatrixOpenModal()" aria-label="Dialog schließen">×</button>
+        </div>
+
+        <label for="matrixSearchInput" class="matrix-modal-label">Nach Name suchen</label>
+        <input id="matrixSearchInput" type="text" class="matrix-search-input" placeholder="z. B. Sommersemester 2026">
+
+        <label for="matrixSelect" class="matrix-modal-label">Matrix auswählen</label>
+        <select id="matrixSelect" class="matrix-select" size="10"></select>
+
+        <div id="matrixOpenStatus" class="matrix-modal-status"></div>
+
+        <div class="matrix-modal-actions">
+            <button type="button" class="red-button" onclick="confirmOpenSelectedMatrix()">Öffnen</button>
+            <button type="button" class="red-button" onclick="closeMatrixOpenModal()">Abbrechen</button>
+        </div>
+    </div>
 </div>
 
 

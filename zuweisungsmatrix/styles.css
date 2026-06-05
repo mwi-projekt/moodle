@@ -12,6 +12,44 @@ button.red-button:hover {
     background-color: #8c0011;
 }
 
+button.red-button-primary {
+    opacity: 1;
+}
+
+button.red-button-primary:hover {
+    background-color: #8c0011;
+}
+
+button.red-button-secondary {
+    opacity: 1;
+}
+
+button.red-button-secondary:hover {
+    background-color: #8c0011;
+}
+
+/* Make all action buttons identical size and alignment */
+#buttonRow .red-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 140px;
+    padding: 10px 18px;
+    font-size: 16px;
+    height: 44px;
+}
+
+#buttonRow .red-button { opacity: 1; }
+
+#buttonRow .red-button-tertiary {
+    opacity: 0.65;
+}
+
+#buttonRow .red-button-tertiary:hover {
+    opacity: 1;
+}
+
 .student {
     padding: 5px;
     margin: 5px;
@@ -60,6 +98,86 @@ h3 {
     -ms-overflow-style: none;
 }
 
-#studentlist::--webkit-scrollbar {
+#studentList::-webkit-scrollbar {
     display: none;
 }
+
+.matrix-modal[hidden] {
+    display: none;
+}
+
+.matrix-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.matrix-modal-content {
+    width: min(720px, calc(100vw - 32px));
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    font-family: "Avenir Next", sans-serif;
+}
+
+.matrix-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.matrix-modal-close {
+    background: transparent;
+    color: #333;
+    border: none;
+    font-size: 30px;
+    line-height: 1;
+    padding: 0 6px;
+    cursor: pointer;
+}
+
+.matrix-modal-label {
+    display: block;
+    margin: 10px 0 6px;
+    font-weight: bold;
+}
+
+.matrix-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #bdbdbd;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+.matrix-select {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 220px;
+    border: 1px solid #bdbdbd;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.matrix-modal-status {
+    min-height: 24px;
+    margin-top: 8px;
+    color: #555;
+    font-size: 14px;
+}
+
+.matrix-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
