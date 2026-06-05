@@ -32,8 +32,10 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     $dbman = $DB->get_manager();
 
+    $newversion = 2026060506;
+
     // Add missing fields for DataForm integration and utilization settings
-    if ($oldversion < 2025052601) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio to be updated
         $table = new xmldb_table('dhbwio');
@@ -88,11 +90,11 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // dhbwio savepoint reached
-        upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     // Add email log table
-    if ($oldversion < 2025062000) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_email_log to be created
         $table = new xmldb_table('dhbwio_email_log');
@@ -121,11 +123,11 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // Update version number
-        upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     // Add DataForm view fields for link generation
-    if ($oldversion < 2025062300) {
+    if ($oldversion < $newversion) {
 
         // Define field dataform_overview_view_id to be added to dhbwio.
         $table = new xmldb_table('dhbwio');
@@ -144,10 +146,10 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
-    if ($oldversion < 2026051900) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_dataform.
         $table = new xmldb_table('dhbwio_dataform');
@@ -306,9 +308,9 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->create_table($table);
         }
 
-        upgrade_mod_savepoint(true, 2026051900, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
-    if ($oldversion < 2026052201) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_application_status.
         $table = new xmldb_table('dhbwio_application_status');
@@ -415,10 +417,10 @@ function xmldb_dhbwio_upgrade($oldversion)
 
         $dbman->add_key($entrytable, $key);
 
-        upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
-    if ($oldversion < 2026052301) {
+    if ($oldversion < $newversion) {
 
         $table = new xmldb_table('dhbwio_dataform_fields');
 
@@ -487,10 +489,10 @@ function xmldb_dhbwio_upgrade($oldversion)
             $DB->set_field('dhbwio_dataform_fields', 'sortorder', $sortorder, ['name' => $name]);
         }
 
-        upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
-    if ($oldversion < 2026060401) {
+    if ($oldversion < $newversion) {
 
         $table = new xmldb_table('dhbwio_studyprograms');
 
@@ -548,7 +550,7 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2026060401, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     return true;
