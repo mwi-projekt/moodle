@@ -7,14 +7,14 @@
             <thead>
                 <tr>
                     {{#isadmin}}
-                        <th>Bewerber</th>
-                        <th>Studiengang</th>
+                        <th>{{#str}} applicant_name, dhbwio {{/str}}</th>
+                        <th>{{#str}} studyprogram, dhbwio {{/str}}</th>
                     {{/isadmin}}
-                    <th>Erstellt</th>
-                    <th>Geändert</th>
-                    <th>Erstwunsch</th>
-                    <th>Status</th>
-                    <th>Aktion</th>
+                <th>{{#str}} created, dhbwio {{/str}}</th>
+                <th>{{#str}} modified, dhbwio {{/str}}</th>
+                <th>{{#str}} firstchoice, dhbwio {{/str}}</th>
+                <th>{{#str}} status, dhbwio {{/str}}</th>
+                <th>{{#str}} action, dhbwio {{/str}}</th>
                 </tr>
             </thead>
             <tbody>
