@@ -111,6 +111,18 @@ $backurl = new moodle_url('/mod/dhbwio/view.php', [
     'id' => $cm->id,
 ]);
 
+$getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+    $field = field_manager::get_field_by_name($dataid, $fieldname);
+
+    if (!$field) {
+        return '';
+    }
+
+    return entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
+};
+
+$acceptedchoicelabel = entry_manager::get_accepted_choice_label($entry, $getvalue);
+
 $templatecontext = [
     'fields' => $fieldcontext,
     'reviewurl' => $reviewurl->out(false),
@@ -119,6 +131,7 @@ $templatecontext = [
     'statusclass' => $statusclass,
     'showreviewresult' => $showreviewresult,
     'reviewfields' => $reviewcontext,
+    'acceptedchoicelabel' => s($acceptedchoicelabel),
 ];
 
 echo $OUTPUT->render_from_template('mod_dhbwio/application_view', $templatecontext);

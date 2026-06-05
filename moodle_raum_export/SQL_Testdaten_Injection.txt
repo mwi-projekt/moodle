@@ -1,5 +1,4 @@
 -- Clean-Slate in SQL
-
 SET FOREIGN_KEY_CHECKS = 0;
 
 DELETE FROM mdl_dhbwio_dataform_contents;
@@ -7,10 +6,18 @@ DELETE FROM mdl_dhbwio_dataform_entries;
 DELETE FROM mdl_dhbwio_dataform_fields;
 DELETE FROM mdl_dhbwio_dataform;
 
+DELETE FROM mdl_dhbwio_electives;
+DELETE FROM mdl_dhbwio_studytracks;
+DELETE FROM mdl_dhbwio_studyprograms;
+
 ALTER TABLE mdl_dhbwio_dataform_contents AUTO_INCREMENT = 1;
 ALTER TABLE mdl_dhbwio_dataform_entries AUTO_INCREMENT = 1;
 ALTER TABLE mdl_dhbwio_dataform_fields AUTO_INCREMENT = 1;
 ALTER TABLE mdl_dhbwio_dataform AUTO_INCREMENT = 1;
+
+ALTER TABLE mdl_dhbwio_electives AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studytracks AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studyprograms AUTO_INCREMENT = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -18,6 +25,13 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Testdatengenerierung via SQL
 
 -- ACHTUNG: Die Einträge für hiesige Studiengänge werden in Zukunft noch über eine separate Tabelle gesteuert!
+
+-- Die @dataid kann ohne den Clean-Slate an den Kurs angepasst werden
+-- Einfach die ID aus folgender Query nehmen:
+-- SELECT
+-- *
+-- FROM mdl_dhbwio_dataform
+-- 
 
 SET @dataid = 1;
 
@@ -197,3 +211,33 @@ INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
 (@entryid, 32, 'Ja'),
 (@entryid, 33, 'Nein'),
 (@entryid, 34, 'Nein');
+
+
+
+--------------- STUDIENGÄNGE
+
+INSERT INTO mdl_dhbwio_studyprograms
+(de_name, en_name, active, sortorder, timecreated, timemodified)
+VALUES
+('Angewandte Gesundheits- und Pflegewissenschaften', 'Applied Health and Nursing Sciences', 1, 10, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Angewandte Hebammenwissenschaft', 'Applied Midwifery Science', 1, 20, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Physician Assistant / Arztassistent', 'Physician Assistant', 1, 30, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Elektro- und Informationstechnik', 'Electrical and Information Engineering', 1, 40, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Informatik', 'Computer Science', 1, 50, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Maschinenbau', 'Mechanical Engineering', 1, 60, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Mechatronik', 'Mechatronics', 1, 70, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Papiertechnik', 'Paper Technology', 1, 80, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sicherheitswesen', 'Safety Engineering', 1, 90, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sustainable Science and Technology', 'Sustainable Science and Technology', 1, 100, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsingenieurwesen', 'Industrial Engineering', 1, 110, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Bank', 'Business Administration - Banking', 1, 120, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Deutsch-Franz. Management', 'Business Administration - Franco-German Management', 1, 130, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Business Management', 'Business Administration - Digital Business Management', 1, 140, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Commerce Management', 'Business Administration - Digital Commerce Management', 1, 150, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Handel', 'Business Administration - Retail Management', 1, 160, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Industrie', 'Business Administration - Industry', 1, 170, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Versicherung', 'Business Administration - Insurance', 1, 180, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Data Science und Künstliche Intelligenz', 'Data Science and Artificial Intelligence', 1, 190, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('RSW - Steuern und Prüfungswesen', 'Accounting, Taxation and Auditing', 1, 200, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Unternehmertum', 'Entrepreneurship', 1, 210, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsinformatik', 'Business Information Systems', 1, 220, UNIX_TIMESTAMP(), UNIX_TIMESTAMP());

@@ -32,8 +32,10 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     $dbman = $DB->get_manager();
 
+    $newversion = 2026060506;
+
     // Add missing fields for DataForm integration and utilization settings
-    if ($oldversion < 2025052601) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio to be updated
         $table = new xmldb_table('dhbwio');
@@ -88,11 +90,11 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // dhbwio savepoint reached
-        upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     // Add email log table
-    if ($oldversion < 2025062000) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_email_log to be created
         $table = new xmldb_table('dhbwio_email_log');
@@ -121,11 +123,11 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // Update version number
-        upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     // Add DataForm view fields for link generation
-    if ($oldversion < 2025062300) {
+    if ($oldversion < $newversion) {
 
         // Define field dataform_overview_view_id to be added to dhbwio.
         $table = new xmldb_table('dhbwio');
@@ -144,10 +146,10 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
-    if ($oldversion < 2026051900) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_dataform.
         $table = new xmldb_table('dhbwio_dataform');
@@ -306,9 +308,9 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->create_table($table);
         }
 
-        upgrade_mod_savepoint(true, 2026051900, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
-    if ($oldversion < 2026052201) {
+    if ($oldversion < $newversion) {
 
         // Define table dhbwio_application_status.
         $table = new xmldb_table('dhbwio_application_status');
@@ -415,10 +417,10 @@ function xmldb_dhbwio_upgrade($oldversion)
 
         $dbman->add_key($entrytable, $key);
 
-        upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
-    if ($oldversion < 2026052301) {
+    if ($oldversion < $newversion) {
 
         $table = new xmldb_table('dhbwio_dataform_fields');
 
@@ -487,7 +489,68 @@ function xmldb_dhbwio_upgrade($oldversion)
             $DB->set_field('dhbwio_dataform_fields', 'sortorder', $sortorder, ['name' => $name]);
         }
 
-        upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
+    }
+
+    if ($oldversion < $newversion) {
+
+        $table = new xmldb_table('dhbwio_studyprograms');
+
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('de_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('en_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('dhbwio_studytracks');
+
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('studyprogramid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('de_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('en_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('studyprogramid', XMLDB_KEY_FOREIGN, ['studyprogramid'], 'dhbwio_studyprograms', ['id']);
+
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('dhbwio_electives');
+
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('studytrackid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('de_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('en_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('studytrackid', XMLDB_KEY_FOREIGN, ['studytrackid'], 'dhbwio_studytracks', ['id']);
+
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('dhbwio_dataform_entries');
+        $field = new xmldb_field('acceptedchoice', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'statusid');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
     if ($oldversion < 2026060501) {

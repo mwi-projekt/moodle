@@ -35,6 +35,17 @@ if (!$entry || (int) $entry->dataid !== $dataid) {
     throw new moodle_exception('invalidentryid', 'mod_dhbwio');
 }
 
+$currentstatus = status_manager::get_status((int) $entry->statusid);
+
+if ($currentstatus && $currentstatus->shortname === 'eingereicht') {
+    $reviewstatus = status_manager::get_status_by_shortname('in_pruefung');
+
+    if ($reviewstatus) {
+        entry_manager::update_status($entryid, (int) $reviewstatus->id);
+        $entry->statusid = (int) $reviewstatus->id;
+    }
+}
+
 $fields = field_manager::get_fields($dataid);
 
 $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
@@ -58,6 +69,9 @@ $mform = new application_review_form($formurl, [
     'dataid' => $dataid,
     'entryid' => $entryid,
     'fields' => $fields,
+    'firstchoice' => $getvalue('ERSTWUNSCH'),
+    'secondchoice' => $getvalue('ZWEITWUNSCH'),
+    'thirdchoice' => $getvalue('DRITTWUNSCH'),
 ]);
 
 if ($mform->is_cancelled()) {
@@ -86,6 +100,14 @@ if ($formdata = $mform->get_data()) {
         $value = $formdata->{$fieldname} ?? '';
 
         entry_manager::save_content($entryid, (int) $field->id, (string) $value);
+
+        $acceptedchoice = $formdata->acceptedchoice ?? null;
+
+        if ($acceptedchoice === '') {
+            $acceptedchoice = null;
+        }
+
+        entry_manager::update_accepted_choice($entryid, $acceptedchoice);
     }
 
     $entry->timemodified = time();
@@ -106,6 +128,7 @@ $mform->set_data([
     'entryid' => $entryid,
     'statusid' => $entry->statusid,
     'KOMMENTAR_IO' => $getvalue('KOMMENTAR_IO'),
+    'acceptedchoice' => $entry->acceptedchoice ?? '',
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT'),

@@ -88,30 +88,6 @@ $formurl = new moodle_url('/mod/dhbwio/application.php', [
     'dataid' => $dataid,
 ]);
 
-
-// Deprecated Moodleform implementation.
-// Kept temporarily during migration to Mustache-based forms.
-
-//$mform = new application_form($formurl, [
-//    'id' => $cm->id,
-//    'dataid' => $dataid,
-//    'entryid' => $entryid,
-//    'fields' => $fields,
-//]);
-//if ($entryid > 0 && !empty($entrycontents)) {
-//    $defaultdata = [
-//        'id' => $cm->id,
-//        'dataid' => $dataid,
-//        'entryid' => $entryid,
-//    ];
-//
-//    foreach ($entrycontents as $fieldid => $content) {
-//        $defaultdata['field_' . $fieldid] = $content->content;
-//    }
-//
-//    $mform->set_data($defaultdata);
-//}
-
 $errors = [];
 $formvalues = [];
 $contents = [];
@@ -237,6 +213,22 @@ foreach ($fields as $field) {
 
 echo $OUTPUT->header();
 
+$acceptedchoicelabel = '';
+
+if ($entryid > 0 && $entry) {
+    $getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+        $field = field_manager::get_field_by_name($dataid, $fieldname);
+
+        if (!$field) {
+            return '';
+        }
+
+        return entry_manager::get_content_value($entryid, (int)$field->id) ?? '';
+    };
+
+    $acceptedchoicelabel = entry_manager::get_accepted_choice_label($entry, $getvalue);
+}
+
 $templatecontext = [
     'actionurl' => (new moodle_url('/mod/dhbwio/application.php', [
         'id' => $cm->id,
@@ -254,6 +246,8 @@ $templatecontext = [
 
     'showreviewresult' => $showreviewresult,
     'reviewfields' => $reviewcontext,
+
+    'acceptedchoicelabel' => s($acceptedchoicelabel),
 
     'backurl' => (new moodle_url('/mod/dhbwio/view.php', [
         'id' => $cm->id,

@@ -117,4 +117,15 @@ class status_manager
 
         return $status && (int) $status->isaccepted === 1;
     }
+    public static function get_status_by_shortname(string $shortname): ?\stdClass
+    {
+        global $DB;
+
+        return $DB->get_record(
+            'dhbwio_application_status',
+            ['shortname' => $shortname, 'active' => 1],
+            '*',
+            IGNORE_MISSING
+        ) ?: null;
+    }
 }
