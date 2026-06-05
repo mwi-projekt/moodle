@@ -228,4 +228,58 @@ class entry_manager
 
         $DB->update_record('dhbwio_dataform_entries', $entry);
     }
+    public static function update_accepted_choice(int $entryid, ?string $acceptedchoice): void
+    {
+        global $DB;
+
+        $allowed = [null, 'first', 'second', 'third'];
+
+        if (!in_array($acceptedchoice, $allowed, true)) {
+            throw new \coding_exception('Invalid accepted choice.');
+        }
+
+        $record = (object) [
+            'id' => $entryid,
+            'acceptedchoice' => $acceptedchoice,
+            'timemodified' => time(),
+        ];
+
+        $DB->update_record('dhbwio_dataform_entries', $record);
+    }
+    public static function get_accepted_choice_label(\stdClass $entry, callable $getvalue): string
+    {
+        if (empty($entry->acceptedchoice)) {
+            return '-';
+        }
+
+        return match ($entry->acceptedchoice) {
+            'first' => 'Erstwunsch – ' . $getvalue('ERSTWUNSCH'),
+            'second' => 'Zweitwunsch – ' . $getvalue('ZWEITWUNSCH'),
+            'third' => 'Drittwunsch – ' . $getvalue('DRITTWUNSCH'),
+            default => '-',
+        };
+    }
+    public static function get_status_by_shortname(string $shortname): ?\stdClass
+    {
+        global $DB;
+
+        return $DB->get_record(
+            'dhbwio_application_status',
+            ['shortname' => $shortname, 'active' => 1],
+            '*',
+            IGNORE_MISSING
+        ) ?: null;
+    }
+    public static function update_status(int $entryid, int $statusid): void
+    {
+        global $DB;
+
+        $record = (object) [
+            'id' => $entryid,
+            'statusid' => $statusid,
+            'timemodified' => time(),
+        ];
+
+        $DB->update_record('dhbwio_dataform_entries', $record);
+    }
 }

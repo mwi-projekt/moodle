@@ -455,3 +455,27 @@ $string['status_field_help'] = 'Das Feld DATAFORM_STATUS_BEWERBUNG dient zum aut
 - ABGELEHNT → Sendet eine Ablehnungs E-Mail
 - NEUEINZUREICHEN → Sendet Rückfragen E-Mail
 - EINGEGANGEN → Sendet eine Empfangsbestätigung (nur bei der ersten Übermittlung)';
+
+
+// DHBWIO-Dataform Integration
+$string['createapplication'] = 'Bewerbung anlegen';
+$string['show'] = 'Anzeigen';
+$string['show/edit'] = 'Anzeigen/Editieren';
+$string['review'] = 'Prüfen';
+$string['all_application_overview_title'] = 'Alle Bewerbungen';
+$string['application_overview_title'] = 'Meine Bewerbungen';
+$string['all_emptytext'] = 'Es liegen noch keine Bewerbungen vor.';
+$string['emptytext'] = 'Du hast noch keine Bewerbung angelegt.';
+$string['applicant_name'] = 'Bewerber';
+$string['studyprogram'] = 'Studiengang';
+$string['created'] = 'Erstellt';
+$string['modified'] = 'Geändert';
+$string['firstchoice'] = 'Erstwunsch';
+$string['status'] = 'Status';
+$string['action'] = 'Aktion';
+$string['learning_agreement'] = 'Learning Agreement hinzufügen';
+$string['status_eingereicht'] = 'Eingereicht';
+$string['status_in_pruefung'] = 'In Prüfung';
+$string['status_angenommen'] = 'Angenommen';
+$string['status_abgelehnt'] = 'Abgelehnt';
+$string['choose'] = 'Bitte auswählen';

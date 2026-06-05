@@ -62,6 +62,16 @@ class application_review_form extends \moodleform
         $statusoptions = status_manager::get_options();
 
         $mform->addElement('select', 'statusid', 'Status der Bewerbung', $statusoptions);
+        $acceptedoptions = $this->get_accepted_choice_options();
+
+        $mform->addElement(
+            'select',
+            'acceptedchoice',
+            'Angenommen für',
+            $acceptedoptions
+        );
+        $mform->setType('acceptedchoice', PARAM_ALPHA);
+
         $mform->setType('statusid', PARAM_INT);
         $mform->addRule('statusid', get_string('required'), 'required', null, 'client');
 
@@ -130,16 +140,17 @@ class application_review_form extends \moodleform
         }
     }
     // Diese Function dient als Übergang bevor tatsächliche Datenbankänderungen der Description vorgenommen werden.
-    private function get_display_label(\stdClass $field): string {
-    $labels = [
-        'KOMMENTAR_IO' => 'Kommentar des International Office',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => 'Freigabe Erstwunsch',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => 'Freigabe Zweitwunsch',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => 'Freigabe Drittwunsch',
-    ];
+    private function get_display_label(\stdClass $field): string
+    {
+        $labels = [
+            'KOMMENTAR_IO' => 'Kommentar des International Office',
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => 'Freigabe Erstwunsch',
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => 'Freigabe Zweitwunsch',
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => 'Freigabe Drittwunsch',
+        ];
 
-    return $labels[$field->name] ?? $field->description ?: $field->name;
-}
+        return $labels[$field->name] ?? $field->description ?: $field->name;
+    }
     /**
      * Extracts selectable options from a field definition.
      *
@@ -171,5 +182,18 @@ class application_review_form extends \moodleform
         }
 
         return $options;
+    }
+    private function get_accepted_choice_options(): array
+    {
+        $firstchoice = $this->_customdata['firstchoice'] ?? '';
+        $secondchoice = $this->_customdata['secondchoice'] ?? '';
+        $thirdchoice = $this->_customdata['thirdchoice'] ?? '';
+
+        return [
+            '' => 'Keine Auswahl',
+            'first' => 'Erstwunsch' . ($firstchoice !== '' ? ' – ' . $firstchoice : ''),
+            'second' => 'Zweitwunsch' . ($secondchoice !== '' ? ' – ' . $secondchoice : ''),
+            'third' => 'Drittwunsch' . ($thirdchoice !== '' ? ' – ' . $thirdchoice : ''),
+        ];
     }
 }

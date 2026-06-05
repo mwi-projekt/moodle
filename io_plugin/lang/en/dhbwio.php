@@ -427,3 +427,27 @@ $string['status_field_help'] = 'The DATAFORM_STATUS_BEWERBUNG field is used to a
 - abgelehnt/rejected/declined → Sends rejection email
 - rückfrage/inquiry/pending → Sends inquiry email
 - eingegangen/received/new → Sends receipt confirmation (only on first submission)';
+
+// DHBWIO-Dataform Integration
+$string['createapplication'] = 'Create Application';
+$string['show'] = 'Show';
+$string['show/edit'] = 'Show/Edit';
+$string['review'] = 'Review';
+$string['no_applications'] = 'No applications to show';
+$string['all_application_overview_title'] = 'All applications';
+$string['application_overview_title'] = 'My applications';
+$string['all_emptytext'] = 'There are no applications to review.';
+$string['emptytext'] = 'You don\'t have any applications yet.';
+$string['applicant_name'] = 'Applicant';
+$string['studyprogram'] = 'Study program';
+$string['created'] = 'Created';
+$string['modified'] = 'Modified';
+$string['firstchoice'] = 'First choice';
+$string['status'] = 'Status';
+$string['action'] = 'Action';
+$string['learning_agreement'] = 'Add Learning Agreement';
+$string['status_eingereicht'] = 'Submitted';
+$string['status_in_pruefung'] = 'Under review';
+$string['status_angenommen'] = 'Accepted';
+$string['status_abgelehnt'] = 'Rejected';
+$string['choose'] = 'Choose';
