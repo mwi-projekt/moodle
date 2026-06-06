@@ -79,6 +79,13 @@ $tabs[] = new tabobject(
 	get_string('nav_universities', 'mod_dhbwio')
 );
 
+// Tab for applications - available to all users
+$tabs[] = new tabobject(
+	'bewerbungen',
+	new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'bewerbungen']),
+	get_string('nav_bewerbungen', 'mod_dhbwio')
+);
+
 // Tab for experience reports - available to all users if enabled
 if (!empty($dhbwio->enablereports)) {
 	$tabs[] = new tabobject(
@@ -126,178 +133,162 @@ echo $OUTPUT->tabtree($tabs, $tab);
 // Display the content based on the selected tab
 switch ($tab) {
 	case 'universities':
-		// Check if map view is enabled
 		if (!empty($dhbwio->enablemap)) {
-			// Get view parameter from URL
-			$view = optional_param('view', 'map', PARAM_ALPHA);
-
 			$renderer = $PAGE->get_renderer('mod_dhbwio');
 			echo $renderer->render_university_view($dhbwio, $cm);
-
-			// Try Generating new Dataform, if none is connected to this Activity-Instance
-			try {
-				$dataform = dataform_manager::get_course_dataform((int) $course->id);
-			} catch (moodle_exception $e) {
-				$dataid = \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $course->id);
-				$dataform = dataform_manager::get_course_dataform((int) $course->id);
-			}
-			$dataid = (int) $dataform->id;
-			$courseid = $course->id;
-
-			// Generating "Apply now"-Button
-			$url = new moodle_url('/mod/dhbwio/application.php', [
-				'id' => $cm->id,
-				'dataid' => $dataid,
-			]);
-
-			$matrixurl = new moodle_url('/local/zuweisungsmatrix/index.php', [
-				'courseid' => $courseid
-			]);
-
-			echo html_writer::link(
-				$url,
-				get_string('createapplication', 'dhbwio'),
-				[
-					'class' => 'btn btn-primary px-3 py-2'
-				]
-			);
-
-			// Apply Rule for Manager-Authority
-			$canviewallapplications = has_capability(
-				'mod/dhbwio:viewallapplications',
-				$context
-			);
-
-			// Define entries: Manager everything, students only theirs
-			if ($canviewallapplications) {
-				$entries = entry_manager::get_entries($dataid);
-				echo html_writer::link(
-				$matrixurl,
-				'Zuweisungsmatrix',
-				[
-					'class' => 'btn btn-primary px-3 py-2'
-				]
-			);
-			} else {
-				$entries = entry_manager::get_user_entries($dataid, $USER->id);
-			}
-
-			$erstwunschfield = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
-			$studiengangfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
-			$vornamefield = field_manager::get_field_by_name($dataid, 'VORNAME');
-			$nachnamefield = field_manager::get_field_by_name($dataid, 'NACHNAME');
-			$emailfield = field_manager::get_field_by_name($dataid, 'EMAIL');
-
-			if (empty($entries)) {
-				echo html_writer::tag('p', get_string('no_applications', 'dhbwio'));
-			} else {
-				$applications = [];
-
-				foreach ($entries as $entry) {
-					$erstwunsch = '-';
-
-					if ($erstwunschfield) {
-						$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
-					}
-
-					$statusrecord = status_manager::get_status((int) $entry->statusid);
-					if ($statusrecord) {
-						$statuskey = $statusrecord->shortname;
-						$status = get_string('status_' . $statuskey, 'dhbwio');
-					} else {
-						$statuskey = 'unknown';
-						$status = '-';
-					}
-
-					$statusclass = match ($statuskey) {
-						'eingereicht' => 'status-submitted',
-						'in_pruefung' => 'status-review',
-						'angenommen' => 'status-approved',
-						'abgelehnt' => 'status-rejected',
-						default => 'status-default',
-					};
-
-					if ($canviewallapplications) {
-						$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
-							'id' => $cm->id,
-							'dataid' => $dataid,
-							'entryid' => $entry->id,
-						]);
-
-						$reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
-							'id' => $cm->id,
-							'dataid' => $dataid,
-							'entryid' => $entry->id,
-						]);
-
-						$actions = html_writer::link($viewurl, get_string('show', 'dhbwio')) . ' | ' .
-							html_writer::link($reviewurl, get_string('review', 'dhbwio'));
-
-						$vorname = $vornamefield ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id) : '';
-						$nachname = $nachnamefield ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id) : '';
-						$email = $emailfield ? entry_manager::get_content_value($entry->id, (int) $emailfield->id) : '';
-						$studiengang = $studiengangfield
-							? entry_manager::get_content_value($entry->id, (int) $studiengangfield->id)
-							: '';
-
-						$applications[] = [
-							'applicantname' => s(trim($vorname . ' ' . $nachname)),
-							'email' => s($email),
-							'timecreated' => userdate($entry->timecreated),
-							'timemodified' => userdate($entry->timemodified),
-							'firstchoice' => s($erstwunsch),
-							'status' => s($status),
-							'statusclass' => $statusclass,
-							'actions' => $actions,
-							'studyprogram' => s($studiengang),
-						];
-					} else {
-						$viewurl = new moodle_url('/mod/dhbwio/application.php', [
-							'id' => $cm->id,
-							'dataid' => $dataid,
-							'entryid' => $entry->id,
-						]);
-
-						$actions = html_writer::link($viewurl, get_string('show/edit', 'dhbwio'));
-
-						// Wenn Status => Accepted, dann eine ACTION für learning_agreement hinterlegen
-						if (status_manager::is_accepted((int) $entry->statusid)) {
-							$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
-								'id' => $cm->id,
-								'dataid' => $dataid,
-								'entryid' => $entry->id,
-							]);
-
-							$actions .= ' | ' . html_writer::link($laurl, get_string('learning_agreement', 'dhbwio'));
-						}
-
-						$applications[] = [
-							'timecreated' => userdate($entry->timecreated),
-							'timemodified' => userdate($entry->timemodified),
-							'firstchoice' => s($erstwunsch),
-							'status' => s($status),
-							'statusclass' => $statusclass,
-							'actions' => $actions,
-						];
-					}
-				}
-
-				$templatecontext = [
-					'title' => $canviewallapplications ? get_string('all_application_overview_title', 'dhbwio') : get_string('application_overview_title', 'dhbwio'),
-					'isadmin' => $canviewallapplications,
-					'hasapplications' => !empty($applications),
-					'applications' => $applications,
-					'emptytext' => $canviewallapplications
-						? get_string('all_emptytext', 'dhbwio')
-						: get_string('emptytext', 'dhbwio'),
-				];
-
-				echo $OUTPUT->render_from_template('mod_dhbwio/application_overview', $templatecontext);
-			}
 		} else {
-			// Fallback to list view
 			$renderer = $PAGE->get_renderer('mod_dhbwio');
 			$renderer->display_universities_list($dhbwio, $cm);
+		}
+		break;
+
+	case 'bewerbungen':
+		// Try Generating new Dataform, if none is connected to this Activity-Instance
+		try {
+			$dataform = dataform_manager::get_course_dataform((int) $course->id);
+		} catch (moodle_exception $e) {
+			$dataid = \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $course->id);
+			$dataform = dataform_manager::get_course_dataform((int) $course->id);
+		}
+		$dataid = (int) $dataform->id;
+		$courseid = $course->id;
+
+		// Generating "Apply now"-Button
+		$url = new moodle_url('/mod/dhbwio/application.php', [
+			'id' => $cm->id,
+			'dataid' => $dataid,
+		]);
+
+		$matrixurl = new moodle_url('/local/zuweisungsmatrix/index.php', [
+			'courseid' => $courseid
+		]);
+
+		echo html_writer::link(
+			$url,
+			get_string('createapplication', 'dhbwio'),
+			['class' => 'btn btn-primary px-3 py-2']
+		);
+
+		// Apply Rule for Manager-Authority
+		$canviewallapplications = has_capability('mod/dhbwio:viewallapplications', $context);
+
+		// Define entries: Manager everything, students only theirs
+		if ($canviewallapplications) {
+			$entries = entry_manager::get_entries($dataid);
+			echo html_writer::link(
+				$matrixurl,
+				'Zuweisungsmatrix',
+				['class' => 'btn btn-primary px-3 py-2']
+			);
+		} else {
+			$entries = entry_manager::get_user_entries($dataid, $USER->id);
+		}
+
+		$erstwunschfield  = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
+		$studiengangfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
+		$vornamefield     = field_manager::get_field_by_name($dataid, 'VORNAME');
+		$nachnamefield    = field_manager::get_field_by_name($dataid, 'NACHNAME');
+		$emailfield       = field_manager::get_field_by_name($dataid, 'EMAIL');
+
+		if (empty($entries)) {
+			echo html_writer::tag('p', get_string('no_applications', 'dhbwio'));
+		} else {
+			$applications = [];
+
+			foreach ($entries as $entry) {
+				$erstwunsch = '-';
+				if ($erstwunschfield) {
+					$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
+				}
+
+				$statusrecord = status_manager::get_status((int) $entry->statusid);
+				if ($statusrecord) {
+					$statuskey = $statusrecord->shortname;
+					$status = get_string('status_' . $statuskey, 'dhbwio');
+				} else {
+					$statuskey = 'unknown';
+					$status = '-';
+				}
+
+				$statusclass = match ($statuskey) {
+					'eingereicht' => 'status-submitted',
+					'in_pruefung' => 'status-review',
+					'angenommen'  => 'status-approved',
+					'abgelehnt'   => 'status-rejected',
+					default       => 'status-default',
+				};
+
+				if ($canviewallapplications) {
+					$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$actions = html_writer::link($viewurl, get_string('show', 'dhbwio')) . ' | ' .
+						html_writer::link($reviewurl, get_string('review', 'dhbwio'));
+
+					$vorname     = $vornamefield     ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id)     : '';
+					$nachname    = $nachnamefield    ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id)    : '';
+					$email       = $emailfield       ? entry_manager::get_content_value($entry->id, (int) $emailfield->id)       : '';
+					$studiengang = $studiengangfield ? entry_manager::get_content_value($entry->id, (int) $studiengangfield->id) : '';
+
+					$applications[] = [
+						'applicantname' => s(trim($vorname . ' ' . $nachname)),
+						'email'         => s($email),
+						'timecreated'   => userdate($entry->timecreated),
+						'timemodified'  => userdate($entry->timemodified),
+						'firstchoice'   => s($erstwunsch),
+						'status'        => s($status),
+						'statusclass'   => $statusclass,
+						'actions'       => $actions,
+						'studyprogram'  => s($studiengang),
+					];
+				} else {
+					$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$actions = html_writer::link($viewurl, get_string('show/edit', 'dhbwio'));
+
+					if (status_manager::is_accepted((int) $entry->statusid)) {
+						$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+							'id'      => $cm->id,
+							'dataid'  => $dataid,
+							'entryid' => $entry->id,
+						]);
+						$actions .= ' | ' . html_writer::link($laurl, get_string('learning_agreement', 'dhbwio'));
+					}
+
+					$applications[] = [
+						'timecreated'  => userdate($entry->timecreated),
+						'timemodified' => userdate($entry->timemodified),
+						'firstchoice'  => s($erstwunsch),
+						'status'       => s($status),
+						'statusclass'  => $statusclass,
+						'actions'      => $actions,
+					];
+				}
+			}
+
+			$templatecontext = [
+				'title'           => $canviewallapplications
+					? get_string('all_application_overview_title', 'dhbwio')
+					: get_string('application_overview_title', 'dhbwio'),
+				'isadmin'         => $canviewallapplications,
+				'hasapplications' => !empty($applications),
+				'applications'    => $applications,
+				'emptytext'       => $canviewallapplications
+					? get_string('all_emptytext', 'dhbwio')
+					: get_string('emptytext', 'dhbwio'),
+			];
+
+			echo $OUTPUT->render_from_template('mod_dhbwio/application_overview', $templatecontext);
 		}
 		break;
 

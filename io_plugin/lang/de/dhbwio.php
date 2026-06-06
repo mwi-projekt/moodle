@@ -158,6 +158,7 @@ $string['nav_reports'] = 'Erfahrungsberichte';
 $string['nav_statistics'] = 'Statistiken';
 $string['nav_emailtemplates'] = 'E-Mail Vorlagen';
 $string['nav_applications'] = 'Bewerbungen';
+$string['nav_bewerbungen'] = 'Bewerbung(en)';
 $string['nav_fristen']                    = 'Fristen';
 $string['fristen_coming_soon']            = 'Fristen-Verwaltung folgt in Kürze.';
 $string['frist_add']                      = 'Frist anlegen';

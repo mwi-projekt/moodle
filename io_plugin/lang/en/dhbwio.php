@@ -131,6 +131,7 @@ $string['nav_reports'] = 'Experience Reports';
 $string['nav_statistics'] = 'Statistics';
 $string['nav_emailtemplates'] = 'Email Templates';
 $string['nav_applications'] = 'Applications';
+$string['nav_bewerbungen'] = 'Application(s)';
 $string['nav_myapplications'] = 'My Applications';
 $string['nav_fristen']                    = 'Deadlines';
 $string['fristen_coming_soon']            = 'Deadline management coming soon.';
