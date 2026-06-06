@@ -150,12 +150,132 @@ switch ($tab) {
 			$dataid = \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $course->id);
 			$dataform = dataform_manager::get_course_dataform((int) $course->id);
 		}
-		$dataid = (int) $dataform->id;
+		$dataid   = (int) $dataform->id;
 		$courseid = $course->id;
+
+		// Apply Rule for Manager-Authority
+		$canviewallapplications = has_capability('mod/dhbwio:viewallapplications', $context);
+
+		// Define entries: Manager everything, students only theirs
+		if ($canviewallapplications) {
+			$entries = entry_manager::get_entries($dataid);
+		} else {
+			$entries = entry_manager::get_user_entries($dataid, $USER->id);
+		}
+
+		// ── Fortschrittsbalken nur für Studierende ──────────────────────────
+		if (!$canviewallapplications) {
+			// Aktuellen Status des Studierenden ermitteln
+			$appstatuskey = null;
+			if (!empty($entries)) {
+				$firstentry   = reset($entries);
+				$appstatrec   = status_manager::get_status((int) $firstentry->statusid);
+				$appstatuskey = $appstatrec ? $appstatrec->shortname : null;
+			}
+
+			// Farbstufen je Fortschritt
+			// Level 0 = keine Bewerbung (grau)
+			// Level 1 = eingereicht   (hellgrün)
+			// Level 2 = in_pruefung   (mittelgrün)
+			// Level 3 = angenommen    (dunkelgrün) | abgelehnt (rot)
+			$islevel = [
+				'eingereicht' => 1,
+				'in_pruefung' => 2,
+				'angenommen'  => 3,
+				'abgelehnt'   => 3,
+			];
+			$curlevel  = $appstatuskey ? ($islevel[$appstatuskey] ?? 0) : 0;
+			$isreject  = ($appstatuskey === 'abgelehnt');
+
+			// Farben je Stufe (grauer Fallback wenn kein Level)
+			$stepcolors = ['#dee2e6', '#A5D6A7', '#43A047', $isreject ? '#dc3545' : '#1B5E20'];
+
+			// Schritt-Konfiguration
+			$step3label = get_string('appbar_result', 'mod_dhbwio');
+			if ($appstatuskey === 'angenommen') {
+				$step3label = get_string('appbar_accepted', 'mod_dhbwio');
+			} elseif ($appstatuskey === 'abgelehnt') {
+				$step3label = get_string('appbar_rejected', 'mod_dhbwio');
+			}
+
+			$barsteps = [
+				['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
+				['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
+				['label' => $step3label,                                      'level' => 3],
+			];
+
+			echo '<div class="dhbwio-appbar-container mb-4">';
+			echo '<div class="dhbwio-appbar-steps">';
+
+			foreach ($barsteps as $si => $step) {
+				if ($si === 0) {
+					// Schritt 1: Submitted – grün sobald eingereicht
+					if ($curlevel >= 1) {
+						$circlass = 'dhbwio-appbar-circle-done';
+						$lblclass = 'dhbwio-appbar-label-done';
+						$icon     = '&#10003;';
+					} else {
+						$circlass = 'dhbwio-appbar-circle-pending';
+						$lblclass = 'dhbwio-appbar-label-pending';
+						$icon     = '1';
+					}
+				} elseif ($si === 1) {
+					// Schritt 2: Under Review – gelb wenn aktiv, grün wenn abgeschlossen
+					if ($curlevel >= 3) {
+						$circlass = 'dhbwio-appbar-circle-done';
+						$lblclass = 'dhbwio-appbar-label-done';
+						$icon     = '&#10003;';
+					} elseif ($curlevel === 2) {
+						$circlass = 'dhbwio-appbar-circle-active';
+						$lblclass = 'dhbwio-appbar-label-active';
+						$icon     = '2';
+					} else {
+						$circlass = 'dhbwio-appbar-circle-pending';
+						$lblclass = 'dhbwio-appbar-label-pending';
+						$icon     = '2';
+					}
+				} else {
+					// Schritt 3: Ergebnis – grün oder rot
+					if ($curlevel >= 3) {
+						$circlass = $isreject ? 'dhbwio-appbar-circle-reject' : 'dhbwio-appbar-circle-done';
+						$lblclass = $isreject ? 'dhbwio-appbar-label-reject' : 'dhbwio-appbar-label-done';
+						$icon     = $isreject ? '&#10007;' : '&#10003;';
+					} else {
+						$circlass = 'dhbwio-appbar-circle-pending';
+						$lblclass = 'dhbwio-appbar-label-pending';
+						$icon     = '3';
+					}
+				}
+
+				echo '<div class="dhbwio-appbar-step">';
+				echo '<div class="dhbwio-appbar-circle ' . $circlass . '">' . $icon . '</div>';
+				echo '<div class="dhbwio-appbar-label ' . $lblclass . '">' . htmlspecialchars($step['label']) . '</div>';
+				echo '</div>';
+
+				// Linie nach diesem Schritt
+				if ($si < count($barsteps) - 1) {
+					if ($si === 0) {
+						// Linie 1: grau → gelb → grün
+						if ($curlevel >= 3)     $linecolor = '#43A047';
+						elseif ($curlevel === 2) $linecolor = '#FFA000';
+						else                     $linecolor = '#dee2e6';
+					} else {
+						// Linie 2: grau → grün oder rot
+						if ($curlevel >= 3) $linecolor = $isreject ? '#dc3545' : '#43A047';
+						else                $linecolor = '#dee2e6';
+					}
+					echo '<div class="dhbwio-appbar-line" style="background:' . $linecolor . '"></div>';
+				}
+			}
+
+			echo '</div>'; // dhbwio-appbar-steps
+			echo '</div>'; // dhbwio-appbar-container
+		}
+		// ────────────────────────────────────────────────────────────────────
 
 		// Generating "Apply now"-Button
 		$url = new moodle_url('/mod/dhbwio/application.php', [
-			'id' => $cm->id,
+			'id'     => $cm->id,
 			'dataid' => $dataid,
 		]);
 
@@ -169,19 +289,12 @@ switch ($tab) {
 			['class' => 'btn btn-primary px-3 py-2']
 		);
 
-		// Apply Rule for Manager-Authority
-		$canviewallapplications = has_capability('mod/dhbwio:viewallapplications', $context);
-
-		// Define entries: Manager everything, students only theirs
 		if ($canviewallapplications) {
-			$entries = entry_manager::get_entries($dataid);
 			echo html_writer::link(
 				$matrixurl,
 				'Zuweisungsmatrix',
 				['class' => 'btn btn-primary px-3 py-2']
 			);
-		} else {
-			$entries = entry_manager::get_user_entries($dataid, $USER->id);
 		}
 
 		$erstwunschfield  = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
