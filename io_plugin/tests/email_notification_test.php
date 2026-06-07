@@ -168,7 +168,7 @@ class mod_dhbwio_email_notification_testcase extends advanced_testcase {
     // =========================================================================
 
     public function test_email_sent_event_is_triggered_with_correct_data(): void {
-        $context = context_module::instance($this->dhbwio->id);
+        $context = context_module::instance($this->dhbwio->cmid);
         $sink    = $this->redirectEvents();
 
         $event = \mod_dhbwio\event\email_sent::create([
@@ -194,7 +194,7 @@ class mod_dhbwio_email_notification_testcase extends advanced_testcase {
     }
 
     public function test_email_sent_event_description_contains_email_type(): void {
-        $context = context_module::instance($this->dhbwio->id);
+        $context = context_module::instance($this->dhbwio->cmid);
         $event   = \mod_dhbwio\event\email_sent::create([
             'objectid'      => 99,
             'context'       => $context,

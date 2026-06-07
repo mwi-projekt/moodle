@@ -98,8 +98,6 @@ class mod_dhbwio_application_persistence_testcase extends advanced_testcase {
         $record = $this->persist_name_to_db(trim($raw));
 
         $this->assertSame('SAP SE', $record->name);
-        $this->assertStringNotStartsWith(' ', $record->name, 'DB value must not have a leading space.');
-        $this->assertStringNotEndsWith(' ', $record->name, 'DB value must not have a trailing space.');
     }
 
     public function test_partnerunternehmen_only_spaces_rejected_and_nothing_written_to_db(): void {
