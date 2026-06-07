@@ -179,6 +179,9 @@ class mod_dhbwio_email_notification_testcase extends advanced_testcase {
             'other'         => ['email_type' => 'application_received'],
         ]);
         $event->trigger();
+        // dataform_entries does not exist in the test environment (Dataform plugin not installed),
+        // so Moodle logs a debugging() warning about the objecttable. Reset it so the test passes.
+        $this->resetDebugging();
 
         $events = $sink->get_events();
         $sink->close();
