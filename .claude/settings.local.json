@@ -7,7 +7,10 @@
       "Bash(gh run *)",
       "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 150)",
       "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 300)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" log --all --oneline --grep=\"nationalit\\\\|muttersprache\\\\|herkunft\\\\|sprache\\\\|#15\" -i)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" show 2c8bd2d --stat)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" show e053515 --stat)"
     ]
   }
 }
