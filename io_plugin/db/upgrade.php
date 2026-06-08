@@ -608,19 +608,19 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     if ($oldversion < 2026060502) {
 
-        // Add deadline column to dhbwio_fristen (missed in 2026060501).
         $table = new xmldb_table('dhbwio_fristen');
+        if ($dbman->table_exists($table)) {
+            // Change jahrgang from int to char if needed.
+            $jagfield = new xmldb_field('jahrgang', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+            if ($dbman->field_exists($table, $jagfield)) {
+                $dbman->change_field_type($table, $jagfield);
+            }
 
-        // Change jahrgang from int to char if needed.
-        $jagfield = new xmldb_field('jahrgang', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
-        if ($dbman->field_exists($table, $jagfield)) {
-            $dbman->change_field_type($table, $jagfield);
-        }
-
-        // Add deadline field.
-        $deadlinefield = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
-        if (!$dbman->field_exists($table, $deadlinefield)) {
-            $dbman->add_field($table, $deadlinefield);
+            // Add deadline field if missing.
+            $deadlinefield = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
+            if (!$dbman->field_exists($table, $deadlinefield)) {
+                $dbman->add_field($table, $deadlinefield);
+            }
         }
 
         upgrade_mod_savepoint(true, 2026060502, 'dhbwio');
@@ -628,11 +628,12 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     if ($oldversion < 2026060503) {
 
-        // Ensure deadline column exists in dhbwio_fristen.
         $table = new xmldb_table('dhbwio_fristen');
-        $field = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        if ($dbman->table_exists($table)) {
+            $field = new xmldb_field('deadline', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'jahrgang');
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
         }
 
         upgrade_mod_savepoint(true, 2026060503, 'dhbwio');
