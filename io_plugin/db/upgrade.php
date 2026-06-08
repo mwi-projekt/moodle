@@ -613,7 +613,16 @@ function xmldb_dhbwio_upgrade($oldversion)
             // Change jahrgang from int to char if needed.
             $jagfield = new xmldb_field('jahrgang', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
             if ($dbman->field_exists($table, $jagfield)) {
+                // Drop dependent index before changing field type.
+                $index = new xmldb_index('dhbwio_jahrgang', XMLDB_INDEX_NOTUNIQUE, ['dhbwio', 'jahrgang']);
+                if ($dbman->index_exists($table, $index)) {
+                    $dbman->drop_index($table, $index);
+                }
                 $dbman->change_field_type($table, $jagfield);
+                // Recreate index after type change.
+                if (!$dbman->index_exists($table, $index)) {
+                    $dbman->add_index($table, $index);
+                }
             }
 
             // Add deadline field if missing.
