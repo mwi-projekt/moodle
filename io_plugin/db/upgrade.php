@@ -553,6 +553,31 @@ function xmldb_dhbwio_upgrade($oldversion)
         //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
 
+    if ($oldversion < 2026060800) {
+
+        // Sicherheitsnetz: dhbwio_fristen Tabelle erstellen falls sie noch nicht existiert.
+        $table = new xmldb_table('dhbwio_fristen');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',           XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('dhbwio',       XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+            $table->add_field('art',          XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL, null, null);
+            $table->add_field('studiengang',  XMLDB_TYPE_CHAR,    '100', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('jahrgang',     XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL, null, null);
+            $table->add_field('deadline',     XMLDB_TYPE_INTEGER, '10',  null, null,           null, null);
+            $table->add_field('kommentar',    XMLDB_TYPE_TEXT,    null,  null, null,           null, null);
+            $table->add_field('authorid',     XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+            $table->add_field('timecreated',  XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary',   XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('fk_dhbwio', XMLDB_KEY_FOREIGN, ['dhbwio'],   'dhbwio', ['id']);
+            $table->add_key('fk_author', XMLDB_KEY_FOREIGN, ['authorid'], 'user',   ['id']);
+            $table->add_index('dhbwio_jahrgang', XMLDB_INDEX_NOTUNIQUE, ['dhbwio', 'jahrgang']);
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2026060800, 'dhbwio');
+    }
+
     if ($oldversion < 2026060501) {
 
         // Create dhbwio_fristen table.
