@@ -43,7 +43,7 @@ class behat_mod_dhbwio extends behat_base {
      * @param string $shortname Course shortname, e.g. "WWI23B2"
      */
     public function a_dhbwio_application_environment_is_set_up_for_course(string $shortname): void {
-        global $DB, $CFG;
+        global $DB;
 
         $course = $DB->get_record('course', ['shortname' => $shortname], 'id', MUST_EXIST);
         $generator = testing_util::get_data_generator();
@@ -52,7 +52,12 @@ class behat_mod_dhbwio extends behat_base {
         // Explicit require needed: behat_mod_dataform.php is not loaded in the
         // @mod_dhbwio suite, so Moodle's auto-discovery for the generator class
         // mod_dataform_generator fails. Loading the file here registers the class.
-        require_once($CFG->dirroot . '/mod/dataform/tests/generator/lib.php');
+        //
+        // core_component::get_plugin_directory() returns the real (symlink-resolved)
+        // path that Moodle registered during bootstrap, avoiding failures that occur
+        // when require_once is given the symlink path directly on the CI filesystem.
+        $dataformdir = core_component::get_plugin_directory('mod', 'dataform');
+        require_once($dataformdir . '/tests/generator/lib.php');
         $dataformgen = $generator->get_plugin_generator('mod_dataform');
 
         $dataform = $dataformgen->create_instance([
