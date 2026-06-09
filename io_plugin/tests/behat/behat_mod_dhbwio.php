@@ -97,9 +97,10 @@ class behat_mod_dhbwio extends behat_base {
 
         $this->dhbwio_dataform_instance_id = (int) $dataform_id;
 
-        // Fields
+        // Fields — insert first to collect IDs for the patterns blob.
+        $field_ids = [];
         foreach (['Kursgruppe', 'Vorname', 'Nachname', 'E-Mail'] as $fname) {
-            $DB->insert_record('dataform_fields', (object)[
+            $field_ids[$fname] = $DB->insert_record('dataform_fields', (object)[
                 'dataid'             => $dataform_id,
                 'type'               => 'text',
                 'name'               => $fname,
@@ -108,6 +109,21 @@ class behat_mod_dhbwio extends behat_base {
                 'editable'           => 1,
                 'defaultcontentmode' => 0,
             ]);
+        }
+
+        // dataformview::compile_view_template() reads the serialised patterns blob
+        // to know which ##...## and [[...]] tokens appear in the templates.
+        // Without it, get_pattern_set('view') returns null and ##addnewentry## is
+        // never replaced with the link — the student sees no "Add a new entry" button.
+        $patterns_array = [
+            'view' => [
+                '##addnewentry##' => '##addnewentry##',
+                '##entries##'     => '##entries##',
+            ],
+            'field' => [],
+        ];
+        foreach ($field_ids as $fname => $fid) {
+            $patterns_array['field'][$fid] = ["[[$fname]]" => "[[$fname]]"];
         }
 
         // View: section holds the page template (##addnewentry## renders the link),
@@ -124,6 +140,7 @@ class behat_mod_dhbwio extends behat_base {
             'section'     => '<div>##addnewentry##</div><div>##entries##</div>',
             'param2'      => "[[Kursgruppe]]\n[[Vorname]]\n[[Nachname]]\n[[E-Mail]]",
             'submission'  => base64_encode(serialize(['save' => '', 'cancel' => '', 'timeout' => 1])),
+            'patterns'    => serialize($patterns_array),
         ]);
         $DB->set_field('dataform', 'defaultview', $view_id, ['id' => $dataform_id]);
 
