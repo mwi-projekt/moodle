@@ -246,15 +246,18 @@ class observer {
         $DB->insert_record('dhbwio_email_log', $log);
         
         // Also trigger event for additional logging
-        $event = \mod_dhbwio\event\email_sent::create([
-            'objectid' => $entryid,
-            'context' => \context_module::instance($dhbwio_id),
-            'userid' => $USER->id,
-            'relateduserid' => $userid,
-            'other' => [
-                'email_type' => $email_type
-            ]
-        ]);
-        $event->trigger();
+        $cm = get_coursemodule_from_instance('dhbwio', $dhbwio_id);
+        if ($cm) {
+            $event = \mod_dhbwio\event\email_sent::create([
+                'objectid' => $entryid,
+                'context' => \context_module::instance($cm->id),
+                'userid' => $USER->id,
+                'relateduserid' => $userid,
+                'other' => [
+                    'email_type' => $email_type
+                ]
+            ]);
+            $event->trigger();
+        }
     }
 }

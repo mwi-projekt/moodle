@@ -871,19 +871,6 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
         $message = str_replace('{' . $key . '}', $value, $message);
     }
     
-    // Log the email for debugging (optional)
-    if (debugging('', DEBUG_DEVELOPER)) {
-        $logdata = [
-            'type' => $type,
-            'to_user' => $to_user_id,
-            'entry_id' => $entry_id,
-            'subject' => $subject,
-            'submission_date' => $allparams['SUBMISSION_DATE'],
-            'variables_used' => array_keys($allparams)
-        ];
-        debugging('Sending email notification: ' . json_encode($logdata), DEBUG_DEVELOPER);
-    }
-    
     // Send email via Moodle API
     return email_to_user(
         $user, 
