@@ -132,8 +132,8 @@ jobs:
       # moodle-plugin-ci kopiert --plugin-Abhaengigkeiten nicht zuverlaessig ins
       # Moodle-Verzeichnis. Symlink manuell anlegen und danach die Behat-Testseite
       # neu initialisieren, damit mod_dataform in der Behat-DB registriert wird.
-      - name: dataform-Symlink anlegen
-        run: ln -sfn $GITHUB_WORKSPACE/dataform_plugin $GITHUB_WORKSPACE/moodle/mod/dataform
+      - name: dataform-Plugin kopieren
+        run: cp -r $GITHUB_WORKSPACE/dataform_plugin $GITHUB_WORKSPACE/moodle/mod/dataform
 
       - name: Behat-Testseite neu initialisieren
         run: php $GITHUB_WORKSPACE/moodle/admin/tool/behat/cli/init.php
