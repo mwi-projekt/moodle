@@ -29,6 +29,10 @@ class view_renderer
         if ($field->type === 'time' && is_numeric($value)) {
             $value = userdate((int) $value, get_string('strftimedatefullshort'));
         }
+        if (self::is_university_choice_field($field) && $value !== '-' && is_numeric($value)) {
+            $value = self::get_university_label((int) $value);
+        }
+
         $rowclass = $alternate
             ? 'dhbwio-view-row dhbwio-view-row-alt row'
             : 'dhbwio-view-row row';
@@ -108,5 +112,31 @@ class view_renderer
         $label = str_replace('(optionale Angabe)', '', $label);
 
         return trim($label);
+    }
+    private static function is_university_choice_field(\stdClass $field): bool
+    {
+        return in_array($field->name, [
+            'ERSTWUNSCH',
+            'ZWEITWUNSCH',
+            'DRITTWUNSCH',
+        ], true);
+    }
+
+    private static function get_university_label(int $universityid): string
+    {
+        global $DB;
+
+        $university = $DB->get_record(
+            'dhbwio_universities',
+            ['id' => $universityid],
+            '*',
+            IGNORE_MISSING
+        );
+
+        if (!$university) {
+            return '-';
+        }
+
+        return trim($university->name);
     }
 }

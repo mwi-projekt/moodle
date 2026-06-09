@@ -206,7 +206,8 @@ foreach ($fields as $field) {
             $field,
             (string)$value,
             (string)$error,
-            $applicationaccepted
+            $applicationaccepted,
+            (int)$dhbwio->id
         )
     ];
 }
