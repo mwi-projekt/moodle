@@ -72,7 +72,7 @@ class behat_mod_dhbwio extends behat_base {
             'timeinterval'            => 0,
             'intervalcount'           => 1,
             'grade'                   => 0,
-            'maxentries'              => 0,
+            'maxentries'              => -1,
             'entriesrequired'         => 0,
             'individualized'          => 0,
             'grouped'                 => 0,
