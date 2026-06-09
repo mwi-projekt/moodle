@@ -129,6 +129,23 @@ jobs:
       - name: Moodle + Plugin installieren
         run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
 
+      - name: Dataform-Install diagnostizieren
+        if: always()
+        env:
+          PGPASSWORD: ""
+        run: |
+          echo "=== mod/dataform Verzeichnis ==="
+          ls $GITHUB_WORKSPACE/moodle/mod/dataform/ 2>&1 | head -20 || echo "NICHT GEFUNDEN"
+          echo "=== dataform in modules-Tabelle ==="
+          psql -h 127.0.0.1 -U postgres moodle \
+            -c "SELECT id, name FROM mdl_modules WHERE name='dataform';" 2>&1 || echo "Abfrage fehlgeschlagen"
+          echo "=== Alle Eintraege in mdl_modules ==="
+          psql -h 127.0.0.1 -U postgres moodle \
+            -c "SELECT name FROM mdl_modules ORDER BY name;" 2>&1 || echo "Abfrage fehlgeschlagen"
+          echo "=== mdl_dataform Tabelle vorhanden? ==="
+          psql -h 127.0.0.1 -U postgres moodle \
+            -c "SELECT COUNT(*) FROM mdl_dataform;" 2>&1 || echo "Tabelle existiert NICHT"
+
       # --profile chrome: @javascript-Szenarien brauchen das Chrome-Profil
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
       #                   false negatives durch Selenium-Race-Conditions)
