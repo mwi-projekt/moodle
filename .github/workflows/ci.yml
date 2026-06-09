@@ -129,11 +129,14 @@ jobs:
       - name: Moodle + Plugin installieren
         run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
 
-      # moodle-plugin-ci kopiert --plugin-Abhaengigkeiten nicht zuverlaessig in
-      # das Moodle-Verzeichnis. Symlink manuell anlegen bevor moodle-plugin-ci behat
-      # die Behat-DB initialisiert (init.php registriert dann mod_dataform korrekt).
+      # moodle-plugin-ci kopiert --plugin-Abhaengigkeiten nicht zuverlaessig ins
+      # Moodle-Verzeichnis. Symlink manuell anlegen und danach die Behat-Testseite
+      # neu initialisieren, damit mod_dataform in der Behat-DB registriert wird.
       - name: dataform-Symlink anlegen
         run: ln -sfn $GITHUB_WORKSPACE/dataform_plugin $GITHUB_WORKSPACE/moodle/mod/dataform
+
+      - name: Behat-Testseite neu initialisieren
+        run: php $GITHUB_WORKSPACE/moodle/admin/tool/behat/cli/init.php
 
       # --profile chrome: @javascript-Szenarien brauchen das Chrome-Profil
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
