@@ -36,63 +36,104 @@ class behat_mod_dhbwio extends behat_base {
      * a dataform activity with four text fields and an aligned default view,
      * plus a dhbwio instance linked to it.
      *
-     * Self-contained – uses only Moodle core data generators, so this step
-     * works regardless of which Behat contexts are loaded by the test suite.
+     * Uses direct DB inserts + Moodle core course API for the dataform setup so
+     * that no dataform PHP files need to be loaded. This is necessary because
+     * moodle-plugin-ci installs dependency plugins without their tests/ directory,
+     * making the dataform generator unavailable in the @mod_dhbwio Behat suite.
      *
      * @Given a dhbwio application environment is set up for course :shortname
      * @param string $shortname Course shortname, e.g. "WWI23B2"
      */
     public function a_dhbwio_application_environment_is_set_up_for_course(string $shortname): void {
-        global $DB;
+        global $DB, $CFG;
 
         $course = $DB->get_record('course', ['shortname' => $shortname], 'id', MUST_EXIST);
         $generator = testing_util::get_data_generator();
 
-        // --- Dataform --------------------------------------------------------
-        // Explicit require needed: behat_mod_dataform.php is not loaded in the
-        // @mod_dhbwio suite, so Moodle's auto-discovery for the generator class
-        // mod_dataform_generator fails. Loading the file here registers the class.
-        //
-        // core_component::get_plugin_directory() returns the real (symlink-resolved)
-        // path that Moodle registered during bootstrap, avoiding failures that occur
-        // when require_once is given the symlink path directly on the CI filesystem.
-        $dataformdir = core_component::get_plugin_directory('mod', 'dataform');
-        require_once($dataformdir . '/tests/generator/lib.php');
-        $dataformgen = $generator->get_plugin_generator('mod_dataform');
+        require_once($CFG->dirroot . '/course/lib.php');
 
-        $dataform = $dataformgen->create_instance([
-            'course' => $course->id,
-            'name'   => 'Bewerbungsformular',
+        // --- Dataform: direct DB + core course API ---------------------------
+        // No dataform PHP code is loaded; only Moodle core functions are used.
+        // This avoids failures caused by the absent tests/ directory in CI.
+
+        $datamodule = $DB->get_record('modules', ['name' => 'dataform'], 'id', MUST_EXIST);
+        $now = time();
+
+        $dataform_id = $DB->insert_record('dataform', (object)[
+            'course'                  => $course->id,
+            'name'                    => 'Bewerbungsformular',
+            'intro'                   => '',
+            'introformat'             => FORMAT_HTML,
+            'inlineview'              => 0,
+            'embedded'                => 0,
+            'timemodified'            => $now,
+            'timeavailable'           => 0,
+            'timedue'                 => 0,
+            'timeinterval'            => 0,
+            'intervalcount'           => 1,
+            'grade'                   => 0,
+            'maxentries'              => 0,
+            'entriesrequired'         => 0,
+            'individualized'          => 0,
+            'grouped'                 => 0,
+            'anonymous'               => 0,
+            'timelimit'               => -1,
+            'defaultview'             => 0,
+            'defaultfilter'           => 0,
+            'completionentries'       => 0,
+            'completionspecificgrade' => 0,
         ]);
 
-        // Fields (created before the view so generate_default_view() includes them)
+        $cm = new stdClass();
+        $cm->course    = $course->id;
+        $cm->module    = $datamodule->id;
+        $cm->instance  = $dataform_id;
+        $cm->visible   = 1;
+        $cm->groupmode = 0;
+        $cm->completion = 0;
+        $cm_id = add_course_module($cm);
+        course_add_cm_to_section($course->id, $cm_id, 0);
+        rebuild_course_cache($course->id);
+
+        $this->dhbwio_dataform_instance_id = (int) $dataform_id;
+
+        // Fields
         foreach (['Kursgruppe', 'Vorname', 'Nachname', 'E-Mail'] as $fname) {
-            $dataformgen->create_field([
-                'type'   => 'text',
-                'dataid' => $dataform->id,
-                'name'   => $fname,
+            $DB->insert_record('dataform_fields', (object)[
+                'dataid'             => $dataform_id,
+                'type'               => 'text',
+                'name'               => $fname,
+                'description'        => '',
+                'visible'            => 2,
+                'editable'           => 1,
+                'defaultcontentmode' => 0,
             ]);
         }
 
-        // Default aligned view – renders "Add a new entry" link and a Save button
-        $dataformgen->create_view([
-            'type'    => 'aligned',
-            'dataid'  => $dataform->id,
-            'name'    => 'Ansicht',
-            'default' => 1,
+        // View: section holds the page template (##addnewentry## renders the link),
+        // param2 holds the per-entry edit template ([[field]] patterns),
+        // submission holds the serialised save/cancel settings (base64-encoded).
+        $view_id = $DB->insert_record('dataform_views', (object)[
+            'dataid'      => $dataform_id,
+            'type'        => 'aligned',
+            'name'        => 'Ansicht',
+            'description' => '',
+            'visible'     => 1,
+            'perpage'     => 0,
+            'filterid'    => 0,
+            'section'     => '<div>##addnewentry##</div><div>##entries##</div>',
+            'param2'      => "[[Kursgruppe]]\n[[Vorname]]\n[[Nachname]]\n[[E-Mail]]",
+            'submission'  => base64_encode(serialize(['save' => '', 'cancel' => '', 'timeout' => 1])),
         ]);
-
-        // Store instance ID so the form-filling step can resolve field names → IDs.
-        $this->dhbwio_dataform_instance_id = (int) $dataform->id;
+        $DB->set_field('dataform', 'defaultview', $view_id, ['id' => $dataform_id]);
 
         // --- dhbwio ----------------------------------------------------------
         $dhbwiogen = $generator->get_plugin_generator('mod_dhbwio');
-        $dhbwio = $dhbwiogen->create_instance(['course' => $course->id]);
+        $dhbwio    = $dhbwiogen->create_instance(['course' => $course->id]);
 
         // dhbwio.dataform_id stores the CM id of the linked dataform because
         // the observer matches it against entry_created event->contextinstanceid.
-        $dataform_cm = get_coursemodule_from_instance('dataform', $dataform->id, $course->id);
-        $DB->set_field('dhbwio', 'dataform_id', $dataform_cm->id, ['id' => $dhbwio->id]);
+        $DB->set_field('dhbwio', 'dataform_id', $cm_id, ['id' => $dhbwio->id]);
     }
 
     // =========================================================================
