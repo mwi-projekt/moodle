@@ -290,6 +290,7 @@ function dhbwio_get_file_areas($course, $cm, $context) {
     
     $areas['university_images'] = get_string('university_images', 'mod_dhbwio');
     $areas['report_attachments'] = get_string('report_attachments', 'mod_dhbwio');
+    $areas['learning_agreements'] = get_string('filearea_learning_agreements', 'mod_dhbwio');
     
     return $areas;
 }
@@ -331,7 +332,7 @@ function dhbwio_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 
     require_course_login($course, true, $cm);
 
-    $validfileareas = ['university_images', 'report_attachments'];
+    $validfileareas = ['university_images', 'report_attachments', 'learning_agreements'];
     if (!in_array($filearea, $validfileareas)) {
         return false;
     }
@@ -347,10 +348,18 @@ function dhbwio_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 
     // Check specific file permissions if needed
     if ($filearea === 'report_attachments') {
-        // Check if user is staff or the report owner
         if (!has_capability('mod/dhbwio:viewreports', $context)) {
             $report = $DB->get_record('dhbwio_experience_reports', ['id' => $itemid]);
             if (!$report || $report->userid != $USER->id) {
+                return false;
+            }
+        }
+    }
+
+    if ($filearea === 'learning_agreements') {
+        if (!has_capability('mod/dhbwio:manageuniversities', $context)) {
+            $la = $DB->get_record('dhbwio_learning_agreements', ['id' => $itemid]);
+            if (!$la || $la->userid != $USER->id) {
                 return false;
             }
         }

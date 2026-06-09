@@ -128,6 +128,12 @@ if (has_capability('mod/dhbwio:manageuniversities', $context)) {
 	);
 }
 
+$tabs[] = new tabobject(
+	'learningagreement',
+	new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']),
+	get_string('nav_learningagreement', 'mod_dhbwio')
+);
+
 echo $OUTPUT->tabtree($tabs, $tab);
 
 // Display the content based on the selected tab
@@ -855,6 +861,124 @@ switch ($tab) {
 		// Default to universities view
 		$renderer = $PAGE->get_renderer('mod_dhbwio');
 		$renderer->display_universities_list($dhbwio, $cm);
+		break;
+
+	case 'learningagreement':
+		$iscoordinator = has_capability('mod/dhbwio:manageuniversities', $context);
+
+		echo '<div class="dhbwio-learningagreement">';
+		echo '<h3>' . get_string('nav_learningagreement', 'mod_dhbwio') . '</h3>';
+
+		if (!$iscoordinator) {
+			// Student view: upload form + own uploaded files
+			$myrecord = $DB->get_record('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
+			$uploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', ['cmid' => $cm->id]);
+
+			if ($myrecord) {
+				$statuslabels = [
+					'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
+					'approved' => get_string('la_status_approved', 'mod_dhbwio'),
+					'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
+				];
+				$statuscolors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'];
+				$statuskey = $myrecord->status ?? 'pending';
+
+				echo '<div class="alert alert-' . ($statuscolors[$statuskey] ?? 'secondary') . '">';
+				echo get_string('la_current_status', 'mod_dhbwio') . ': <strong>'
+					. ($statuslabels[$statuskey] ?? $statuskey) . '</strong>';
+				if (!empty($myrecord->comment)) {
+					echo '<br><em>' . s($myrecord->comment) . '</em>';
+				}
+				echo '</div>';
+
+				// Show the uploaded file
+				$fs = get_file_storage();
+				$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $myrecord->id, '', false);
+				if (!empty($files)) {
+					$file = reset($files);
+					$fileurl = moodle_url::make_pluginfile_url(
+						$context->id, 'mod_dhbwio', 'learning_agreements', $myrecord->id,
+						$file->get_filepath(), $file->get_filename()
+					);
+					echo '<p>' . get_string('la_uploaded_file', 'mod_dhbwio') . ': ';
+					echo '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a></p>';
+				}
+
+				// Allow re-upload if rejected
+				if ($statuskey === 'rejected' || $statuskey === 'pending') {
+					echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
+						. get_string('la_reupload', 'mod_dhbwio') . '</a>';
+				}
+			} else {
+				echo '<p>' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
+				echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
+					. get_string('la_upload_btn', 'mod_dhbwio') . '</a>';
+			}
+		} else {
+			// Coordinator view: all uploaded LAs
+			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'timecreated DESC');
+
+			if (empty($records)) {
+				echo $OUTPUT->notification(get_string('la_no_submissions', 'mod_dhbwio'), 'info');
+			} else {
+				$statuslabels = [
+					'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
+					'approved' => get_string('la_status_approved', 'mod_dhbwio'),
+					'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
+				];
+				$fs = get_file_storage();
+
+				$table = new html_table();
+				$table->head = [
+					get_string('la_col_student', 'mod_dhbwio'),
+					get_string('la_col_file', 'mod_dhbwio'),
+					get_string('la_col_submitted', 'mod_dhbwio'),
+					get_string('la_col_status', 'mod_dhbwio'),
+					get_string('actions', 'mod_dhbwio'),
+				];
+				$table->attributes['class'] = 'table table-striped table-hover';
+
+				foreach ($records as $rec) {
+					$student = $DB->get_record('user', ['id' => $rec->userid]);
+					$studentname = $student ? fullname($student) : '(unbekannt)';
+
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$reviewurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+						'cmid'   => $cm->id,
+						'action' => 'review',
+						'laid'   => $rec->id,
+					]);
+
+					$statusbadge = '<span class="badge badge-'
+						. ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending']
+						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+
+					$table->data[] = [
+						$studentname,
+						$filelink,
+						userdate($rec->timecreated),
+						$statusbadge,
+						'<a href="' . $reviewurl . '" class="btn btn-sm btn-secondary">'
+							. get_string('la_review_btn', 'mod_dhbwio') . '</a>',
+					];
+				}
+
+				echo html_writer::table($table);
+			}
+		}
+
+		echo '</div>';
 		break;
 }
 

@@ -648,5 +648,29 @@ function xmldb_dhbwio_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2026060503, 'dhbwio');
     }
 
+    if ($oldversion < 2026060900) {
+        $table = new xmldb_table('dhbwio_learning_agreements');
+        $table->add_field('id',           XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('dhbwio',       XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid',       XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('filename',     XMLDB_TYPE_CHAR,    '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('status',       XMLDB_TYPE_CHAR,    '20',  null, XMLDB_NOTNULL, null, 'pending');
+        $table->add_field('comment',      XMLDB_TYPE_TEXT,    null,  null, null,          null, null);
+        $table->add_field('timecreated',  XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary',   XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_dhbwio', XMLDB_KEY_FOREIGN, ['dhbwio'], 'dhbwio', ['id']);
+        $table->add_key('fk_user',   XMLDB_KEY_FOREIGN, ['userid'], 'user',   ['id']);
+
+        $table->add_index('dhbwio_user', XMLDB_INDEX_NOTUNIQUE, ['dhbwio', 'userid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2026060900, 'dhbwio');
+    }
+
     return true;
 }
