@@ -3,28 +3,26 @@ Feature: End-to-End Bewerbungsprozess (Wirtschaftsinformatik)
   Als Studierender (Kurs WWI23B2) moechte ich den gesamten Prozess
   vom Login bis zum Formular-Absenden durchlaufen koennen.
 
-  # Background nutzt den Fresh-Site-Step des Dataform-Plugins.
-  # Dieser erzeugt: Kurs "Course 1" (shortname C1), Nutzer student1/teacher1
-  # sowie die Kurseinschreibungen – alles mit vorhersehbaren DB-IDs.
+  # Background verwendet ausschliesslich Standard-Moodle-Steps und einen eigenen
+  # dhbwio-Setup-Step, um keine Abhaengigkeit von behat_mod_dataform zu erzeugen.
   Background:
-    Given a fresh site with dataform "Bewerbungsformular"
-    And the following dataform "fields" exist:
-      | name       | type | dataform  |
-      | Kursgruppe | text | dataform1 |
-      | Vorname    | text | dataform1 |
-      | Nachname   | text | dataform1 |
-      | E-Mail     | text | dataform1 |
-    And the following dataform "views" exist:
-      | name    | type    | dataform  | default |
-      | Ansicht | aligned | dataform1 | 1       |
-    And a dhbwio instance is set up in course "C1" linked to dataform "dataform1"
+    Given the following "users" exist:
+      | username | firstname | lastname   | email                |
+      | student1 | Max       | Mustermann | student1@example.com |
+    And the following "courses" exist:
+      | fullname        | shortname |
+      | WWI Test Course | WWI23B2   |
+    And the following "course enrolments" exist:
+      | user     | course  | role    |
+      | student1 | WWI23B2 | student |
+    And a dhbwio application environment is set up for course "WWI23B2"
 
   # AC1: @javascript aktiviert den Selenium-Treiber (Behat-Anforderung fuer
   #       JS-Rendering und vollstaendige Browser-Interaktion).
   @javascript
   Scenario: Student durchlaeuft den vollstaendigen Bewerbungs-Happy-Path
     Given I log in as "student1"
-    And I am on "Course 1" course homepage
+    And I am on "WWI Test Course" course homepage
     When I follow "Bewerbungsformular"
     And I follow "Add a new entry"
     And I fill the dhbwio application form with:

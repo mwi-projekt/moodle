@@ -32,42 +32,57 @@ class behat_mod_dhbwio extends behat_base {
     // =========================================================================
 
     /**
-     * Creates a dhbwio module instance in the given course and links it to an
-     * existing dataform identified by its course-module idnumber.
+     * Creates the complete test environment for dhbwio application tests:
+     * a dataform activity with four text fields and an aligned default view,
+     * plus a dhbwio instance linked to it.
      *
-     * Why the linking matters: the observer in observer.php matches incoming
-     * dataform entry_created events against dhbwio.dataform_id, which stores
-     * the CM id of the dataform (not the instance id).
+     * Self-contained – uses only Moodle core data generators, so this step
+     * works regardless of which Behat contexts are loaded by the test suite.
      *
-     * @Given a dhbwio instance is set up in course :shortname linked to dataform :dfidnumber
-     * @param string $shortname  Course shortname, e.g. "C1"
-     * @param string $dfidnumber Dataform CM idnumber, e.g. "dataform1"
+     * @Given a dhbwio application environment is set up for course :shortname
+     * @param string $shortname Course shortname, e.g. "WWI23B2"
      */
-    public function a_dhbwio_instance_is_set_up_in_course_linked_to_dataform(
-        string $shortname,
-        string $dfidnumber
-    ): void {
+    public function a_dhbwio_application_environment_is_set_up_for_course(string $shortname): void {
         global $DB;
 
         $course = $DB->get_record('course', ['shortname' => $shortname], 'id', MUST_EXIST);
+        $generator = testing_util::get_data_generator();
 
-        // The CM record gives us both the CM id (stored in dhbwio.dataform_id)
-        // and the instance id (needed to resolve dataform_fields.dataid).
-        $dataform_cm = $DB->get_record(
-            'course_modules',
-            ['idnumber' => $dfidnumber],
-            'id, instance',
-            MUST_EXIST
-        );
+        // --- Dataform --------------------------------------------------------
+        $dataformgen = $generator->get_plugin_generator('mod_dataform');
 
-        $this->dhbwio_dataform_instance_id = (int) $dataform_cm->instance;
+        $dataform = $dataformgen->create_instance([
+            'course' => $course->id,
+            'name'   => 'Bewerbungsformular',
+        ]);
 
-        require_once(__DIR__ . '/../generator/lib.php');
-        $generator = testing_util::get_data_generator()->get_plugin_generator('mod_dhbwio');
-        $dhbwio = $generator->create_instance(['course' => $course->id]);
+        // Fields (created before the view so generate_default_view() includes them)
+        foreach (['Kursgruppe', 'Vorname', 'Nachname', 'E-Mail'] as $fname) {
+            $dataformgen->create_field([
+                'type'   => 'text',
+                'dataid' => $dataform->id,
+                'name'   => $fname,
+            ]);
+        }
 
-        // Link dhbwio to the dataform. dhbwio_add_instance() already created
-        // the default email templates, so notifications will fire correctly.
+        // Default aligned view – renders "Add a new entry" link and a Save button
+        $dataformgen->create_view([
+            'type'    => 'aligned',
+            'dataid'  => $dataform->id,
+            'name'    => 'Ansicht',
+            'default' => 1,
+        ]);
+
+        // Store instance ID so the form-filling step can resolve field names → IDs.
+        $this->dhbwio_dataform_instance_id = (int) $dataform->id;
+
+        // --- dhbwio ----------------------------------------------------------
+        $dhbwiogen = $generator->get_plugin_generator('mod_dhbwio');
+        $dhbwio = $dhbwiogen->create_instance(['course' => $course->id]);
+
+        // dhbwio.dataform_id stores the CM id of the linked dataform because
+        // the observer matches it against entry_created event->contextinstanceid.
+        $dataform_cm = get_coursemodule_from_instance('dataform', $dataform->id, $course->id);
         $DB->set_field('dhbwio', 'dataform_id', $dataform_cm->id, ['id' => $dhbwio->id]);
     }
 
@@ -89,7 +104,7 @@ class behat_mod_dhbwio extends behat_base {
         if ($this->dhbwio_dataform_instance_id === null) {
             throw new \RuntimeException(
                 'Dataform instance ID not initialised. ' .
-                'Run "a dhbwio instance is set up in course ... linked to dataform ..." first.'
+                'Run "a dhbwio application environment is set up for course ..." first.'
             );
         }
 
