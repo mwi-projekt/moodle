@@ -210,6 +210,28 @@ switch ($tab) {
 				['label' => $step3label,                                      'level' => 3],
 			];
 
+			// ── Hinweis-Banner bei Entscheidung ─────────────────────────────────
+			if ($curlevel >= 3 && !empty($entries)) {
+				$firstentry = reset($entries);
+				$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+					'id'      => $cm->id,
+					'dataid'  => $dataid,
+					'entryid' => $firstentry->id,
+				]);
+				if ($isreject) {
+					$alertclass = 'alert-danger';
+					$alertmsg   = get_string('alert_rejected', 'mod_dhbwio');
+				} else {
+					$alertclass = 'alert-success';
+					$alertmsg   = get_string('alert_accepted', 'mod_dhbwio');
+				}
+				echo '<div class="alert ' . $alertclass . ' alert-dismissible fade show" role="alert">';
+				echo $alertmsg . ' ';
+				echo html_writer::link($viewurl, get_string('alert_open_application', 'mod_dhbwio'), ['class' => 'alert-link fw-bold']);
+				echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
+				echo '</div>';
+			}
+
 			echo '<div class="dhbwio-appbar-container mb-4">';
 			echo '<div class="dhbwio-appbar-steps">';
 
