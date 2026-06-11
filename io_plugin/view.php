@@ -906,11 +906,15 @@ switch ($tab) {
 
 				// Allow re-upload if rejected
 				if ($statuskey === 'rejected' || $statuskey === 'pending') {
+					echo '<button class="btn btn-secondary" disabled>'
+						. get_string('la_create_btn', 'mod_dhbwio') . '</button> ';
 					echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
 						. get_string('la_reupload', 'mod_dhbwio') . '</a>';
 				}
 			} else {
 				echo '<p>' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
+				echo '<button class="btn btn-secondary" disabled>'
+					. get_string('la_create_btn', 'mod_dhbwio') . '</button> ';
 				echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
 					. get_string('la_upload_btn', 'mod_dhbwio') . '</a>';
 			}

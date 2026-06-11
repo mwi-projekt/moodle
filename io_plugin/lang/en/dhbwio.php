@@ -144,6 +144,7 @@ $string['la_upload_title']                = 'Upload Learning Agreement';
 $string['la_review_title']                = 'Review Learning Agreement';
 $string['la_file_label']                  = 'File (PDF, DOCX)';
 $string['la_upload_btn']                  = 'Upload';
+$string['la_create_btn']                  = 'Create';
 $string['la_upload_success']              = 'Learning Agreement uploaded successfully.';
 $string['la_reupload']                    = 'Re-upload';
 $string['la_no_upload_yet']               = 'You have not uploaded a Learning Agreement yet.';

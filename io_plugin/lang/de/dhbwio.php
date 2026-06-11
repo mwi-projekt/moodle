@@ -170,6 +170,7 @@ $string['la_upload_title']                = 'Learning Agreement hochladen';
 $string['la_review_title']                = 'Learning Agreement prüfen';
 $string['la_file_label']                  = 'Datei (PDF, DOCX)';
 $string['la_upload_btn']                  = 'Hochladen';
+$string['la_create_btn']                  = 'Erstellen';
 $string['la_upload_success']              = 'Learning Agreement erfolgreich hochgeladen.';
 $string['la_reupload']                    = 'Erneut hochladen';
 $string['la_no_upload_yet']               = 'Du hast noch kein Learning Agreement hochgeladen.';
