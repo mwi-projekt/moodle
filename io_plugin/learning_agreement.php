@@ -27,9 +27,15 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 use mod_dhbwio\form\learning_agreement_form;
 
-$cmid   = required_param('cmid', PARAM_INT);
-$action = optional_param('action', 'upload', PARAM_ALPHA);
-$laid   = optional_param('laid', 0, PARAM_INT);
+$cmid    = required_param('cmid', PARAM_INT);
+$action  = optional_param('action', 'upload', PARAM_ALPHA);
+$laid    = optional_param('laid', 0, PARAM_INT);
+$doctype = optional_param('doctype', 'learning_agreement', PARAM_ALPHANUMEXT);
+
+// Sanitise doctype to known values.
+if (!in_array($doctype, ['learning_agreement', 'other_document'])) {
+    $doctype = 'learning_agreement';
+}
 
 $cm     = get_coursemodule_from_id('dhbwio', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
@@ -38,12 +44,12 @@ $dhbwio = $DB->get_record('dhbwio', ['id' => $cm->instance], '*', MUST_EXIST);
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$PAGE->set_url('/mod/dhbwio/learning_agreement.php', ['cmid' => $cmid, 'action' => $action, 'laid' => $laid]);
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 $PAGE->requires->css('/mod/dhbwio/styles.css');
 
 $returnurl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cmid, 'tab' => 'learningagreement']);
+$PAGE->set_url('/mod/dhbwio/learning_agreement.php', ['cmid' => $cmid, 'action' => $action, 'laid' => $laid, 'doctype' => $doctype]);
 $iscoordinator = has_capability('mod/dhbwio:manageuniversities', $context);
 
 // ── COORDINATOR: Review ──────────────────────────────────────────────────────
@@ -127,13 +133,25 @@ if ($iscoordinator) {
     redirect($returnurl);
 }
 
-$PAGE->set_title(get_string('la_upload_title', 'mod_dhbwio'));
+$uploadtitle = ($doctype === 'other_document')
+    ? get_string('la_other_upload_title', 'mod_dhbwio')
+    : get_string('la_upload_title', 'mod_dhbwio');
 
-$myrecord = $DB->get_record('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
+$uploadsuccess = ($doctype === 'other_document')
+    ? get_string('la_other_upload_success', 'mod_dhbwio')
+    : get_string('la_upload_success', 'mod_dhbwio');
+
+$PAGE->set_title($uploadtitle);
+
+$myrecord = $DB->get_record('dhbwio_learning_agreements', [
+    'dhbwio'  => $dhbwio->id,
+    'userid'  => $USER->id,
+    'doctype' => $doctype,
+]);
 
 $form = new learning_agreement_form(null, ['cmid' => $cmid]);
 
-// Pre-populate filemanager with existing file
+// Pre-populate filemanager with existing file.
 if ($myrecord) {
     $draftitemid = file_get_submitted_draft_itemid('la_file');
     file_prepare_draft_area(
@@ -155,17 +173,18 @@ if ($data = $form->get_data()) {
     $now = time();
 
     if ($myrecord) {
-        $recordid          = $myrecord->id;
-        $update            = new stdClass();
-        $update->id        = $myrecord->id;
-        $update->status    = 'pending';
-        $update->comment   = '';
+        $recordid             = $myrecord->id;
+        $update               = new stdClass();
+        $update->id           = $myrecord->id;
+        $update->status       = 'pending';
+        $update->comment      = '';
         $update->timemodified = $now;
         $DB->update_record('dhbwio_learning_agreements', $update);
     } else {
         $insert               = new stdClass();
         $insert->dhbwio       = $dhbwio->id;
         $insert->userid       = $USER->id;
+        $insert->doctype      = $doctype;
         $insert->filename     = '';
         $insert->status       = 'pending';
         $insert->comment      = '';
@@ -183,7 +202,7 @@ if ($data = $form->get_data()) {
         ['subdirs' => 0, 'maxfiles' => 1]
     );
 
-    // Cache filename
+    // Cache filename.
     $fs    = get_file_storage();
     $files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $recordid, '', false);
     if (!empty($files)) {
@@ -191,10 +210,10 @@ if ($data = $form->get_data()) {
         $DB->set_field('dhbwio_learning_agreements', 'filename', $file->get_filename(), ['id' => $recordid]);
     }
 
-    redirect($returnurl, get_string('la_upload_success', 'mod_dhbwio'));
+    redirect($returnurl, $uploadsuccess);
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('la_upload_title', 'mod_dhbwio'));
+echo $OUTPUT->heading($uploadtitle);
 $form->display();
 echo $OUTPUT->footer();

@@ -379,5 +379,26 @@
         <INDEX NAME="dhbwio_jahrgang" UNIQUE="false" FIELDS="dhbwio, jahrgang"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="dhbwio_learning_agreements" COMMENT="Learning agreements and other documents submitted by students">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="doctype" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="learning_agreement" SEQUENCE="false" COMMENT="Document type: learning_agreement|other_document"/>
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending|approved|rejected"/>
+        <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_user" UNIQUE="false" FIELDS="dhbwio, userid"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

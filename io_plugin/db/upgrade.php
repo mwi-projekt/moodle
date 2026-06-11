@@ -672,5 +672,33 @@ function xmldb_dhbwio_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2026060900, 'dhbwio');
     }
 
+    if ($oldversion < 2026061101) {
+        // Add doctype field to dhbwio_learning_agreements.
+        $table = new xmldb_table('dhbwio_learning_agreements');
+        $field = new xmldb_field('doctype', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, 'learning_agreement', 'userid');
+        if ($dbman->table_exists($table) && !$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Insert "nachzureichen" status if it does not exist yet.
+        if (!$DB->record_exists('dhbwio_application_status', ['shortname' => 'nachzureichen'])) {
+            $now = time();
+            $DB->insert_record('dhbwio_application_status', (object)[
+                'shortname'    => 'nachzureichen',
+                'label'        => 'Nachzureichen',
+                'description'  => 'Unterlagen müssen nachgereicht werden.',
+                'sortorder'    => 50,
+                'active'       => 1,
+                'isinitial'    => 0,
+                'isaccepted'   => 0,
+                'isrejected'   => 0,
+                'timecreated'  => $now,
+                'timemodified' => $now,
+            ]);
+        }
+
+        upgrade_mod_savepoint(true, 2026061101, 'dhbwio');
+    }
+
     return true;
 }

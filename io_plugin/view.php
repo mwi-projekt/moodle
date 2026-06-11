@@ -179,100 +179,112 @@ switch ($tab) {
 				$appstatuskey = $appstatrec ? $appstatrec->shortname : null;
 			}
 
-			// Farbstufen je Fortschritt
-			// Level 0 = keine Bewerbung (grau)
-			// Level 1 = eingereicht   (hellgrün)
-			// Level 2 = in_pruefung   (mittelgrün)
-			// Level 3 = angenommen    (dunkelgrün) | abgelehnt (rot)
-			$islevel = [
-				'eingereicht' => 1,
-				'in_pruefung' => 2,
-				'angenommen'  => 3,
-				'abgelehnt'   => 3,
-			];
-			$curlevel  = $appstatuskey ? ($islevel[$appstatuskey] ?? 0) : 0;
-			$isreject  = ($appstatuskey === 'abgelehnt');
+			// Level-Zuordnung je Status
+			$isnachzureichen = ($appstatuskey === 'nachzureichen');
+			$isreject        = ($appstatuskey === 'abgelehnt');
 
-			// Farben je Stufe (grauer Fallback wenn kein Level)
-			$stepcolors = ['#dee2e6', '#A5D6A7', '#43A047', $isreject ? '#dc3545' : '#1B5E20'];
+			if ($isnachzureichen) {
+				// 4-Schritt-Modus: Eingereicht → In Prüfung → Nachzureichen → Ergebnis
+				$islevel = [
+					'eingereicht'    => 1,
+					'in_pruefung'    => 2,
+					'nachzureichen'  => 3,
+					'angenommen'     => 4,
+					'abgelehnt'      => 4,
+				];
+				$curlevel = 3; // nachzureichen ist aktiv
+				$barsteps = [
+					['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
+					['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
+					['label' => get_string('appbar_nachzureichen','mod_dhbwio'), 'level' => 3],
+					['label' => get_string('appbar_result',       'mod_dhbwio'), 'level' => 4],
+				];
+			} else {
+				// Standard 3-Schritt-Modus
+				$islevel = [
+					'eingereicht' => 1,
+					'in_pruefung' => 2,
+					'angenommen'  => 3,
+					'abgelehnt'   => 3,
+				];
+				$curlevel = $appstatuskey ? ($islevel[$appstatuskey] ?? 0) : 0;
 
-			// Schritt-Konfiguration
-			$step3label = get_string('appbar_result', 'mod_dhbwio');
-			if ($appstatuskey === 'angenommen') {
-				$step3label = get_string('appbar_accepted', 'mod_dhbwio');
-			} elseif ($appstatuskey === 'abgelehnt') {
-				$step3label = get_string('appbar_rejected', 'mod_dhbwio');
+				$step3label = get_string('appbar_result', 'mod_dhbwio');
+				if ($appstatuskey === 'angenommen') {
+					$step3label = get_string('appbar_accepted', 'mod_dhbwio');
+				} elseif ($appstatuskey === 'abgelehnt') {
+					$step3label = get_string('appbar_rejected', 'mod_dhbwio');
+				}
+				$barsteps = [
+					['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
+					['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
+					['label' => $step3label,                                      'level' => 3],
+				];
 			}
 
-			$barsteps = [
-				['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
-				['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
-				['label' => $step3label,                                      'level' => 3],
-			];
-
-			// ── Hinweis-Banner bei Entscheidung ─────────────────────────────────
-			if ($curlevel >= 3 && !empty($entries)) {
+			// ── Hinweis-Banner ────────────────────────────────────────────────
+			if (!empty($entries)) {
 				$firstentry = reset($entries);
-				$viewurl = new moodle_url('/mod/dhbwio/application.php', [
-					'id'      => $cm->id,
-					'dataid'  => $dataid,
-					'entryid' => $firstentry->id,
-				]);
-				if ($isreject) {
-					$alertclass = 'alert-danger';
-					$alertmsg   = get_string('alert_rejected', 'mod_dhbwio');
-				} else {
-					$alertclass = 'alert-success';
-					$alertmsg   = get_string('alert_accepted', 'mod_dhbwio');
+				if ($isnachzureichen) {
+					echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">';
+					echo get_string('alert_nachzureichen', 'mod_dhbwio');
+					echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
+					echo '</div>';
+				} elseif ($curlevel >= 3) {
+					$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $firstentry->id,
+					]);
+					if ($isreject) {
+						$alertclass = 'alert-danger';
+						$alertmsg   = get_string('alert_rejected', 'mod_dhbwio');
+					} else {
+						$alertclass = 'alert-success';
+						$alertmsg   = get_string('alert_accepted', 'mod_dhbwio');
+					}
+					echo '<div class="alert ' . $alertclass . ' alert-dismissible fade show" role="alert">';
+					echo $alertmsg . ' ';
+					echo html_writer::link($viewurl, get_string('alert_open_application', 'mod_dhbwio'), ['class' => 'alert-link fw-bold']);
+					echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
+					echo '</div>';
 				}
-				echo '<div class="alert ' . $alertclass . ' alert-dismissible fade show" role="alert">';
-				echo $alertmsg . ' ';
-				echo html_writer::link($viewurl, get_string('alert_open_application', 'mod_dhbwio'), ['class' => 'alert-link fw-bold']);
-				echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
-				echo '</div>';
 			}
 
 			echo '<div class="dhbwio-appbar-container mb-4">';
 			echo '<div class="dhbwio-appbar-steps">';
 
+			$totalsteps = count($barsteps);
 			foreach ($barsteps as $si => $step) {
-				if ($si === 0) {
-					// Schritt 1: Submitted – grün sobald eingereicht
-					if ($curlevel >= 1) {
+				$steplevel = $step['level'];
+
+				if ($isnachzureichen && $si === 2) {
+					// "Nachzureichen" – aktiv (gelb/orange)
+					$circlass = 'dhbwio-appbar-circle-active';
+					$lblclass = 'dhbwio-appbar-label-active';
+					$icon     = '3';
+				} elseif ($curlevel > $steplevel) {
+					$circlass = 'dhbwio-appbar-circle-done';
+					$lblclass = 'dhbwio-appbar-label-done';
+					$icon     = '&#10003;';
+				} elseif ($curlevel === $steplevel && !$isnachzureichen) {
+					if ($isreject && $si === $totalsteps - 1) {
+						$circlass = 'dhbwio-appbar-circle-reject';
+						$lblclass = 'dhbwio-appbar-label-reject';
+						$icon     = '&#10007;';
+					} elseif ($curlevel >= 3) {
 						$circlass = 'dhbwio-appbar-circle-done';
 						$lblclass = 'dhbwio-appbar-label-done';
 						$icon     = '&#10003;';
 					} else {
-						$circlass = 'dhbwio-appbar-circle-pending';
-						$lblclass = 'dhbwio-appbar-label-pending';
-						$icon     = '1';
-					}
-				} elseif ($si === 1) {
-					// Schritt 2: Under Review – gelb wenn aktiv, grün wenn abgeschlossen
-					if ($curlevel >= 3) {
-						$circlass = 'dhbwio-appbar-circle-done';
-						$lblclass = 'dhbwio-appbar-label-done';
-						$icon     = '&#10003;';
-					} elseif ($curlevel === 2) {
 						$circlass = 'dhbwio-appbar-circle-active';
 						$lblclass = 'dhbwio-appbar-label-active';
-						$icon     = '2';
-					} else {
-						$circlass = 'dhbwio-appbar-circle-pending';
-						$lblclass = 'dhbwio-appbar-label-pending';
-						$icon     = '2';
+						$icon     = (string) $steplevel;
 					}
 				} else {
-					// Schritt 3: Ergebnis – grün oder rot
-					if ($curlevel >= 3) {
-						$circlass = $isreject ? 'dhbwio-appbar-circle-reject' : 'dhbwio-appbar-circle-done';
-						$lblclass = $isreject ? 'dhbwio-appbar-label-reject' : 'dhbwio-appbar-label-done';
-						$icon     = $isreject ? '&#10007;' : '&#10003;';
-					} else {
-						$circlass = 'dhbwio-appbar-circle-pending';
-						$lblclass = 'dhbwio-appbar-label-pending';
-						$icon     = '3';
-					}
+					$circlass = 'dhbwio-appbar-circle-pending';
+					$lblclass = 'dhbwio-appbar-label-pending';
+					$icon     = (string) $steplevel;
 				}
 
 				echo '<div class="dhbwio-appbar-step">';
@@ -280,17 +292,13 @@ switch ($tab) {
 				echo '<div class="dhbwio-appbar-label ' . $lblclass . '">' . htmlspecialchars($step['label']) . '</div>';
 				echo '</div>';
 
-				// Linie nach diesem Schritt
-				if ($si < count($barsteps) - 1) {
-					if ($si === 0) {
-						// Linie 1: grau → gelb → grün
-						if ($curlevel >= 3)     $linecolor = '#43A047';
-						elseif ($curlevel === 2) $linecolor = '#FFA000';
-						else                     $linecolor = '#dee2e6';
+				if ($si < $totalsteps - 1) {
+					if ($curlevel > $steplevel) {
+						$linecolor = ($isnachzureichen && $si === 1) ? '#FFA000' : '#43A047';
+					} elseif ($isnachzureichen && $si === 1) {
+						$linecolor = '#FFA000';
 					} else {
-						// Linie 2: grau → grün oder rot
-						if ($curlevel >= 3) $linecolor = $isreject ? '#dc3545' : '#43A047';
-						else                $linecolor = '#dee2e6';
+						$linecolor = '#dee2e6';
 					}
 					echo '<div class="dhbwio-appbar-line" style="background:' . $linecolor . '"></div>';
 				}
@@ -345,18 +353,22 @@ switch ($tab) {
 				$statusrecord = status_manager::get_status((int) $entry->statusid);
 				if ($statusrecord) {
 					$statuskey = $statusrecord->shortname;
-					$status = get_string('status_' . $statuskey, 'dhbwio');
+					$strkey    = 'status_' . $statuskey;
+					$status    = get_string_manager()->string_exists($strkey, 'dhbwio')
+						? get_string($strkey, 'dhbwio')
+						: $statusrecord->label;
 				} else {
 					$statuskey = 'unknown';
 					$status = '-';
 				}
 
 				$statusclass = match ($statuskey) {
-					'eingereicht' => 'status-submitted',
-					'in_pruefung' => 'status-review',
-					'angenommen'  => 'status-approved',
-					'abgelehnt'   => 'status-rejected',
-					default       => 'status-default',
+					'eingereicht'   => 'status-submitted',
+					'in_pruefung'   => 'status-review',
+					'angenommen'    => 'status-approved',
+					'abgelehnt'     => 'status-rejected',
+					'nachzureichen' => 'status-review',
+					default         => 'status-default',
 				};
 
 				if ($canviewallapplications) {
@@ -891,86 +903,164 @@ switch ($tab) {
 		echo '<div class="dhbwio-learningagreement">';
 		echo '<h3>' . get_string('nav_learningagreement', 'mod_dhbwio') . '</h3>';
 
+		$statuslabels = [
+			'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
+			'approved' => get_string('la_status_approved', 'mod_dhbwio'),
+			'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
+		];
+		$doctypelabels = [
+			'learning_agreement' => get_string('la_doctype_learning_agreement', 'mod_dhbwio'),
+			'other_document'     => get_string('la_doctype_other_document', 'mod_dhbwio'),
+		];
+
 		if (!$iscoordinator) {
-			// Student view: upload form + own uploaded files
-			$myrecord = $DB->get_record('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
-			$uploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', ['cmid' => $cm->id]);
-
-			if ($myrecord) {
-				$statuslabels = [
-					'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
-					'approved' => get_string('la_status_approved', 'mod_dhbwio'),
-					'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
-				];
-				$statuscolors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'];
-				$statuskey = $myrecord->status ?? 'pending';
-
-				echo '<div class="alert alert-' . ($statuscolors[$statuskey] ?? 'secondary') . '">';
-				echo get_string('la_current_status', 'mod_dhbwio') . ': <strong>'
-					. ($statuslabels[$statuskey] ?? $statuskey) . '</strong>';
-				if (!empty($myrecord->comment)) {
-					echo '<br><em>' . s($myrecord->comment) . '</em>';
+			// Determine application status.
+			try {
+				$dataform_la = dataform_manager::get_course_dataform((int) $course->id);
+				$dataid_la   = (int) $dataform_la->id;
+			} catch (moodle_exception $e) {
+				$dataid_la = 0;
+			}
+			$appstatus_la     = null;
+			$appstatuskey_la  = null;
+			if ($dataid_la > 0) {
+				$userentries = entry_manager::get_user_entries($dataid_la, $USER->id);
+				if (!empty($userentries)) {
+					$ufirst        = reset($userentries);
+					$appstatus_la  = status_manager::get_status((int) $ufirst->statusid);
+					$appstatuskey_la = $appstatus_la ? $appstatus_la->shortname : null;
 				}
-				echo '</div>';
+			}
 
-				// Show the uploaded file
-				$fs = get_file_storage();
-				$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $myrecord->id, '', false);
-				if (!empty($files)) {
-					$file = reset($files);
-					$fileurl = moodle_url::make_pluginfile_url(
-						$context->id, 'mod_dhbwio', 'learning_agreements', $myrecord->id,
-						$file->get_filepath(), $file->get_filename()
-					);
-					echo '<p>' . get_string('la_uploaded_file', 'mod_dhbwio') . ': ';
-					echo '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a></p>';
-				}
+			$isnachzureichen_tab = ($appstatuskey_la === 'nachzureichen');
 
-				// Allow re-upload if rejected
-				if ($statuskey === 'rejected' || $statuskey === 'pending') {
-					echo '<button class="btn btn-secondary" disabled>'
-						. get_string('la_create_btn', 'mod_dhbwio') . '</button> ';
-					echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
-						. get_string('la_reupload', 'mod_dhbwio') . '</a>';
-				}
+			// ── Upload buttons (immer sichtbar) ────────────────────────────
+			$lauploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+				'cmid'    => $cm->id,
+				'doctype' => 'learning_agreement',
+			]);
+			$otherurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+				'cmid'    => $cm->id,
+				'doctype' => 'other_document',
+			]);
+			echo '<div class="mb-3">';
+			if ($isnachzureichen_tab) {
+				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
+				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-secondary']);
 			} else {
-				echo '<p>' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
-				echo '<button class="btn btn-secondary" disabled>'
-					. get_string('la_create_btn', 'mod_dhbwio') . '</button> ';
-				echo '<a href="' . $uploadurl . '" class="btn btn-primary">'
-					. get_string('la_upload_btn', 'mod_dhbwio') . '</a>';
+				echo '<button class="btn btn-secondary me-2" disabled>'
+					. get_string('la_create_btn', 'mod_dhbwio') . '</button>';
+				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
+				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-outline-secondary']);
+			}
+			echo '</div>';
+
+			// ── DELETE action ──────────────────────────────────────────────
+			$deletelaid = optional_param('deletelaid', 0, PARAM_INT);
+			if ($deletelaid > 0 && confirm_sesskey()) {
+				$delrec = $DB->get_record('dhbwio_learning_agreements', ['id' => $deletelaid, 'dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
+				if ($delrec) {
+					$fs = get_file_storage();
+					$fs->delete_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $delrec->id);
+					$DB->delete_records('dhbwio_learning_agreements', ['id' => $delrec->id]);
+				}
+				redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']));
+			}
+
+			// ── Document history ────────────────────────────────────────────
+			$allrecords = $DB->get_records('dhbwio_learning_agreements', [
+				'dhbwio' => $dhbwio->id,
+				'userid' => $USER->id,
+			], 'timecreated DESC');
+
+			echo '<h5 class="mt-4">' . get_string('la_doc_history', 'mod_dhbwio') . '</h5>';
+
+			if (empty($allrecords)) {
+				echo '<p class="text-muted">' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
+			} else {
+				$fs = get_file_storage();
+				$histable = new html_table();
+				$histable->head = [
+					get_string('la_col_doctype',  'mod_dhbwio'),
+					get_string('la_col_file',     'mod_dhbwio'),
+					get_string('la_col_status',   'mod_dhbwio'),
+					get_string('la_col_uploaded', 'mod_dhbwio'),
+					get_string('actions',         'mod_dhbwio'),
+				];
+				$histable->attributes['class'] = 'table table-striped table-hover';
+
+				foreach ($allrecords as $rec) {
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file    = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$statusbadge = '<span class="badge badge-'
+						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
+						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+
+					if (!empty($rec->comment)) {
+						$statusbadge .= '<br><small class="text-muted">' . s($rec->comment) . '</small>';
+					}
+
+					$deleteurl = new moodle_url('/mod/dhbwio/view.php', [
+						'id'         => $cm->id,
+						'tab'        => 'learningagreement',
+						'deletelaid' => $rec->id,
+						'sesskey'    => sesskey(),
+					]);
+
+					$histable->data[] = [
+						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
+						$filelink,
+						$statusbadge,
+						userdate($rec->timecreated),
+						html_writer::link(
+							$deleteurl,
+							get_string('delete'),
+							[
+								'class'   => 'btn btn-sm btn-outline-danger',
+								'onclick' => 'return confirm("' . get_string('la_delete_confirm', 'mod_dhbwio') . '")',
+							]
+						),
+					];
+				}
+				echo html_writer::table($histable);
 			}
 		} else {
-			// Coordinator view: all uploaded LAs
-			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'timecreated DESC');
+			// Coordinator view: all uploaded documents grouped by student.
+			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'userid ASC, timecreated DESC');
 
 			if (empty($records)) {
 				echo $OUTPUT->notification(get_string('la_no_submissions', 'mod_dhbwio'), 'info');
 			} else {
-				$statuslabels = [
-					'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
-					'approved' => get_string('la_status_approved', 'mod_dhbwio'),
-					'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
-				];
 				$fs = get_file_storage();
 
 				$table = new html_table();
 				$table->head = [
-					get_string('la_col_student', 'mod_dhbwio'),
-					get_string('la_col_file', 'mod_dhbwio'),
-					get_string('la_col_submitted', 'mod_dhbwio'),
-					get_string('la_col_status', 'mod_dhbwio'),
-					get_string('actions', 'mod_dhbwio'),
+					get_string('la_col_student',  'mod_dhbwio'),
+					get_string('la_col_doctype',  'mod_dhbwio'),
+					get_string('la_col_file',     'mod_dhbwio'),
+					get_string('la_col_submitted','mod_dhbwio'),
+					get_string('la_col_status',   'mod_dhbwio'),
+					get_string('actions',         'mod_dhbwio'),
 				];
 				$table->attributes['class'] = 'table table-striped table-hover';
 
 				foreach ($records as $rec) {
-					$student = $DB->get_record('user', ['id' => $rec->userid]);
+					$student     = $DB->get_record('user', ['id' => $rec->userid]);
 					$studentname = $student ? fullname($student) : '(unbekannt)';
 
 					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
 					if (!empty($files)) {
-						$file = reset($files);
+						$file    = reset($files);
 						$fileurl = moodle_url::make_pluginfile_url(
 							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
 							$file->get_filepath(), $file->get_filename()
@@ -987,11 +1077,12 @@ switch ($tab) {
 					]);
 
 					$statusbadge = '<span class="badge badge-'
-						. ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending']
+						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
 						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
 
 					$table->data[] = [
 						$studentname,
+						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
 						$filelink,
 						userdate($rec->timecreated),
 						$statusbadge,

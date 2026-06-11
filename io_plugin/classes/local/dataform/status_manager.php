@@ -117,6 +117,13 @@ class status_manager
 
         return $status && (int) $status->isaccepted === 1;
     }
+    public static function is_nachzureichen(int $statusid): bool
+    {
+        $status = self::get_status($statusid);
+
+        return $status && $status->shortname === 'nachzureichen';
+    }
+
     public static function get_status_by_shortname(string $shortname): ?\stdClass
     {
         global $DB;

@@ -78,6 +78,18 @@ function xmldb_dhbwio_install(): void
             'timecreated' => $now,
             'timemodified' => $now,
         ],
+        [
+            'shortname' => 'nachzureichen',
+            'label' => 'Nachzureichen',
+            'description' => 'Unterlagen müssen nachgereicht werden.',
+            'sortorder' => 50,
+            'active' => 1,
+            'isinitial' => 0,
+            'isaccepted' => 0,
+            'isrejected' => 0,
+            'timecreated' => $now,
+            'timemodified' => $now,
+        ],
     ];
 
     $study_programs = [
