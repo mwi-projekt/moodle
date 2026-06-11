@@ -149,7 +149,7 @@ $myrecord = $DB->get_record('dhbwio_learning_agreements', [
     'doctype' => $doctype,
 ]);
 
-$form = new learning_agreement_form(null, ['cmid' => $cmid]);
+$form = new learning_agreement_form(null, ['cmid' => $cmid, 'doctype' => $doctype]);
 
 // Pre-populate filemanager with existing file.
 if ($myrecord) {
@@ -170,6 +170,10 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
+    // Doctype aus dem Formular lesen (zuverlässiger als URL-Parameter)
+    if (!empty($data->doctype) && in_array($data->doctype, ['learning_agreement', 'other_document'])) {
+        $doctype = $data->doctype;
+    }
     $now = time();
 
     if ($myrecord) {

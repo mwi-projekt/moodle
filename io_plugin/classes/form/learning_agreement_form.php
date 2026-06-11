@@ -24,10 +24,14 @@ class learning_agreement_form extends \moodleform {
 
     public function definition() {
         $mform = $this->_form;
-        $cmid  = $this->_customdata['cmid'];
+        $cmid    = $this->_customdata['cmid'];
+        $doctype = $this->_customdata['doctype'] ?? 'learning_agreement';
 
         $mform->addElement('hidden', 'cmid', $cmid);
         $mform->setType('cmid', PARAM_INT);
+
+        $mform->addElement('hidden', 'doctype', $doctype);
+        $mform->setType('doctype', PARAM_ALPHANUMEXT);
 
         $mform->addElement('filemanager', 'la_file', get_string('la_file_label', 'mod_dhbwio'), null, [
             'subdirs'        => 0,
