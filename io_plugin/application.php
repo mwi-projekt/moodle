@@ -104,7 +104,7 @@ $submitted = optional_param('submitbutton', '', PARAM_RAW) !== '';
 
 // Verarbeitet abgesendete Bewerbungsformulare: Werte einlesen,
 // validieren, Entry erstellen/aktualisieren und Inhalte speichern.
-// Kann perspektivisch zur besseren Übersichtlichkeit ausgelagert werden.
+// #TODO Kann perspektivisch zur besseren Übersichtlichkeit ausgelagert werden.
 if ($submitted) {
     require_sesskey();
 
@@ -213,7 +213,7 @@ foreach ($fields as $field) {
 echo $OUTPUT->header();
 
 if ($entryid > 0 && $entry) {
-    // Diese Hilfsfunktion sollte in Zukunft ausgelagert werden.
+    // #TODO Diese Hilfsfunktion sollte in Zukunft ausgelagert werden.
     $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
         $field = field_manager::get_field_by_name($dataid, $fieldname);
 

@@ -27,11 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'mod_dhbwio';
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->release = 'v0.4.3';
-<<<<<<< Updated upstream
-$plugin->version = 2025062302;
-=======
-$plugin->version = 2026060401;
->>>>>>> Stashed changes
+$plugin->version = 2026061101;
 $plugin->requires = 2024100704;
 
 $plugin->dependencies = [

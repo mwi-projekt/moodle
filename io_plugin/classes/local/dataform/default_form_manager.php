@@ -387,7 +387,7 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_REVIEW,
                 'fieldgroup' => field_manager::GROUP_REVIEW,
-                'sortorder' => 20
+                'sortorder' => 30
             ],
             [
                 'type' => 'radiobutton',
@@ -396,7 +396,7 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_REVIEW,
                 'fieldgroup' => field_manager::GROUP_REVIEW,
-                'sortorder' => 30
+                'sortorder' => 40
             ],
             [
                 'type' => 'radiobutton',
@@ -405,7 +405,15 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_REVIEW,
                 'fieldgroup' => field_manager::GROUP_REVIEW,
-                'sortorder' => 40
+                'sortorder' => 50
+            ],
+            [
+                'type' => 'select',
+                'name' => 'ANGENOMMEN_FUER',
+                'description' => 'SGL-Freigabe für Hochschule',
+                'scope' => field_manager::SCOPE_REVIEW,
+                'fieldgroup' => field_manager::GROUP_REVIEW,
+                'sortorder' => 20
             ],
         ];
     }

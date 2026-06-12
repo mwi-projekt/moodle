@@ -88,7 +88,7 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // dhbwio savepoint reached
-        upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
+       // upgrade_mod_savepoint(true, 2025052601, 'dhbwio');
     }
 
     // Add email log table
@@ -121,7 +121,7 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // Update version number
-        upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
+       // upgrade_mod_savepoint(true, 2025062000, 'dhbwio');
     }
 
     // Add DataForm view fields for link generation
@@ -144,7 +144,7 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
+       // upgrade_mod_savepoint(true, 2025062300, 'dhbwio');
     }
 
     if ($oldversion < 2026051900) {
@@ -306,7 +306,7 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->create_table($table);
         }
 
-        upgrade_mod_savepoint(true, 2026051900, 'dhbwio');
+      //  upgrade_mod_savepoint(true, 2026051900, 'dhbwio');
     }
     if ($oldversion < 2026052201) {
 
@@ -415,7 +415,7 @@ function xmldb_dhbwio_upgrade($oldversion)
 
         $dbman->add_key($entrytable, $key);
 
-        upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
+       // upgrade_mod_savepoint(true, 2026052201, 'dhbwio');
     }
 
     if ($oldversion < 2026052301) {
@@ -487,7 +487,7 @@ function xmldb_dhbwio_upgrade($oldversion)
             $DB->set_field('dhbwio_dataform_fields', 'sortorder', $sortorder, ['name' => $name]);
         }
 
-        upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
+       // upgrade_mod_savepoint(true, 2026052301, 'dhbwio');
     }
 
     if ($oldversion < 2026060401) {
@@ -548,8 +548,34 @@ function xmldb_dhbwio_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2026060401, 'dhbwio');
+        // upgrade_mod_savepoint(true, 2026060401, 'dhbwio');
     }
+
+    if ($oldversion < 2026060402) {
+    $table = new xmldb_table('dhbwio_dataform_entries');
+
+    $oldfield = new xmldb_field('acceptedchoice');
+    if ($dbman->field_exists($table, $oldfield)) {
+        $dbman->drop_field($table, $oldfield);
+    }
+
+    $newfield = new xmldb_field(
+        'accepteduniversityid',
+        XMLDB_TYPE_INTEGER,
+        '10',
+        null,
+        null,
+        null,
+        null,
+        'statusid'
+    );
+
+    if (!$dbman->field_exists($table, $newfield)) {
+        $dbman->add_field($table, $newfield);
+    }
+
+    // upgrade_mod_savepoint(true, 2026060402, 'dhbwio');
+}
 
     return true;
 }

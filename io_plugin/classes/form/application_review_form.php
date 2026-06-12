@@ -66,12 +66,11 @@ class application_review_form extends \moodleform
 
         $mform->addElement(
             'select',
-            'acceptedchoice',
+            'accepteduniversityid',
             'Angenommen für',
             $acceptedoptions
         );
-        $mform->setType('acceptedchoice', PARAM_ALPHA);
-
+        $mform->setType('accepteduniversityid', PARAM_INT);
         $mform->setType('statusid', PARAM_INT);
         $mform->addRule('statusid', get_string('required'), 'required', null, 'client');
 
@@ -189,11 +188,39 @@ class application_review_form extends \moodleform
         $secondchoice = $this->_customdata['secondchoice'] ?? '';
         $thirdchoice = $this->_customdata['thirdchoice'] ?? '';
 
-        return [
-            '' => 'Keine Auswahl',
-            'first' => 'Erstwunsch' . ($firstchoice !== '' ? ' – ' . $firstchoice : ''),
-            'second' => 'Zweitwunsch' . ($secondchoice !== '' ? ' – ' . $secondchoice : ''),
-            'third' => 'Drittwunsch' . ($thirdchoice !== '' ? ' – ' . $thirdchoice : ''),
+        $options = [
+            0 => 'Keine Auswahl',
         ];
+
+        if (!empty($firstchoice) && is_numeric($firstchoice)) {
+            $options[(int)$firstchoice] = 'Erstwunsch – ' . $this->get_university_label((int)$firstchoice);
+        }
+
+        if (!empty($secondchoice) && is_numeric($secondchoice)) {
+            $options[(int)$secondchoice] = 'Zweitwunsch – ' . $this->get_university_label((int)$secondchoice);
+        }
+
+        if (!empty($thirdchoice) && is_numeric($thirdchoice)) {
+            $options[(int)$thirdchoice] = 'Drittwunsch – ' . $this->get_university_label((int)$thirdchoice);
+        }
+
+        return $options;
+    }
+    private function get_university_label(int $universityid): string
+    {
+        global $DB;
+
+        $university = $DB->get_record(
+            'dhbwio_universities',
+            ['id' => $universityid],
+            '*',
+            IGNORE_MISSING
+        );
+
+        if (!$university) {
+            return '-';
+        }
+
+        return trim($university->country . ' - ' . $university->name);
     }
 }

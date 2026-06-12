@@ -286,12 +286,13 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="state" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="statusid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="acceptedchoice" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="accepteduniversityid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
         <KEY NAME="dataid" TYPE="foreign" FIELDS="dataid" REFTABLE="dhbwio_dataform" REFFIELDS="id" />
         <KEY NAME="statusid_fk" TYPE="foreign" FIELDS="statusid" REFTABLE="dhbwio_application_status" REFFIELDS="id"/>
+        <KEY NAME="accepteduniversityid" TYPE="foreign" FIELDS="accepteduniversityid" REFTABLE="dhbwio_universities" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="dhbwio_dataform_contents" COMMENT="the content of each entry">

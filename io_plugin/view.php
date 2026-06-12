@@ -164,12 +164,12 @@ switch ($tab) {
 			if ($canviewallapplications) {
 				$entries = entry_manager::get_entries($dataid);
 				echo html_writer::link(
-				$matrixurl,
-				'Zuweisungsmatrix',
-				[
-					'class' => 'btn btn-primary px-3 py-2'
-				]
-			);
+					$matrixurl,
+					'Zuweisungsmatrix',
+					[
+						'class' => 'btn btn-primary px-3 py-2'
+					]
+				);
 			} else {
 				$entries = entry_manager::get_user_entries($dataid, $USER->id);
 			}
@@ -189,7 +189,13 @@ switch ($tab) {
 					$erstwunsch = '-';
 
 					if ($erstwunschfield) {
-						$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
+						$erstwunschvalue = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '';
+
+						if (is_numeric($erstwunschvalue) && (int)$erstwunschvalue > 0) {
+							$erstwunsch = entry_manager::get_university_label((int)$erstwunschvalue);
+						} else {
+							$erstwunsch = '-';
+						}
 					}
 
 					$statusrecord = status_manager::get_status((int) $entry->statusid);

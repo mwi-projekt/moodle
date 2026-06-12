@@ -333,7 +333,7 @@ class form_renderer
         $options = [];
 
         if ($fieldname === 'ZWEITWUNSCH' || $fieldname === 'DRITTWUNSCH') {
-            $options['Keine'] = 'Keine';
+            $options['0'] = 'Keine';
         }
 
         $conditions = ['active' => 1];
@@ -350,7 +350,7 @@ class form_renderer
 
         foreach ($universities as $university) {
             $label = trim($university->country . ' - ' . $university->name);
-            $options[$label] = $label;
+            $options[(string)$university->id] = $label;
         }
 
         return $options;
