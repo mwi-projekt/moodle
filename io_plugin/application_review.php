@@ -83,9 +83,6 @@ if ($formdata = $mform->get_data()) {
     }
     $reviewfields = [
         'KOMMENTAR_IO',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT',
-        'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT',
     ];
 
     foreach ($reviewfields as $fieldname) {

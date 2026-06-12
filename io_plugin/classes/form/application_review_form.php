@@ -44,6 +44,10 @@ class application_review_form extends \moodleform
 
     public function definition(): void
     {
+        $excludedreviewfields = [
+        'ANGENOMMEN_FUER',
+        ];
+
         $mform = $this->_form;
 
         $id = $this->_customdata['id'] ?? 0;
@@ -80,7 +84,9 @@ class application_review_form extends \moodleform
             if (!field_manager::is_review_field($field)) {
                 continue;
             }
-
+            if (in_array($field->name, $excludedreviewfields, true)) {
+            continue;
+            }
             $this->add_review_field($field);
         }
 
