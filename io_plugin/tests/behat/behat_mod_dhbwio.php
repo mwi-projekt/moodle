@@ -123,7 +123,8 @@ class behat_mod_dhbwio extends behat_base {
             'field' => [],
         ];
         foreach ($field_ids as $fname => $fid) {
-            $patterns_array['field'][$fid] = ["[[$fname]]" => "[[$fname]]"];
+            $pattern = ($fname === 'Nachname') ? "[[*$fname]]" : "[[$fname]]";
+            $patterns_array['field'][$fid] = [$pattern => $pattern];
         }
 
         // View: section holds the page template (##addnewentry## renders the link),

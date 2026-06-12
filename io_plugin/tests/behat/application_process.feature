@@ -65,6 +65,6 @@ Feature: End-to-End Bewerbungsprozess (Wirtschaftsinformatik)
       | E-Mail     | max.mustermann@dhbw.de |
     And I press "Save"
     # AC2: Formular nicht abgesendet – Submit-Button muss noch sichtbar sein.
-    Then the "Save" "button" should exist
+    Then "Save" "button" should exist
     # AC3: Fehlermeldung sichtbar und per ARIA fuer Screenreader zugaenglich.
     And the form error for "Nachname" is visible and accessible
