@@ -63,6 +63,9 @@ Feature: End-to-End Bewerbungsprozess (Wirtschaftsinformatik)
       | Kursgruppe | WWI23B2                |
       | Vorname    | Max                    |
       | E-Mail     | max.mustermann@dhbw.de |
+    # Nachname anklicken (ohne Wert), damit Moodles YUI-Validierung das Feld
+    # als "touched" markiert und die Fehlermeldung anzeigt.
+    And I focus the dhbwio application form field "Nachname"
     And I press "Save"
     # AC2: Formular nicht abgesendet – Submit-Button muss noch sichtbar sein.
     Then "Save" "button" should exist

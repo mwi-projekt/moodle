@@ -218,6 +218,43 @@ class behat_mod_dhbwio extends behat_base {
     }
 
     /**
+     * Clicks on a dhbwio application form field (without entering a value) to
+     * mark it as "touched" for Moodle's YUI client-side validation.  YUI only
+     * renders the visible error element for fields that have received at least
+     * one focus/blur event; calling this step before pressing Save ensures that
+     * the required-field error is shown rather than silently prevented.
+     *
+     * @When I focus the dhbwio application form field :fieldname
+     * @param string $fieldname  Field name as stored in dataform_fields.name
+     */
+    public function i_focus_dhbwio_application_form_field(string $fieldname): void {
+        global $DB;
+
+        if ($this->dhbwio_dataform_instance_id === null) {
+            throw new \RuntimeException(
+                'Dataform instance ID not initialised. ' .
+                'Run "a dhbwio application environment is set up for course ..." first.'
+            );
+        }
+
+        $field   = $DB->get_record(
+            'dataform_fields',
+            ['dataid' => $this->dhbwio_dataform_instance_id, 'name' => $fieldname],
+            'id',
+            MUST_EXIST
+        );
+        $inputid = "id_field_{$field->id}_-1";
+        $input   = $this->getSession()->getPage()->find('css', "#{$inputid}");
+        if (!$input) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Cannot focus field \"$fieldname\": input element \"#{$inputid}\" not found.",
+                $this->getSession()
+            );
+        }
+        $input->click();
+    }
+
+    /**
      * Verifies that a required-field validation error is both visible in the UI
      * and carries ARIA attributes so screen readers can announce it (Issue #25).
      *
@@ -246,20 +283,23 @@ class behat_mod_dhbwio extends behat_base {
             'id',
             MUST_EXIST
         );
-        $inputid  = "id_field_{$field->id}_-1";
-        $errorid  = "{$inputid}_error";
-        $page     = $this->getSession()->getPage();
+        // Moodle mform renders error elements as:
+        //   <span id="id_error_{element_name}" class="error" style="display:none">
+        // where element_name = "field_{id}_-1" (the form field's name attribute, not HTML id).
+        $formelementname = "field_{$field->id}_-1";
+        $inputid         = "id_{$formelementname}";
+        $errorid         = "id_error_{$formelementname}";
+        $page            = $this->getSession()->getPage();
 
         // AC3a: the error element must be present and visible.
         $errorel = $page->find('css', "#{$errorid}");
-        if (!$errorel) {
-            $errorel = $page->find('css', 'span.error');
-        }
         if (!$errorel || !$errorel->isVisible()) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "No visible error message found for required field \"$fieldname\". " .
-                "Expected an element with id=\"{$errorid}\" or class=\"error\" to be visible after " .
-                "attempting to save without a value.",
+                "Expected element with id=\"{$errorid}\" to be visible after pressing Save " .
+                "with an empty required field. " .
+                "Hint: ensure the field was focused (touched) before pressing Save so that " .
+                "Moodle's YUI validation renders the error.",
                 $this->getSession()
             );
         }
@@ -268,7 +308,7 @@ class behat_mod_dhbwio extends behat_base {
         //   • input has aria-describedby referencing the error element
         //   • input has aria-invalid="true"
         //   • error element carries role="alert" (live region)
-        $input = $page->find('css', "#{$inputid}");
+        $input      = $page->find('css', "#{$inputid}");
         $accessible = false;
         if ($input) {
             $ariadescribedby = $input->getAttribute('aria-describedby');
@@ -284,7 +324,7 @@ class behat_mod_dhbwio extends behat_base {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "Error message for \"$fieldname\" is visible but not accessible to screen readers. " .
                 "Expected aria-describedby or aria-invalid on #{$inputid}, " .
-                "or role=\"alert\" on the error element.",
+                "or role=\"alert\" on the error element (#{$errorid}).",
                 $this->getSession()
             );
         }
