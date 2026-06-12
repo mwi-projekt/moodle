@@ -138,7 +138,7 @@ class behat_mod_dhbwio extends behat_base {
             'perpage'     => 0,
             'filterid'    => 0,
             'section'     => '<div>##addnewentry##</div><div>##entries##</div>',
-            'param2'      => "[[Kursgruppe]]\n[[Vorname]]\n[[Nachname]]\n[[E-Mail]]",
+            'param2'      => "[[Kursgruppe]]\n[[Vorname]]\n[[*Nachname]]\n[[E-Mail]]",
             'submission'  => base64_encode(serialize(['save' => '', 'cancel' => '', 'timeout' => 1])),
             'patterns'    => serialize($patterns_array),
         ]);
@@ -213,6 +213,79 @@ class behat_mod_dhbwio extends behat_base {
                     $this->getSession()
                 );
             }
+        }
+    }
+
+    /**
+     * Verifies that a required-field validation error is both visible in the UI
+     * and carries ARIA attributes so screen readers can announce it (Issue #25).
+     *
+     * Checks:
+     *  a) A <span class="error"> element is present and visible on the page.
+     *  b) The associated input has aria-describedby pointing to the error element
+     *     OR aria-invalid="true", OR the error element itself has role="alert" —
+     *     any one of these satisfies WCAG 1.3.1 (Info and Relationships).
+     *
+     * @Then the form error for :fieldname is visible and accessible
+     * @param string $fieldname  Field name as stored in dataform_fields.name
+     */
+    public function the_form_error_for_field_is_visible_and_accessible(string $fieldname): void {
+        global $DB;
+
+        if ($this->dhbwio_dataform_instance_id === null) {
+            throw new \RuntimeException(
+                'Dataform instance ID not initialised. ' .
+                'Run "a dhbwio application environment is set up for course ..." first.'
+            );
+        }
+
+        $field = $DB->get_record(
+            'dataform_fields',
+            ['dataid' => $this->dhbwio_dataform_instance_id, 'name' => $fieldname],
+            'id',
+            MUST_EXIST
+        );
+        $inputid  = "id_field_{$field->id}_-1";
+        $errorid  = "{$inputid}_error";
+        $page     = $this->getSession()->getPage();
+
+        // AC3a: the error element must be present and visible.
+        $errorel = $page->find('css', "#{$errorid}");
+        if (!$errorel) {
+            $errorel = $page->find('css', 'span.error');
+        }
+        if (!$errorel || !$errorel->isVisible()) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "No visible error message found for required field \"$fieldname\". " .
+                "Expected an element with id=\"{$errorid}\" or class=\"error\" to be visible after " .
+                "attempting to save without a value.",
+                $this->getSession()
+            );
+        }
+
+        // AC3b: ARIA accessibility — at least one of the following must be true:
+        //   • input has aria-describedby referencing the error element
+        //   • input has aria-invalid="true"
+        //   • error element carries role="alert" (live region)
+        $input = $page->find('css', "#{$inputid}");
+        $accessible = false;
+        if ($input) {
+            $ariadescribedby = $input->getAttribute('aria-describedby');
+            $ariainvalid     = $input->getAttribute('aria-invalid');
+            if (!empty($ariadescribedby) || $ariainvalid === 'true') {
+                $accessible = true;
+            }
+        }
+        if (!$accessible && $errorel->getAttribute('role') === 'alert') {
+            $accessible = true;
+        }
+        if (!$accessible) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Error message for \"$fieldname\" is visible but not accessible to screen readers. " .
+                "Expected aria-describedby or aria-invalid on #{$inputid}, " .
+                "or role=\"alert\" on the error element.",
+                $this->getSession()
+            );
         }
     }
 

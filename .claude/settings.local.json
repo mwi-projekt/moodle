@@ -18,7 +18,10 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\\\\io_plugin\\\\tests\" -File)",
       "Bash(Find \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\\\\io_plugin\" -name \"*.feature\")",
       "Skill(code-review)",
-      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run list --repo mwi-projekt/moodle --branch teamTestautomation --limit 5)"
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run list --repo mwi-projekt/moodle --branch teamTestautomation --limit 5)",
+      "Bash(xargs wc -l)",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && head -30 \"{}\"')",
+      "Bash(xargs grep -l \"extends.*TestCase\")"
     ]
   }
 }
