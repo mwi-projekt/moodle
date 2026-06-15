@@ -30,14 +30,13 @@ $PAGE->set_title(format_string($dhbwio->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $entry = entry_manager::get_entry($entryid);
-$currentstatus = status_manager::get_status((int) $entry->statusid);
 
 if (!$entry || (int) $entry->dataid !== $dataid) {
     throw new moodle_exception('invalidentryid', 'mod_dhbwio');
 }
 
-// #TODO Entscheidung: Soll der Status sofort auf "In Prüfung" gesetzt werden, sobald die Anmeldung angeschaut wird?
-// Der Status einer Bewerbung wird bei Aufruf dieser Seite direkt von "Eingereicht" auf "In Prüfung" gesetzt.
+$currentstatus = status_manager::get_status((int) $entry->statusid);
+
 if ($currentstatus && $currentstatus->shortname === 'eingereicht') {
     $reviewstatus = status_manager::get_status_by_shortname('in_pruefung');
 
@@ -46,14 +45,16 @@ if ($currentstatus && $currentstatus->shortname === 'eingereicht') {
         $entry->statusid = (int) $reviewstatus->id;
     }
 }
+
 $fields = field_manager::get_fields($dataid);
 
-// #TODO Funktion zukünftig auslagern!
 $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
     $field = field_manager::get_field_by_name($dataid, $fieldname);
+
     if (!$field) {
         return '';
     }
+
     return entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
 };
 
@@ -81,8 +82,12 @@ if ($formdata = $mform->get_data()) {
     if (!empty($formdata->statusid)) {
         $entry->statusid = (int) $formdata->statusid;
     }
+
     $reviewfields = [
         'KOMMENTAR_IO',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT',
+        'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT',
     ];
 
     foreach ($reviewfields as $fieldname) {
@@ -91,19 +96,21 @@ if ($formdata = $mform->get_data()) {
         if (!$field) {
             continue;
         }
-        $value = $formdata->{$fieldname} ?? '';
-        entry_manager::save_content($entryid, (int) $field->id, (string) $value);
-    }
 
-    $accepteduniversityid = !empty($formdata->accepteduniversityid)
-        ? (int)$formdata->accepteduniversityid
+        $value = $formdata->{$fieldname} ?? '';
+
+        entry_manager::save_content($entryid, (int) $field->id, (string) $value);
+
+    $accepteduniversityid = !empty($formdata->acceptedchoice)
+        ? (int)$formdata->acceptedchoice
         : null;
 
     // entry_manager::update_accepted_university($entryid, $accepteduniversityid);
-    $entry->accepteduniversityid = $accepteduniversityid;
+    $entry->acceptedchoice = $accepteduniversityid;
+    }
+
     $entry->timemodified = time();
 
-    // #TODO Durch einen eigenen Methodenaufruf ersetzen!
     $DB->update_record('dhbwio_dataform_entries', $entry);
 
     redirect(
@@ -120,7 +127,7 @@ $mform->set_data([
     'entryid' => $entryid,
     'statusid' => $entry->statusid,
     'KOMMENTAR_IO' => $getvalue('KOMMENTAR_IO'),
-    'accepteduniversityid' => $entry->accepteduniversityid ?? '',
+    'acceptedchoice' => $entry->acceptedchoice ?? '',
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT'),
     'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => $getvalue('SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT'),

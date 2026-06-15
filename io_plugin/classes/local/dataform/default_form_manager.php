@@ -387,7 +387,7 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_DEPRECATED,
                 'fieldgroup' => field_manager::GROUP_TECHNICAL,
-                'sortorder' => 30
+                'sortorder' => 20
             ],
             [
                 'type' => 'radiobutton',
@@ -396,7 +396,7 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_DEPRECATED,
                 'fieldgroup' => field_manager::GROUP_TECHNICAL,
-                'sortorder' => 40
+                'sortorder' => 30
             ],
             [
                 'type' => 'radiobutton',
@@ -405,7 +405,7 @@ class default_form_manager
                 'param1' => "Ja\nNein",
                 'scope' => field_manager::SCOPE_DEPRECATED,
                 'fieldgroup' => field_manager::GROUP_TECHNICAL,
-                'sortorder' => 50
+                'sortorder' => 40
             ],
             [
                 'type' => 'select',

@@ -30,10 +30,6 @@ $PAGE->set_cm($cm);
 $PAGE->set_title(format_string($dhbwio->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-$showreviewresult = false;
-$reviewcontext = [];
-$fieldcontext = [];
-
 $entry = entry_manager::get_entry($entryid);
 
 if (!$entry || (int) $entry->dataid !== $dataid) {
@@ -53,6 +49,8 @@ $statusclass = match (mb_strtolower($status)) {
 
 $fields = field_manager::get_fields($dataid);
 
+$showreviewresult = false;
+$reviewcontext = [];
 
 if ($statusrecord &&
     ((int)$statusrecord->isaccepted === 1 ||
@@ -83,6 +81,8 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading('Bewerbung anzeigen', 3);
 
+$fieldcontext = [];
+
 foreach ($fields as $field) {
     if (!field_manager::is_student_field($field)) {
         continue;
@@ -111,7 +111,17 @@ $backurl = new moodle_url('/mod/dhbwio/view.php', [
     'id' => $cm->id,
 ]);
 
-$acceptedchoicelabel = entry_manager::get_accepted_university_label($entry);
+$getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+    $field = field_manager::get_field_by_name($dataid, $fieldname);
+
+    if (!$field) {
+        return '';
+    }
+
+    return entry_manager::get_content_value($entryid, (int)$field->id) ?? '';
+};
+
+$acceptedchoicelabel = entry_manager::get_accepted_university_label($entry, $getvalue);
 
 $templatecontext = [
     'fields' => $fieldcontext,

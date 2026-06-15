@@ -215,6 +215,18 @@ class validation_manager
     {
         return in_array($field->name, ['ERSTWUNSCH', 'ZWEITWUNSCH', 'DRITTWUNSCH'], true);
     }
+    /**
+     * Validiert die Auswahl einer Partnerhochschule.
+     *
+     * Es wird geprüft, ob die ausgewählte Hochschule als aktive
+     * Hochschule im System vorhanden ist.
+     *
+     * @param \stdClass $field Felddefinition.
+     * @param string $fieldname Formularfeldname.
+     * @param mixed $value Gewählter Wert.
+     * @param array $errors Fehlerliste.
+     * @return void
+     */
     private static function validate_university_option(
         \stdClass $field,
         string $fieldname,

@@ -100,7 +100,6 @@ class form_renderer
                     $selectclass,
                     $islockedchoicefield
                 );
-
                 break;
 
             case 'radiobutton':
@@ -332,6 +331,9 @@ class form_renderer
 
         $options = [];
 
+        if ($fieldname === 'ERSTWUNSCH') {
+            $options['0'] = 'Bitte Auswählen';
+        }
         if ($fieldname === 'ZWEITWUNSCH' || $fieldname === 'DRITTWUNSCH') {
             $options['0'] = 'Keine';
         }

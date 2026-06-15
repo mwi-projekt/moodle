@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__ . '/../../config.php');
 
+use mod_dhbwio\form\application_form;
 use mod_dhbwio\local\dataform\form_renderer;
 use mod_dhbwio\local\dataform\validation_manager;
 use mod_dhbwio\local\dataform\dataform_manager;
@@ -31,96 +32,96 @@ $PAGE->set_title(format_string($dhbwio->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $dataform = dataform_manager::get_dataform($dataid);
-$showreviewresult = false;
-$reviewcontext = [];
-$entry = null;
-$contents = [];
-$status = null;
-$errors = [];
-$formvalues = [];
-$applicationaccepted = false;
-$acceptedchoicelabel = '';
-$fieldcontext = [];
 
 if (!$dataform) {
     throw new moodle_exception('invaliddataformid', 'mod_dhbwio');
 }
+
 $fields = field_manager::get_fields($dataid);
+
+$showreviewresult = false;
+$reviewcontext = [];
 
 if ($entryid > 0) {
     $entry = entry_manager::get_entry($entryid);
-    /* "Gibt es diese Application-ID?" Schutz vor application.php?entryid=xxxx
-    *   sowie Prüfung ob die Application zu dieser Instanz des Dataform gehört.
-    */
-    if (!$entry || (int) $entry->dataid !== $dataid) {
-        throw new moodle_exception('invalidentryid', 'mod_dhbwio');
-    }
-    // Fremde Bewerbungen dürfen hier nur von Nutzern mit viewallapplications angezeigt werden.
-    // Das Speichern fremder Bewerbungen wird im Submit-Block separat verhindert.
-    if ((int) $entry->userid !== (int) $USER->id) {
-        require_capability('mod/dhbwio:viewallapplications', $context);
-    }
 
-    $contents = entry_manager::get_entry_contents($entryid);
-}
+    if ($entry) {
+        $status = status_manager::get_status((int) $entry->statusid);
 
-if ($entry) {
-    $status = status_manager::get_status((int)$entry->statusid);
-}
+        if ($status && ((int) $status->isaccepted === 1 || (int) $status->isrejected === 1)) {
+            $showreviewresult = true;
 
-/*
- * Lädt bei einer bestehenden Bewerbung die Review-Ergebnisse.
- *
- * Wenn die Bewerbung bereits einen finalen Status hat
- * (angenommen oder abgelehnt), werden die Review-Felder des
- * International Office ausgelesen und als read-only HTML für
- * die Anzeige im Application-Template vorbereitet.
- */
+            foreach ($fields as $field) {
+                if (!field_manager::is_review_field($field)) {
+                    continue;
+                }
 
-if ($entry) {
-    if ($status && ((int) $status->isaccepted === 1 || (int) $status->isrejected === 1)) {
-        $showreviewresult = true;
-        foreach ($fields as $field) {
-            if (!field_manager::is_review_field($field)) {
-                continue;
+                $value = entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
+
+                $reviewcontext[$field->name] = [
+                    'html' => view_renderer::render_field($field, (string) $value),
+                ];
             }
-            $value = entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
-            $reviewcontext[$field->name] = [
-                'html' => view_renderer::render_field($field, (string) $value),
-            ];
         }
     }
 }
 
-// Statusinformationen und Inhalte einer vorhandenen Bewerbung vorbereiten
+$entry = null;
+$entrycontents = [];
+
 if ($entryid > 0) {
+    $entry = entry_manager::get_entry($entryid);
+
+    if (!$entry || (int) $entry->dataid !== $dataid) {
+        throw new moodle_exception('invalidentryid', 'mod_dhbwio');
+    }
+
+    if ((int) $entry->userid !== (int) $USER->id) {
+        require_capability('mod/dhbwio:viewallapplications', $context);
+    }
+
+    $entrycontents = entry_manager::get_entry_contents($entryid);
+}
+
+$formurl = new moodle_url('/mod/dhbwio/application.php', [
+    'id' => $cm->id,
+    'dataid' => $dataid,
+]);
+
+$errors = [];
+$formvalues = [];
+$contents = [];
+
+$applicationaccepted = false;
+
+if ($entryid > 0) {
+    $entry = entry_manager::get_entry($entryid);
+
     if ($entry) {
+        $status = status_manager::get_status((int) $entry->statusid);
         $applicationaccepted = $status && (int) $status->isaccepted === 1;
     }
 }
 
+if ($entryid > 0) {
+    $contents = entry_manager::get_entry_contents($entryid);
+}
 
-$submitted = optional_param('submitbutton', '', PARAM_RAW) !== '';
+$ispost = optional_param('submitbutton', '', PARAM_RAW) !== '';
 
-// Verarbeitet abgesendete Bewerbungsformulare: Werte einlesen,
-// validieren, Entry erstellen/aktualisieren und Inhalte speichern.
-// #TODO Kann perspektivisch zur besseren Übersichtlichkeit ausgelagert werden.
-if ($submitted) {
+if ($ispost) {
     require_sesskey();
 
     foreach ($fields as $field) {
-        // Nur Felder des student-scope dürfen abgeschickt werden
         if (!field_manager::is_student_field($field)) {
             continue;
         }
 
         $formfieldname = 'field_' . $field->id;
 
-        // Sonderprüfung für Datumswerte
         if ($field->type === 'time') {
             $datevalue = optional_param($formfieldname, '', PARAM_RAW);
 
-            // Convert zu Unix-Timestamp
             if ($datevalue !== '') {
                 $timestamp = strtotime($datevalue);
                 $formvalues[$formfieldname] = $timestamp ?: '';
@@ -132,16 +133,12 @@ if ($submitted) {
         }
     }
 
-    // Umwandlung der $formvalues zu (object)
     $formdata = (object) $formvalues;
-    // Prüfung des $formdata durch validation_manager
     $errors = validation_manager::validate($formdata, $fields);
 
-    // Speichern erfolgt nur bei leerem $error-Array
     if (empty($errors)) {
         $submittedentryid = optional_param('entryid', 0, PARAM_INT);
 
-        // UPDATE
         if ($submittedentryid > 0) {
             $entry = entry_manager::get_entry((int) $submittedentryid);
 
@@ -149,26 +146,31 @@ if ($submitted) {
                 throw new moodle_exception('invalidentryid', 'mod_dhbwio');
             }
 
-            if ((int)$entry->userid !== (int)$USER->id) {
-                throw new moodle_exception('nopermission');
+            if ((int) $entry->userid !== (int) $USER->id) {
+                require_capability('mod/dhbwio:viewallapplications', $context);
             }
 
             $entryid = (int) $submittedentryid;
             entry_manager::update_entry($entryid);
-        }
-        // NEW ENTRY
-        else {
+        } else {
             $entryid = entry_manager::create_entry($dataid, $USER->id);
         }
 
-        // Feldinhalte Speichern
+        $isnewentry = ($submittedentryid === 0);
+
         foreach ($fields as $field) {
             if (!field_manager::is_student_field($field)) {
                 continue;
             }
+
             $formfieldname = 'field_' . $field->id;
             $value = $formvalues[$formfieldname] ?? '';
+
             entry_manager::save_content($entryid, (int) $field->id, (string) $value);
+        }
+
+        if ($isnewentry) {
+            entry_manager::update_within_deadline($entryid, (int) $dhbwio->id);
         }
 
         redirect(
@@ -180,7 +182,8 @@ if ($submitted) {
     }
 }
 
-// Mustache-Template-Aufbau
+$fieldcontext = [];
+
 foreach ($fields as $field) {
 
     if (!field_manager::is_student_field($field)) {
@@ -188,17 +191,21 @@ foreach ($fields as $field) {
     }
 
     $formfieldname = 'field_' . $field->id;
+
     $value = '';
 
     // Nach Validierungsfehlern POST-Werte behalten.
     if (isset($formvalues[$formfieldname])) {
+
         $value = $formvalues[$formfieldname];
     } else if (!empty($contents[$field->id])) {
+
         $value = $contents[$field->id]->content;
     }
 
-    // vorhandenen Error-Text abgreifen
+    $formfieldname = 'field_' . $field->id;
     $error = $errors[$formfieldname] ?? '';
+
     $fieldcontext[$field->name] = [
         'html' => form_renderer::render_field(
             $field,
@@ -212,8 +219,9 @@ foreach ($fields as $field) {
 
 echo $OUTPUT->header();
 
+$acceptedchoicelabel = '';
+
 if ($entryid > 0 && $entry) {
-    // #TODO Diese Hilfsfunktion sollte in Zukunft ausgelagert werden.
     $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
         $field = field_manager::get_field_by_name($dataid, $fieldname);
 
