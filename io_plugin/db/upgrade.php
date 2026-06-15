@@ -700,5 +700,66 @@ function xmldb_dhbwio_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2026061101, 'dhbwio');
     }
 
+    if ($oldversion < 2026061102) {
+
+        // Add within_deadline column to dhbwio_dataform_entries.
+        $table = new xmldb_table('dhbwio_dataform_entries');
+        $field = new xmldb_field('within_deadline', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'acceptedchoice');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Populate within_deadline for all existing entries.
+        $entries = $DB->get_records('dhbwio_dataform_entries', null, '', 'id, dataid, timecreated');
+
+        foreach ($entries as $entry) {
+            // Find the dhbwio instance for this entry via dataform → course → dhbwio.
+            $dataform = $DB->get_record('dhbwio_dataform', ['id' => $entry->dataid], 'course');
+            if (!$dataform) {
+                continue;
+            }
+            $dhbwio = $DB->get_record('dhbwio', ['course' => $dataform->course], 'id');
+            if (!$dhbwio) {
+                continue;
+            }
+
+            // Find the STUDIENGANG field for this dataid.
+            $studiengang_field = $DB->get_record('dhbwio_dataform_fields', ['dataid' => $entry->dataid, 'name' => 'STUDIENGANG'], 'id');
+            if (!$studiengang_field) {
+                continue;
+            }
+
+            // Get the studiengang value from the entry's content.
+            $content = $DB->get_record('dhbwio_dataform_contents', ['entryid' => $entry->id, 'fieldid' => $studiengang_field->id], 'content');
+            if (!$content || empty($content->content)) {
+                continue;
+            }
+            $studiengang = $content->content;
+
+            // Look up a matching Bewerbungsfrist (prefer specific studiengang over 'alle').
+            $frist = $DB->get_record_select(
+                'dhbwio_fristen',
+                "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = :studiengang AND deadline IS NOT NULL",
+                ['dhbwio' => $dhbwio->id, 'studiengang' => $studiengang]
+            );
+            if (!$frist) {
+                $frist = $DB->get_record_select(
+                    'dhbwio_fristen',
+                    "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = 'alle' AND deadline IS NOT NULL",
+                    ['dhbwio' => $dhbwio->id]
+                );
+            }
+
+            if ($frist && !empty($frist->deadline)) {
+                $within = ($entry->timecreated <= (int)$frist->deadline) ? 1 : 0;
+                $DB->set_field('dhbwio_dataform_entries', 'within_deadline', $within, ['id' => $entry->id]);
+            }
+            // If no frist found, leave the default value 1 (= rechtzeitig).
+        }
+
+        upgrade_mod_savepoint(true, 2026061102, 'dhbwio');
+    }
+
     return true;
 }

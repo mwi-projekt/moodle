@@ -282,4 +282,73 @@ class entry_manager
 
         $DB->update_record('dhbwio_dataform_entries', $record);
     }
+
+    /**
+     * Berechnet, ob eine Bewerbung innerhalb der Frist eingereicht wurde.
+     *
+     * Gibt 1 zurück, wenn keine passende Bewerbungsfrist existiert oder
+     * die Bewerbung vor dem Fristende eingereicht wurde. Gibt 0 zurück,
+     * wenn die Frist überschritten wurde.
+     *
+     * @param int $entryid ID des Eintrags.
+     * @param int $dhbwio_id ID der dhbwio-Modulinstanz.
+     * @return int 1 = rechtzeitig, 0 = zu spät.
+     */
+    public static function compute_within_deadline(int $entryid, int $dhbwio_id): int
+    {
+        global $DB;
+
+        $entry = self::get_entry($entryid);
+        if (!$entry) {
+            return 1;
+        }
+
+        // Find STUDIENGANG field for this dataid.
+        $studiengang_field = $DB->get_record('dhbwio_dataform_fields', ['dataid' => $entry->dataid, 'name' => 'STUDIENGANG'], 'id');
+        if (!$studiengang_field) {
+            return 1;
+        }
+
+        // Get studiengang value from entry contents.
+        $content = $DB->get_record('dhbwio_dataform_contents', ['entryid' => $entryid, 'fieldid' => $studiengang_field->id], 'content');
+        if (!$content || empty($content->content)) {
+            return 1;
+        }
+        $studiengang = $content->content;
+
+        // Find matching Bewerbungsfrist — specific studiengang takes priority over 'alle'.
+        $frist = $DB->get_record_select(
+            'dhbwio_fristen',
+            "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = :studiengang AND deadline IS NOT NULL",
+            ['dhbwio' => $dhbwio_id, 'studiengang' => $studiengang]
+        );
+        if (!$frist) {
+            $frist = $DB->get_record_select(
+                'dhbwio_fristen',
+                "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = 'alle' AND deadline IS NOT NULL",
+                ['dhbwio' => $dhbwio_id]
+            );
+        }
+
+        if (!$frist || empty($frist->deadline)) {
+            return 1;
+        }
+
+        return ($entry->timecreated <= (int)$frist->deadline) ? 1 : 0;
+    }
+
+    /**
+     * Setzt das within_deadline-Flag für einen Eintrag.
+     *
+     * @param int $entryid ID des Eintrags.
+     * @param int $dhbwio_id ID der dhbwio-Modulinstanz.
+     * @return void
+     */
+    public static function update_within_deadline(int $entryid, int $dhbwio_id): void
+    {
+        global $DB;
+
+        $within = self::compute_within_deadline($entryid, $dhbwio_id);
+        $DB->set_field('dhbwio_dataform_entries', 'within_deadline', $within, ['id' => $entryid]);
+    }
 }
