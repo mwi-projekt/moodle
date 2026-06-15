@@ -26,6 +26,8 @@ require_once('../../config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
 use mod_dhbwio\form\frist_form;
+use mod_dhbwio\local\dataform\entry_manager;
+use mod_dhbwio\local\dataform\dataform_manager;
 
 $cmid    = required_param('cmid', PARAM_INT);
 $action  = optional_param('action', 'add', PARAM_ALPHA);
@@ -86,7 +88,6 @@ if ($data = $form->get_data()) {
         $record->kommentar    = $data->kommentar ?? '';
         $record->timemodified = $now;
         $DB->update_record('dhbwio_fristen', $record);
-        redirect($returnurl, get_string('frist_saved', 'mod_dhbwio'));
     } else {
         // Insert
         $record              = new stdClass();
@@ -100,8 +101,20 @@ if ($data = $form->get_data()) {
         $record->timecreated  = $now;
         $record->timemodified = $now;
         $DB->insert_record('dhbwio_fristen', $record);
-        redirect($returnurl, get_string('frist_saved', 'mod_dhbwio'));
     }
+
+    // Alle bestehenden Bewerbungen neu prüfen.
+    try {
+        $dataform = dataform_manager::get_course_dataform((int) $course->id);
+        $entries  = entry_manager::get_entries((int) $dataform->id);
+        foreach ($entries as $entry) {
+            entry_manager::update_within_deadline((int) $entry->id, (int) $dhbwio->id);
+        }
+    } catch (Exception $e) {
+        // Kein Dataform vorhanden – kein Problem, einfach überspringen.
+    }
+
+    redirect($returnurl, get_string('frist_saved', 'mod_dhbwio'));
 }
 
 echo $OUTPUT->header();
