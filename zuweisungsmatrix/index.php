@@ -105,7 +105,10 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
     <!--Zuweisungsmatrix-->
     <div style="overflow-x: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <h3 style="margin: 0;">Zuweisung</h3>
+            <div>
+                <h3 style="margin: 0;">Zuweisung</h3>
+                <small id="matrixNameDisplay" style="color: #666; margin-top: 4px; display: block;">Keine gespeicherte Matrix geöffnet</small>
+            </div>
             <label style="font-weight: normal;">
                 <input type="checkbox" id="showWishes" checked>
                 Wünsche anzeigen

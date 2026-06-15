@@ -236,12 +236,15 @@ function toggleWunschAnzeige() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const checkbox = document.getElementById("showWishes");
-    if (checkbox) {
-        checkbox.addEventListener("change", toggleWunschAnzeige);
-        toggleWunschAnzeige(); // Initialzustand direkt anwenden
-    }
-});
+     const checkbox = document.getElementById("showWishes");
+     if (checkbox) {
+         checkbox.addEventListener("change", toggleWunschAnzeige);
+         toggleWunschAnzeige(); // Initialzustand direkt anwenden
+     }
+
+     // Initialisiere Matrix-Name-Anzeige
+     updateMatrixNameDisplay();
+ });
 
 function updateEmptyInfoVisibility() {
     const studentList = document.getElementById('studentList');
@@ -252,9 +255,10 @@ function updateEmptyInfoVisibility() {
 }
 
 let matrixOpenSearchTimer = null;
-let matrixOpenCurrentList = [];
-let currentLoadedMatrixId = null;  // ID der derzeit geöffneten Matrix (null wenn neu)
-let hasUnsavedChanges = false;     // Flag für ungespeicherte Änderungen
+ let matrixOpenCurrentList = [];
+ let currentLoadedMatrixId = null;  // ID der derzeit geöffneten Matrix (null wenn neu)
+ let currentLoadedMatrixName = null; // Name der derzeit geöffneten Matrix
+ let hasUnsavedChanges = false;     // Flag für ungespeicherte Änderungen
 
 function markAsChanged() {
     if (!hasUnsavedChanges) {
@@ -264,21 +268,34 @@ function markAsChanged() {
 }
 
 function updateStatusDisplay() {
-    const statusEl = document.getElementById('matrixStatus');
-    if (!statusEl) return;
+     const statusEl = document.getElementById('matrixStatus');
+     if (!statusEl) return;
 
-    if (hasUnsavedChanges) {
-        statusEl.textContent = '⚠ Ungespeicherte Änderungen';
-        statusEl.style.color = '#e1001a';
-        statusEl.style.fontWeight = 'bold';
-    } else if (currentLoadedMatrixId) {
-        statusEl.textContent = '✓ Matrix gespeichert';
-        statusEl.style.color = '#0a8c0a';
-        statusEl.style.fontWeight = 'normal';
-    } else {
-        statusEl.textContent = '';
-    }
-}
+     if (hasUnsavedChanges) {
+         statusEl.textContent = '⚠ Ungespeicherte Änderungen';
+         statusEl.style.color = '#e1001a';
+         statusEl.style.fontWeight = 'bold';
+     } else if (currentLoadedMatrixId) {
+         statusEl.textContent = '✓ Matrix gespeichert';
+         statusEl.style.color = '#0a8c0a';
+         statusEl.style.fontWeight = 'normal';
+     } else {
+         statusEl.textContent = '';
+     }
+ }
+
+ function updateMatrixNameDisplay() {
+     const nameEl = document.getElementById('matrixNameDisplay');
+     if (!nameEl) return;
+
+     if (currentLoadedMatrixId && currentLoadedMatrixName) {
+         nameEl.textContent = `Geöffnet: Matrix "${currentLoadedMatrixName}"`;
+         nameEl.style.color = '#0a8c0a';
+     } else {
+         nameEl.textContent = 'Keine gespeicherte Matrix geöffnet';
+         nameEl.style.color = '#666';
+     }
+ }
 
 function getMatrixOpenModalElements() {
     return {
@@ -407,7 +424,7 @@ async function confirmOpenSelectedMatrix() {
              return;
          }
 
-         const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid);
+         const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid, loadResult.matrix.name);
          closeMatrixOpenModal();
 
          // Nur Fehler-Hinweise zeigen, keine Erfolgs-Meldung
@@ -502,61 +519,63 @@ function formatMatrixTimestamp(timestamp) {
     }
 }
 
-function restoreMatrixDetails(details, masterid = null) {
-    resetZuweisung();
+function restoreMatrixDetails(details, masterid = null, matrixName = null) {
+     resetZuweisung();
 
-    // Setze die Matrix-ID wenn eine geladen wurde
-    if (masterid) {
-        currentLoadedMatrixId = masterid;
-    }
+     // Setze die Matrix-ID und Name wenn eine geladen wurde
+     if (masterid) {
+         currentLoadedMatrixId = masterid;
+         currentLoadedMatrixName = matrixName || null;
+     }
 
-    const studentMap = {};
-    document.querySelectorAll('.student').forEach(student => {
-        studentMap[String(student.dataset.studentid)] = student;
-    });
+     const studentMap = {};
+     document.querySelectorAll('.student').forEach(student => {
+         studentMap[String(student.dataset.studentid)] = student;
+     });
 
-    const cellsByUniversity = {};
-    document.querySelectorAll('#matrix tbody td.drop-cell:not(.disabled)').forEach(cell => {
-        const universityId = String(cell.dataset.universityid);
-        if (!cellsByUniversity[universityId]) {
-            cellsByUniversity[universityId] = [];
-        }
-        cellsByUniversity[universityId].push(cell);
-    });
+     const cellsByUniversity = {};
+     document.querySelectorAll('#matrix tbody td.drop-cell:not(.disabled)').forEach(cell => {
+         const universityId = String(cell.dataset.universityid);
+         if (!cellsByUniversity[universityId]) {
+             cellsByUniversity[universityId] = [];
+         }
+         cellsByUniversity[universityId].push(cell);
+     });
 
-    const missingStudents = [];
-    const missingUniversities = [];
+     const missingStudents = [];
+     const missingUniversities = [];
 
-    details.forEach(detail => {
-        const student = studentMap[String(detail.studentid)];
-        if (!student) {
-            missingStudents.push(detail.studentid);
-            return;
-        }
+     details.forEach(detail => {
+         const student = studentMap[String(detail.studentid)];
+         if (!student) {
+             missingStudents.push(detail.studentid);
+             return;
+         }
 
-        const targetCells = cellsByUniversity[String(detail.universityid)] || [];
-        const targetCell = targetCells.find(cell => cell.children.length === 0);
+         const targetCells = cellsByUniversity[String(detail.universityid)] || [];
+         const targetCell = targetCells.find(cell => cell.children.length === 0);
 
-        if (!targetCell) {
-            missingUniversities.push(detail.universityid);
-            return;
-        }
+         if (!targetCell) {
+             missingUniversities.push(detail.universityid);
+             return;
+         }
 
-        targetCell.appendChild(student);
-    });
+         targetCell.appendChild(student);
+     });
 
-    toggleWunschAnzeige();
-    updateEmptyInfoVisibility();
+     toggleWunschAnzeige();
+     updateEmptyInfoVisibility();
 
-    // Nach dem Laden: keine ungespeicherten Änderungen
-    hasUnsavedChanges = false;
-    updateStatusDisplay();
+     // Nach dem Laden: keine ungespeicherten Änderungen
+     hasUnsavedChanges = false;
+     updateStatusDisplay();
+     updateMatrixNameDisplay();
 
-    return {
-        missingStudents,
-        missingUniversities
-    };
-}
+     return {
+         missingStudents,
+         missingUniversities
+     };
+ }
 
 // openSavedMatrix() wird jetzt als Dialog-Öffner verwendet.
 
@@ -700,10 +719,12 @@ function saveMatrixToDatabase() {
              // Bei erfolgreicher Speicherung (INSERT): die neue ID speichern
              if (result.masterid && !masterid) {
                  currentLoadedMatrixId = result.masterid;
+                 currentLoadedMatrixName = matrixName;
              }
 
              hasUnsavedChanges = false;
              updateStatusDisplay();
+             updateMatrixNameDisplay();
 
              // Keine Erfolgs-Alert, nur Status-Update
          } else {
