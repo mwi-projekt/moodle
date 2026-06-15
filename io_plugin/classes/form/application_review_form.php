@@ -86,6 +86,52 @@ class application_review_form extends \moodleform
         }
 
         $this->add_action_buttons(true, get_string('savechanges'));
+
+        // JS: require KOMMENTAR_IO when "abgelehnt" or "nachzureichen" is selected.
+        $rejectedmsg     = addslashes(get_string('rejection_reason_required', 'mod_dhbwio'));
+        $nachzureichenmsg = addslashes(get_string('nachzureichen_reason_required', 'mod_dhbwio'));
+        $mform->addElement('html', '
+<script>
+(function() {
+    var REJECTED_HINT     = "' . $rejectedmsg . '";
+    var NACHZUREICHEN_HINT = "' . $nachzureichenmsg . '";
+
+    function updateCommentRequired() {
+        var sel = document.getElementById("id_statusid");
+        var textarea = document.getElementById("id_KOMMENTAR_IO");
+        if (!sel || !textarea) return;
+        var selectedText = (sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "").toLowerCase();
+        var isRejected      = selectedText.indexOf("abgelehnt") !== -1 || selectedText.indexOf("rejected") !== -1;
+        var isNachzureichen = selectedText.indexOf("nachzureichen") !== -1 || selectedText.indexOf("documents required") !== -1;
+        var needsComment    = isRejected || isNachzureichen;
+        var hint            = isNachzureichen ? NACHZUREICHEN_HINT : REJECTED_HINT;
+
+        var label = textarea.closest(".form-group") || textarea.parentElement;
+        var note  = label ? label.querySelector(".comment-required-note") : null;
+
+        if (needsComment) {
+            textarea.setAttribute("required", "required");
+            if (label && !note) {
+                note = document.createElement("small");
+                note.className = "form-text text-danger comment-required-note";
+                label.appendChild(note);
+            }
+            if (note) note.textContent = hint;
+        } else {
+            textarea.removeAttribute("required");
+            if (note) note.remove();
+        }
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var sel = document.getElementById("id_statusid");
+        if (sel) {
+            sel.addEventListener("change", updateCommentRequired);
+            updateCommentRequired();
+        }
+    });
+})();
+</script>
+');
     }
 
     /**
@@ -139,6 +185,37 @@ class application_review_form extends \moodleform
                 break;
         }
     }
+    public function validation($data, $files): array
+    {
+        $errors = parent::validation($data, $files);
+
+        $statuses = status_manager::get_active_statuses();
+        $abgelehntid      = null;
+        $nachzureichenid  = null;
+        foreach ($statuses as $s) {
+            if ($s->shortname === 'abgelehnt') {
+                $abgelehntid = (int) $s->id;
+            }
+            if ($s->shortname === 'nachzureichen') {
+                $nachzureichenid = (int) $s->id;
+            }
+        }
+
+        $selectedid = (int) ($data['statusid'] ?? 0);
+
+        if (($abgelehntid && $selectedid === $abgelehntid) ||
+            ($nachzureichenid && $selectedid === $nachzureichenid)) {
+            if (empty(trim($data['KOMMENTAR_IO'] ?? ''))) {
+                $errkey = ($nachzureichenid && $selectedid === $nachzureichenid)
+                    ? 'nachzureichen_reason_required'
+                    : 'rejection_reason_required';
+                $errors['KOMMENTAR_IO'] = get_string($errkey, 'mod_dhbwio');
+            }
+        }
+
+        return $errors;
+    }
+
     // Diese Function dient als Übergang bevor tatsächliche Datenbankänderungen der Description vorgenommen werden.
     private function get_display_label(\stdClass $field): string
     {

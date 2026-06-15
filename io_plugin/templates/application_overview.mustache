@@ -13,7 +13,7 @@
                 <th>{{#str}} created, dhbwio {{/str}}</th>
                 <th>{{#str}} modified, dhbwio {{/str}}</th>
                 <th>{{#str}} firstchoice, dhbwio {{/str}}</th>
-                <th>{{#str}} status, dhbwio {{/str}}</th>
+                {{#isadmin}}<th>{{#str}} status, dhbwio {{/str}}</th>{{/isadmin}}
                 <th>{{#str}} action, dhbwio {{/str}}</th>
                 </tr>
             </thead>
@@ -27,11 +27,13 @@
                         <td>{{timecreated}}</td>
                         <td>{{timemodified}}</td>
                         <td>{{firstchoice}}</td>
+                        {{#isadmin}}
                         <td>
                             <span class="dhbwio-status-badge {{statusclass}}">
                                 {{status}}
                             </span>
                         </td>
+                        {{/isadmin}}
                         <td>
                             {{{actions}}}
                         </td>

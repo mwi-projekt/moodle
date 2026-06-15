@@ -282,4 +282,89 @@ class entry_manager
 
         $DB->update_record('dhbwio_dataform_entries', $record);
     }
+
+    /**
+     * Berechnet, ob eine Bewerbung innerhalb der Frist eingereicht wurde.
+     *
+     * Gibt 1 zurück, wenn keine passende Bewerbungsfrist existiert oder
+     * die Bewerbung vor dem Fristende eingereicht wurde. Gibt 0 zurück,
+     * wenn die Frist überschritten wurde.
+     *
+     * @param int $entryid ID des Eintrags.
+     * @param int $dhbwio_id ID der dhbwio-Modulinstanz.
+     * @return int 1 = rechtzeitig, 0 = zu spät.
+     */
+    public static function compute_within_deadline(int $entryid, int $dhbwio_id): int
+    {
+        global $DB;
+
+        $entry = self::get_entry($entryid);
+        if (!$entry) {
+            return 1;
+        }
+
+        // 1. Studiengang aus dem Eintrag lesen.
+        $studiengang_field = $DB->get_record('dhbwio_dataform_fields', ['dataid' => $entry->dataid, 'name' => 'STUDIENGANG'], 'id');
+        if (!$studiengang_field) {
+            return 1;
+        }
+        $sg_content = $DB->get_record('dhbwio_dataform_contents', ['entryid' => $entryid, 'fieldid' => $studiengang_field->id], 'content');
+        if (!$sg_content || empty($sg_content->content)) {
+            return 1;
+        }
+        $studiengang = trim($sg_content->content);
+
+        // 2. Jahrgang aus Kürzel extrahieren (z.B. "WWI23B2" → "2023", "TINF22B3" → "2022").
+        $kursname_field = $DB->get_record('dhbwio_dataform_fields', ['dataid' => $entry->dataid, 'name' => 'KURSNAME'], 'id');
+        if (!$kursname_field) {
+            return 1;
+        }
+        $kurs_content = $DB->get_record('dhbwio_dataform_contents', ['entryid' => $entryid, 'fieldid' => $kursname_field->id], 'content');
+        if (!$kurs_content || empty($kurs_content->content)) {
+            return 1;
+        }
+        // Erste 2-stellige Zahl nach führenden Buchstaben extrahieren: "WWI23B2" → "23"
+        if (!preg_match('/^[A-Za-z]+(\d{2})/i', trim($kurs_content->content), $matches)) {
+            return 1;
+        }
+        $jahrgang = '20' . $matches[1]; // "23" → "2023"
+
+        // 3. Passende Frist suchen: art = 'bewerbung', Studiengang + Jahrgang müssen übereinstimmen.
+        //    Spezifischer Studiengang hat Vorrang vor 'alle'.
+        $frist = $DB->get_record_select(
+            'dhbwio_fristen',
+            "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = :studiengang AND jahrgang = :jahrgang AND deadline IS NOT NULL",
+            ['dhbwio' => $dhbwio_id, 'studiengang' => $studiengang, 'jahrgang' => $jahrgang]
+        );
+        if (!$frist) {
+            // Fallback: Frist gilt für alle Studiengänge dieses Jahrgangs.
+            $frist = $DB->get_record_select(
+                'dhbwio_fristen',
+                "dhbwio = :dhbwio AND art = 'bewerbung' AND studiengang = 'alle' AND jahrgang = :jahrgang AND deadline IS NOT NULL",
+                ['dhbwio' => $dhbwio_id, 'jahrgang' => $jahrgang]
+            );
+        }
+
+        if (!$frist || empty($frist->deadline)) {
+            return 1; // Keine passende Frist → keine Einschränkung
+        }
+
+        // 4. Prüfen ob Bewerbung vor Fristablauf eingereicht wurde.
+        return ($entry->timecreated <= (int)$frist->deadline) ? 1 : 0;
+    }
+
+    /**
+     * Setzt das within_deadline-Flag für einen Eintrag.
+     *
+     * @param int $entryid ID des Eintrags.
+     * @param int $dhbwio_id ID der dhbwio-Modulinstanz.
+     * @return void
+     */
+    public static function update_within_deadline(int $entryid, int $dhbwio_id): void
+    {
+        global $DB;
+
+        $within = self::compute_within_deadline($entryid, $dhbwio_id);
+        $DB->set_field('dhbwio_dataform_entries', 'within_deadline', $within, ['id' => $entryid]);
+    }
 }

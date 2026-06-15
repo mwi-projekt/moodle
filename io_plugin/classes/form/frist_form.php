@@ -1,0 +1,103 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Form for creating and editing Fristen (deadlines).
+ *
+ * @package    mod_dhbwio
+ * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace mod_dhbwio\form;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once("$CFG->libdir/formslib.php");
+
+class frist_form extends \moodleform {
+
+    public function definition() {
+        $mform = $this->_form;
+        $cmid  = $this->_customdata['cmid'];
+
+        // Art der Frist
+        $artoptionen = [
+            'stipendium'          => get_string('frist_art_stipendium', 'mod_dhbwio'),
+            'bewerbung'           => get_string('frist_art_bewerbung', 'mod_dhbwio'),
+            'learning_agreement'  => get_string('frist_art_learning_agreement', 'mod_dhbwio'),
+        ];
+        $mform->addElement('select', 'art', get_string('frist_art', 'mod_dhbwio'), $artoptionen);
+        $mform->addRule('art', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
+        $mform->setType('art', PARAM_ALPHA);
+
+        // Studiengang
+        $studiengaenge = [
+            'alle'                                                  => get_string('frist_alle_studiengaenge', 'mod_dhbwio'),
+            'Angewandte Gesundheits- und Pflegewissenschaften'      => 'Angewandte Gesundheits- und Pflegewissenschaften',
+            'Angewandte Hebammenwissenschaft'                       => 'Angewandte Hebammenwissenschaft',
+            'Physician Assistant / Arztassistent'                   => 'Physician Assistant / Arztassistent',
+            'Elektro- und Informationstechnik'                      => 'Elektro- und Informationstechnik',
+            'Informatik'                                            => 'Informatik',
+            'Maschinenbau'                                          => 'Maschinenbau',
+            'Mechatronik'                                           => 'Mechatronik',
+            'Papiertechnik'                                         => 'Papiertechnik',
+            'Sicherheitswesen'                                      => 'Sicherheitswesen',
+            'Sustainable Science and Technology'                    => 'Sustainable Science and Technology',
+            'Wirtschaftsingenieurwesen'                             => 'Wirtschaftsingenieurwesen',
+            'BWL - Bank'                                            => 'BWL - Bank',
+            'BWL - Deutsch-Franz. Management'                       => 'BWL - Deutsch-Franz. Management',
+            'BWL - Digital Business Management'                     => 'BWL - Digital Business Management',
+            'BWL - Digital Commerce Management'                     => 'BWL - Digital Commerce Management',
+            'BWL - Handel'                                          => 'BWL - Handel',
+            'BWL - Industrie'                                       => 'BWL - Industrie',
+            'BWL - Versicherung'                                    => 'BWL - Versicherung',
+            'Data Science und Künstliche Intelligenz'               => 'Data Science und Künstliche Intelligenz',
+            'RSW - Steuern und Prüfungswesen'                       => 'RSW - Steuern und Prüfungswesen',
+            'Unternehmertum'                                        => 'Unternehmertum',
+            'Wirtschaftsinformatik'                                 => 'Wirtschaftsinformatik',
+        ];
+        $mform->addElement('select', 'studiengang', get_string('frist_studiengang', 'mod_dhbwio'), $studiengaenge);
+        $mform->addRule('studiengang', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
+        $mform->setType('studiengang', PARAM_TEXT);
+
+        // Jahrgang (Freitext)
+        $mform->addElement('text', 'jahrgang', get_string('frist_jahrgang', 'mod_dhbwio'),
+            ['size' => 20, 'placeholder' => 'z.B. 2023']);
+        $mform->addRule('jahrgang', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
+        $mform->setType('jahrgang', PARAM_TEXT);
+
+        // Datum der Frist
+        $mform->addElement('date_selector', 'deadline', get_string('frist_deadline', 'mod_dhbwio'));
+        $mform->addRule('deadline', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
+
+        // Kommentar (optional)
+        $mform->addElement('textarea', 'kommentar', get_string('frist_kommentar', 'mod_dhbwio'),
+            ['rows' => 4, 'cols' => 60, 'placeholder' => get_string('frist_kommentar_placeholder', 'mod_dhbwio')]);
+        $mform->setType('kommentar', PARAM_TEXT);
+
+        // Hidden fields
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
+
+        if (!empty($this->_customdata['fristid'])) {
+            $mform->addElement('hidden', 'fristid', $this->_customdata['fristid']);
+            $mform->setType('fristid', PARAM_INT);
+        }
+
+        $this->add_action_buttons(true, get_string('frist_save', 'mod_dhbwio'));
+    }
+}

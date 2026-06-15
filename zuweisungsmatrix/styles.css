@@ -181,3 +181,30 @@ h3 {
     margin-top: 14px;
 }
 
+/* Deadline-based coloring: within deadline = blue, outside = red */
+.student {
+    position: relative; /* needed for the warning icon placement */
+}
+
+.deadline-warning {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #e1001a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1;
+    border: 1px solid rgba(0,0,0,0.08);
+    cursor: default;
+}
+
+.deadline-warning[title]:hover::after {
+    /* we rely on native tooltip via title attribute, no custom tooltip needed */
+}

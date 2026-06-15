@@ -156,6 +156,8 @@ if ($ispost) {
             $entryid = entry_manager::create_entry($dataid, $USER->id);
         }
 
+        $isnewentry = ($submittedentryid === 0);
+
         foreach ($fields as $field) {
             if (!field_manager::is_student_field($field)) {
                 continue;
@@ -165,6 +167,10 @@ if ($ispost) {
             $value = $formvalues[$formfieldname] ?? '';
 
             entry_manager::save_content($entryid, (int) $field->id, (string) $value);
+        }
+
+        if ($isnewentry) {
+            entry_manager::update_within_deadline($entryid, (int) $dhbwio->id);
         }
 
         redirect(
