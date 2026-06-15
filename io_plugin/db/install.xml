@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="20260519" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="2026060506" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="dhbwio" COMMENT="Each record represents one dhbwio activity instance">
       <FIELDS>
@@ -286,6 +286,8 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="state" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" />
         <FIELD NAME="statusid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="acceptedchoice" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="within_deadline" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1 = application was submitted within the deadline, 0 = too late. Always 1 when no deadline exists for the study programme."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
@@ -309,6 +311,95 @@
         <KEY NAME="entryid" TYPE="foreign" FIELDS="entryid" REFTABLE="dhbwio_dataform_entries" REFFIELDS="id" />
         <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="dhbwio_dataform_fields" REFFIELDS="id" />
       </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_studyprograms" COMMENT="Study programs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="de_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="en_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_studytracks" COMMENT="Study tracks">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="studyprogramid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="de_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="en_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="studyprogramid" TYPE="foreign" FIELDS="studyprogramid" REFTABLE="dhbwio_studyprograms" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_electives" COMMENT="Elective modules">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="studytrackid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="de_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="en_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="studytrackid" TYPE="foreign" FIELDS="studytrackid" REFTABLE="dhbwio_studytracks" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="dhbwio_fristen" COMMENT="Deadlines managed by IO staff">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="art" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type: stipendium|bewerbung|learning_agreement"/>
+        <FIELD NAME="studiengang" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Study programme or alle"/>
+        <FIELD NAME="jahrgang" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Cohort year (free text)"/>
+        <FIELD NAME="deadline" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp of the deadline date"/>
+        <FIELD NAME="kommentar" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional comment"/>
+        <FIELD NAME="authorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who created the record"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_authorid" TYPE="foreign" FIELDS="authorid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_jahrgang" UNIQUE="false" FIELDS="dhbwio, jahrgang"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="dhbwio_learning_agreements" COMMENT="Learning agreements and other documents submitted by students">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dhbwio" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="dhbwio instance ID"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="doctype" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="learning_agreement" SEQUENCE="false" COMMENT="Document type: learning_agreement|other_document"/>
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending|approved|rejected"/>
+        <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_dhbwio" TYPE="foreign" FIELDS="dhbwio" REFTABLE="dhbwio" REFFIELDS="id"/>
+        <KEY NAME="fk_user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dhbwio_user" UNIQUE="false" FIELDS="dhbwio, userid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

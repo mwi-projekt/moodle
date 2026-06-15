@@ -1,5 +1,100 @@
 /* DHBW International Office Plugin Styles */
 
+/* Bewerbungs-Fortschrittsbalken (Studierendensicht) */
+.dhbwio-appbar-container {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 1.25rem 2rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dhbwio-appbar-steps {
+    display: flex;
+    align-items: flex-start;
+}
+
+.dhbwio-appbar-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.dhbwio-appbar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.25s ease;
+}
+
+.dhbwio-appbar-circle-pending {
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #adb5bd;
+}
+
+.dhbwio-appbar-circle-done {
+    background: #43A047;
+    border: 2px solid #43A047;
+    color: #fff;
+}
+
+.dhbwio-appbar-circle-active {
+    background: #FFA000;
+    border: 2px solid #FFA000;
+    color: #fff;
+}
+
+.dhbwio-appbar-circle-reject {
+    background: #dc3545;
+    border: 2px solid #dc3545;
+    color: #fff;
+}
+
+.dhbwio-appbar-label {
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.dhbwio-appbar-label-pending {
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+.dhbwio-appbar-label-done {
+    color: #2E7D32;
+}
+
+.dhbwio-appbar-label-active {
+    color: #E65100;
+}
+
+.dhbwio-appbar-label-reject {
+    color: #c0392b;
+}
+
+.dhbwio-appbar-line {
+    flex: 1;
+    height: 5px;
+    /* vertically center on 34px circle: (34 - 5) / 2 = 14.5px */
+    margin-top: 14px;
+    margin-left: 3px;
+    margin-right: 3px;
+    border-radius: 2px;
+    transition: background 0.25s ease;
+}
+
 /* Country group styling */
 .dhbwio-country-group {
     margin-bottom: 2rem;

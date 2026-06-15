@@ -367,7 +367,7 @@ class default_form_manager
                 'type' => 'select',
                 'name' => 'STUDIENGANG',
                 'description' => 'Studiengang des Bewerbers',
-                'param1' => "Angewandte Gesundheits- und Pflegewissenschaften\nAngewandte Hebammenwissenschaft\nPhysician Assistant / Arztassistent\nElektro- und Informationstechnik\nInformatik\nMaschinenbau\nMechatronik\nPapiertechnik\nSicherheitswesen\nSustainable Science and Technology\nWirtschaftsingenieurwesen\nBWL - Bank\nBWL - Deutsch-Franz. Management\nBWL - Digital Business Management\nBWL - Digital Commerce Management\nBWL - Handel\nBWL - Industrie\nBWL - Versicherung\nData Science und Künstliche Intelligenz\nRSW - Steuern und Prüfungswesen\nUnternehmertum\nWirtschaftsinformatik",
+                'param1' => null,
                 'scope' => field_manager::SCOPE_STUDENT,
                 'fieldgroup' => field_manager::GROUP_STUDY,
                 'sortorder' => 10

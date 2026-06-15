@@ -4,19 +4,30 @@
     <input type="hidden" name="id" value="{{id}}">
     <input type="hidden" name="dataid" value="{{dataid}}">
     <input type="hidden" name="entryid" value="{{entryid}}">
-    {{#showreviewresult}}
-    <section class="dhbwio-form-section dhbwio-review-result-section">
-        <div class="dhbwio-form-section-header">
-            <span class="dhbwio-form-step-number">✓</span>
-            <h3>Rückmeldung des International Office</h3>
-        </div>
+{{#showreviewresult}}
+<section class="dhbwio-form-section dhbwio-review-result-section">
+    <div class="dhbwio-form-section-header">
+        <span class="dhbwio-form-step-number">✓</span>
+        <h3>Rückmeldung des International Office</h3>
+    </div>
 
-        {{{reviewfields.KOMMENTAR_IO.html}}}
-        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST.html}}}
-        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT.html}}}
-        {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT.html}}}
-    </section>
-    {{/showreviewresult}}
+    {{#acceptedchoicelabel}}
+        <div class="dhbwio-view-row row">
+            <div class="col-md-3 dhbwio-view-label">
+                <strong>Angenommen für</strong>
+            </div>
+            <div class="col-md-8 dhbwio-view-value">
+                {{acceptedchoicelabel}}
+            </div>
+        </div>
+    {{/acceptedchoicelabel}}
+
+    {{{reviewfields.KOMMENTAR_IO.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT.html}}}
+</section>
+{{/showreviewresult}}
 
     <section class="dhbwio-form-section">
         <div class="dhbwio-form-section-header">

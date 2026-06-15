@@ -83,9 +83,14 @@ class form_renderer
                         'value' => $value,
                     ]);
                 }
-                $options = self::is_university_choice_field($field)
-                    ? self::get_university_options($field->name)
-                    : self::get_options_from_field($field);
+
+                if ($field->name === 'STUDIENGANG') {
+                    $options = self::get_studyprogram_options();
+                } else if (self::is_university_choice_field($field)) {
+                    $options = self::get_university_options($field->name);
+                } else {
+                    $options = self::get_options_from_field($field);
+                }
 
                 $html .= self::render_select(
                     $name,
@@ -103,6 +108,17 @@ class form_renderer
                     $value,
                     !empty($error)
                 );
+                break;
+
+            case 'studyprogram':
+
+                $html .= self::render_select(
+                    $name,
+                    self::get_studyprogram_options(),
+                    $value,
+                    $selectclass
+                );
+
                 break;
 
             case 'time':
@@ -136,7 +152,7 @@ class form_renderer
                     'class' => $inputclass,
                 ];
 
-                if (($field->param4 ?? '') === 'email') {
+                if ($field->name === 'EMAIL') {
                     $attributes['type'] = 'email';
                     $attributes['placeholder'] = 'nachname.vorname.kurs@dh-karlsruhe.de';
                 }
@@ -145,6 +161,7 @@ class form_renderer
 
                 break;
         }
+
 
         if (!empty($error)) {
             $html .= html_writer::div(
@@ -338,16 +355,6 @@ class form_renderer
 
         return trim($label);
     }
-    private static function get_help_text(\stdClass $field): string
-    {
-        $description = $field->description ?? '';
-
-        if (preg_match('/^(.*?)\((?:verpflichtende|verplichtende|optionale).*$/i', $description, $matches)) {
-            return trim($matches[1]);
-        }
-
-        return '';
-    }
     private static function is_required(\stdClass $field): bool
     {
         $description = \core_text::strtolower($field->description ?? '');
@@ -376,5 +383,29 @@ class form_renderer
         }
 
         return self::clean_label($field->description ?: $field->name);
+    }
+    private static function get_studyprogram_options(): array
+    {
+        global $DB;
+
+        $options = ['' => get_string('choose')];
+
+        $records = $DB->get_records(
+            'dhbwio_studyprograms',
+            ['active' => 1],
+            'sortorder ASC, de_name ASC'
+        );
+
+        $lang = current_language();
+
+        foreach ($records as $record) {
+            $label = ($lang === 'en')
+                ? $record->en_name
+                : $record->de_name;
+
+            $options[$record->de_name] = $label;
+        }
+
+        return $options;
     }
 }
