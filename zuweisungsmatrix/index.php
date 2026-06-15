@@ -57,7 +57,8 @@ $entriesql = "
            MAX(CASE WHEN c.fieldid = 16 THEN c.content END) AS nachname,
            MAX(CASE WHEN c.fieldid = 5  THEN c.content END) AS Erstwunsch,
            MAX(CASE WHEN c.fieldid = 6  THEN c.content END) AS Zweitwunsch,
-           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS Drittwunsch
+           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS Drittwunsch,
+           MAX(e.within_deadline) AS within_deadline
     FROM {dhbwio_dataform_entries} e
     JOIN {dhbwio_dataform_contents} c ON c.entryid = e.id
     WHERE e.dataid = ?
@@ -84,19 +85,21 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
             $idx = 0;
             foreach ($studenten as $s) {
                 $id = "student-" . (int)$s->entryid;
+                $within = isset($s->within_deadline) ? (int)$s->within_deadline : 0;
+                $deadlineclass = $within ? 'within-deadline' : 'outside-deadline';
 
-                echo "<div class='student' id='$id' draggable='true'
-                    data-studentid='" . (int)$s->entryid . "'
-                    ondragstart=\"event.dataTransfer.setData('text/plain', '$id')\">
-                    <strong>" . htmlspecialchars($s->vorname . ' ' . $s->nachname) . "</strong><br>
-                    <div class='wuensche'>
-                    <small>
-                    1. " . htmlspecialchars($s->erstwunsch) . "<br>
-                    2. " . htmlspecialchars($s->zweitwunsch) . "<br>
-                    3. " . htmlspecialchars($s->drittwunsch) . "
-                    </small>
-                    </div>
-                    </div>";
+                // Wenn außerhalb der Deadline: kleines Ausrufezeichen mit Tooltip anzeigen
+                $warning = '';
+                if (!$within) {
+                    $warning = "<span class='deadline-warning' title='Der Bewerber hat sich nach Ende der Deadline angemeldet'>⚠</span>";
+                }
+
+                echo "<div class='student $deadlineclass' id='$id' draggable='true'"
+                   . " data-studentid='" . (int)$s->entryid . "' data-within-deadline='" . $within . "'"
+                   . " ondragstart=\"event.dataTransfer.setData('text/plain', '$id')\">"
+                   . $warning
+                   . "<strong>" . htmlspecialchars($s->vorname . ' ' . $s->nachname) . "</strong><br>"
+                   . "<div class='wuensche'>\n                    <small>\n                    1. " . htmlspecialchars($s->erstwunsch) . "<br>\n                    2. " . htmlspecialchars($s->zweitwunsch) . "<br>\n                    3. " . htmlspecialchars($s->drittwunsch) . "\n                    </small>\n                    </div>\n                    </div>";
             }
             ?>
         </div>
@@ -206,3 +209,5 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
 
 <?php
 echo $OUTPUT->footer();
+
+
