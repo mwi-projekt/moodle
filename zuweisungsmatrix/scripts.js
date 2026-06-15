@@ -386,81 +386,105 @@ function closeMatrixOpenModal() {
 }
 
 async function confirmOpenSelectedMatrix() {
-    const { select } = getMatrixOpenModalElements();
-    if (!select || !select.value) {
-        alert('Bitte zuerst eine Matrix auswählen.');
-        return;
-    }
+     const { select } = getMatrixOpenModalElements();
+     if (!select || !select.value) {
+         alert('Bitte zuerst eine Matrix auswählen.');
+         return;
+     }
 
-    const masterid = parseInt(select.value, 10);
-    if (Number.isNaN(masterid) || masterid <= 0) {
-        alert('Bitte eine gültige Matrix auswählen.');
-        return;
-    }
+     const masterid = parseInt(select.value, 10);
+     if (Number.isNaN(masterid) || masterid <= 0) {
+         alert('Bitte eine gültige Matrix auswählen.');
+         return;
+     }
 
-    try {
-        const loadResponse = await fetch(`load_matrix.php?action=load&masterid=${masterid}`);
-        const loadResult = await loadResponse.json();
+     try {
+         const loadResponse = await fetch(`load_matrix.php?action=load&masterid=${masterid}`);
+         const loadResult = await loadResponse.json();
 
-        if (!loadResponse.ok || !loadResult.success) {
-            alert('Fehler beim Öffnen der Matrix: ' + (loadResult.message || 'Unbekannter Fehler.'));
-            return;
-        }
+         if (!loadResponse.ok || !loadResult.success) {
+             alert('Fehler beim Öffnen der Matrix: ' + (loadResult.message || 'Unbekannter Fehler.'));
+             return;
+         }
 
-        const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid);
-        closeMatrixOpenModal();
+         const restoreResult = restoreMatrixDetails(loadResult.matrix.details || [], masterid);
+         closeMatrixOpenModal();
 
-        let message = `Matrix "${loadResult.matrix.name}" wurde geöffnet.`;
-        if (restoreResult.missingStudents.length > 0) {
-            message += `\nNicht gefundene Studierende: ${restoreResult.missingStudents.join(', ')}`;
-        }
-        if (restoreResult.missingUniversities.length > 0) {
-            message += `\nNicht genügend freie Plätze für Hochschul-IDs: ${restoreResult.missingUniversities.join(', ')}`;
-        }
-
-        alert(message);
-    } catch (error) {
-        console.error('Fehler beim Öffnen der Matrix:', error);
-        alert('Beim Öffnen der Matrix ist ein technischer Fehler aufgetreten.');
-    }
-}
+         // Nur Fehler-Hinweise zeigen, keine Erfolgs-Meldung
+         if (restoreResult.missingStudents.length > 0 || restoreResult.missingUniversities.length > 0) {
+             let message = 'Warnung: Einige Einträge konnten nicht wiederhergestellt werden.';
+             if (restoreResult.missingStudents.length > 0) {
+                 message += `\nNicht gefundene Studierende: ${restoreResult.missingStudents.join(', ')}`;
+             }
+             if (restoreResult.missingUniversities.length > 0) {
+                 message += `\nNicht genügend freie Plätze für Hochschul-IDs: ${restoreResult.missingUniversities.join(', ')}`;
+             }
+             alert(message);
+         }
+     } catch (error) {
+         console.error('Fehler beim Öffnen der Matrix:', error);
+         alert('Beim Öffnen der Matrix ist ein technischer Fehler aufgetreten.');
+     }
+ }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const { searchInput, select, modal } = getMatrixOpenModalElements();
+     const { searchInput, select, modal } = getMatrixOpenModalElements();
 
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            window.clearTimeout(matrixOpenSearchTimer);
-            matrixOpenSearchTimer = window.setTimeout(() => {
-                void refreshMatrixOpenList(searchInput.value || '');
-            }, 250);
-        });
+     if (searchInput) {
+         searchInput.addEventListener('input', () => {
+             window.clearTimeout(matrixOpenSearchTimer);
+             matrixOpenSearchTimer = window.setTimeout(() => {
+                 void refreshMatrixOpenList(searchInput.value || '');
+             }, 250);
+         });
 
-        searchInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                closeMatrixOpenModal();
-            }
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                void confirmOpenSelectedMatrix();
-            }
-        });
-    }
+         searchInput.addEventListener('keydown', (event) => {
+             if (event.key === 'Escape') {
+                 closeMatrixOpenModal();
+             }
+             if (event.key === 'Enter') {
+                 event.preventDefault();
+                 void confirmOpenSelectedMatrix();
+             }
+         });
+     }
 
-    if (select) {
-        select.addEventListener('dblclick', () => {
-            void confirmOpenSelectedMatrix();
-        });
-    }
+     if (select) {
+         select.addEventListener('dblclick', () => {
+             void confirmOpenSelectedMatrix();
+         });
+     }
 
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                closeMatrixOpenModal();
-            }
-        });
-    }
-});
+     if (modal) {
+         modal.addEventListener('click', (event) => {
+             if (event.target === modal) {
+                 closeMatrixOpenModal();
+             }
+         });
+     }
+
+     // Save Modal Event-Listener
+     const saveModalElements = getMatrixSaveModalElements();
+     if (saveModalElements.nameInput) {
+         saveModalElements.nameInput.addEventListener('keydown', (event) => {
+             if (event.key === 'Escape') {
+                 closeMatrixSaveModal();
+             }
+             if (event.key === 'Enter') {
+                 event.preventDefault();
+                 void confirmSaveMatrixWithName();
+             }
+         });
+     }
+
+     if (saveModalElements.modal) {
+         saveModalElements.modal.addEventListener('click', (event) => {
+             if (event.target === saveModalElements.modal) {
+                 closeMatrixSaveModal();
+             }
+         });
+     }
+ });
 
 function formatMatrixTimestamp(timestamp) {
     if (!timestamp) return '';
@@ -577,80 +601,117 @@ function collectMatrixData() {
 }
 
 
+function getMatrixSaveModalElements() {
+     return {
+         modal: document.getElementById('matrixSaveModal'),
+         nameInput: document.getElementById('matrixSaveNameInput'),
+         status: document.getElementById('matrixSaveStatus')
+     };
+ }
+
+ function setMatrixSaveStatus(message) {
+     const { status } = getMatrixSaveModalElements();
+     if (status) {
+         status.textContent = message || '';
+     }
+ }
+
+ function openMatrixSaveModal() {
+     const { modal, nameInput } = getMatrixSaveModalElements();
+     if (!modal) return;
+
+     modal.hidden = false;
+     setMatrixSaveStatus('');
+
+     if (nameInput) {
+         nameInput.value = '';
+         nameInput.focus();
+     }
+ }
+
+ function closeMatrixSaveModal() {
+     const { modal } = getMatrixSaveModalElements();
+     if (!modal) return;
+
+     modal.hidden = true;
+     setMatrixSaveStatus('');
+ }
+
 /**
  * Sendet die aktuelle Matrix per AJAX an Moodle/PHP,
  * damit die Zuweisungen dauerhaft in der Datenbank gespeichert werden.
  *
  * Falls currentLoadedMatrixId gesetzt: UPDATE des bestehenden Eintrags
- * Falls currentLoadedMatrixId null: INSERT mit Namensdialog
+ * Falls currentLoadedMatrixId null: Modal für Namensingabe öffnen
  */
-async function saveMatrixToDatabase() {
-    const details = collectMatrixData();
+function saveMatrixToDatabase() {
+     const details = collectMatrixData();
 
-    // Nicht speichern, wenn keine Zuweisungen vorhanden sind
-    if (details.length === 0) {
-        alert("Es gibt keine Zuweisungen zum Speichern.");
-        return;
-    }
+     // Nicht speichern, wenn keine Zuweisungen vorhanden sind
+     if (details.length === 0) {
+         alert("Es gibt keine Zuweisungen zum Speichern.");
+         return;
+     }
 
-    let matrixName = null;
-    let masterid = null;
+     // Wenn Matrix geladen: direkt Update ohne Dialog
+     if (currentLoadedMatrixId) {
+         performMatrixSave(null, currentLoadedMatrixId, details);
+     } else {
+         // Neue Matrix: Modal für Namen öffnen
+         openMatrixSaveModal();
+     }
+ }
 
-    // Wenn Matrix geladen: direkt Update ohne Dialog
-    if (currentLoadedMatrixId) {
-        masterid = currentLoadedMatrixId;
-    } else {
-        // Neue Matrix: Dialog für Namen
-        const input = prompt(
-            "Bitte Namen für die Zuweisungsrunde eingeben:",
-            "Sommersemester 2026"
-        );
+ async function confirmSaveMatrixWithName() {
+     const { nameInput } = getMatrixSaveModalElements();
+     if (!nameInput) return;
 
-        // Speichern abbrechen, wenn der Nutzer auf "Abbrechen" klickt
-        if (input === null) {
-            return;
-        }
+     const matrixName = nameInput.value.trim();
 
-        matrixName = input.trim();
+     // Leere Namen verhindern
+     if (matrixName === "") {
+         alert("Bitte einen gültigen Namen eingeben.");
+         return;
+     }
 
-        // Leere Namen verhindern
-        if (matrixName === "") {
-            alert("Bitte einen gültigen Namen eingeben.");
-            return;
-        }
-    }
+     const details = collectMatrixData();
+     closeMatrixSaveModal();
 
-    try {
-        const response = await fetch("save_matrix.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: matrixName,
-                masterid: masterid,
-                details: details
-            })
-        });
+     await performMatrixSave(matrixName, null, details);
+ }
 
-        const result = await response.json();
+ async function performMatrixSave(matrixName, masterid, details) {
+     try {
+         const response = await fetch("save_matrix.php", {
+             method: "POST",
+             headers: {
+                 "Content-Type": "application/json"
+             },
+             body: JSON.stringify({
+                 name: matrixName,
+                 masterid: masterid,
+                 details: details
+             })
+         });
 
-        if (response.ok && result.success) {
-            // Bei erfolgreicher Speicherung (INSERT): die neue ID speichern
-            if (result.masterid && !currentLoadedMatrixId) {
-                currentLoadedMatrixId = result.masterid;
-            }
+         const result = await response.json();
 
-            hasUnsavedChanges = false;
-            updateStatusDisplay();
+         if (response.ok && result.success) {
+             // Bei erfolgreicher Speicherung (INSERT): die neue ID speichern
+             if (result.masterid && !masterid) {
+                 currentLoadedMatrixId = result.masterid;
+             }
 
-            alert("Zuweisungsmatrix wurde gespeichert.");
-        } else {
-            alert("Fehler: " + (result.message || "Unbekannter Fehler."));
-        }
+             hasUnsavedChanges = false;
+             updateStatusDisplay();
 
-    } catch (error) {
-        console.error("Fehler beim Speichern:", error);
-        alert("Beim Speichern ist ein technischer Fehler aufgetreten.");
-    }
-}
+             // Keine Erfolgs-Alert, nur Status-Update
+         } else {
+             alert("Fehler: " + (result.message || "Unbekannter Fehler."));
+         }
+
+     } catch (error) {
+         console.error("Fehler beim Speichern:", error);
+         alert("Beim Speichern ist ein technischer Fehler aufgetreten.");
+     }
+ }

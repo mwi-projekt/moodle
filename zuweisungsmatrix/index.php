@@ -181,6 +181,25 @@ $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
     </div>
 </div>
 
+<div id="matrixSaveModal" class="matrix-modal" hidden>
+    <div class="matrix-modal-content" role="dialog" aria-modal="true" aria-labelledby="matrixSaveTitle">
+        <div class="matrix-modal-header">
+            <h3 id="matrixSaveTitle">Matrix speichern</h3>
+            <button type="button" class="matrix-modal-close" onclick="closeMatrixSaveModal()" aria-label="Dialog schließen">×</button>
+        </div>
+
+        <label for="matrixSaveNameInput" class="matrix-modal-label">Name für die Zuweisungsrunde</label>
+        <input id="matrixSaveNameInput" type="text" class="matrix-search-input" placeholder="z. B. Sommersemester 2026">
+
+        <div id="matrixSaveStatus" class="matrix-modal-status"></div>
+
+        <div class="matrix-modal-actions">
+            <button type="button" class="red-button" onclick="confirmSaveMatrixWithName()">Speichern</button>
+            <button type="button" class="red-button" onclick="closeMatrixSaveModal()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
 
 <?php
 echo $OUTPUT->footer();
