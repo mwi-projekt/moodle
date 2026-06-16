@@ -110,7 +110,6 @@ jobs:
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
           ini-values: max_input_vars=5000
           coverage: none
-          ini-values: max_input_vars=5000
 
       - name: Composer-Cache wiederherstellen
         uses: actions/cache@v4
