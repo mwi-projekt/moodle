@@ -2,5 +2,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_zuweisungsmatrix';
-$plugin->version = 2025071500;
+$plugin->version = 2026061504;
 $plugin->requires = 2021051700; // Mindest-Moodle-Version (Moodle 3.11)

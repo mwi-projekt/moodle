@@ -23,8 +23,14 @@
  */
 
 require_once('../../config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
+require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
+
+use mod_dhbwio\local\dataform\entry_manager;
+use mod_dhbwio\local\dataform\field_manager;
+use mod_dhbwio\local\dataform\status_manager;
+use mod_dhbwio\local\dataform\dataform_manager;
+use mod_dhbwio\local\dataform\default_form_manager;
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $tab = optional_param('tab', 'universities', PARAM_ALPHA); // Active tab
@@ -48,8 +54,8 @@ $PAGE->requires->css('/mod/dhbwio/styles.css');
 
 // For map view
 if ($tab == 'universities' && !empty($dhbwio->enablemap)) {
-    // Load Leaflet and initialize map
-    dhbwio_load_leaflet_map($cm->id);
+	// Load Leaflet and initialize map
+	dhbwio_load_leaflet_map($cm->id);
 }
 
 // Start output
@@ -60,7 +66,7 @@ echo $OUTPUT->header();
 
 // Display intro if set
 if (!empty($dhbwio->intro)) {
-    echo $OUTPUT->box(format_module_intro('dhbwio', $dhbwio, $cm->id), 'generalbox mod_introbox', 'dhbwiointro');
+	echo $OUTPUT->box(format_module_intro('dhbwio', $dhbwio, $cm->id), 'generalbox mod_introbox', 'dhbwiointro');
 }
 
 // Create tabs for navigation
@@ -68,211 +74,524 @@ $tabs = [];
 
 // Tab for viewing partner universities - available to all users
 $tabs[] = new tabobject(
-    'universities',
-    new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'universities']),
-    get_string('nav_universities', 'mod_dhbwio')
+	'universities',
+	new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'universities']),
+	get_string('nav_universities', 'mod_dhbwio')
+);
+
+// Tab for applications - available to all users
+$tabs[] = new tabobject(
+	'bewerbungen',
+	new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'bewerbungen']),
+	get_string('nav_bewerbungen', 'mod_dhbwio')
 );
 
 // Tab for experience reports - available to all users if enabled
 if (!empty($dhbwio->enablereports)) {
-    $tabs[] = new tabobject(
-        'reports',
-        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'reports']),
-        get_string('nav_reports', 'mod_dhbwio')
-    );
+	$tabs[] = new tabobject(
+		'reports',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'reports']),
+		get_string('nav_reports', 'mod_dhbwio')
+	);
 }
 
 // Tabs for IO staff
 if (has_capability('mod/dhbwio:manageuniversities', $context)) {
-    $tabs[] = new tabobject(
-        'manageunis',
-        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'manageunis']),
-        get_string('nav_manageunis', 'mod_dhbwio')
-    );
+	$tabs[] = new tabobject(
+		'manageunis',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'manageunis']),
+		get_string('nav_manageunis', 'mod_dhbwio')
+	);
 }
 
 if (has_capability('mod/dhbwio:viewreports', $context)) {
-    $tabs[] = new tabobject(
-        'statistics',
-        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'statistics']),
-        get_string('nav_statistics', 'mod_dhbwio')
-    );
+	$tabs[] = new tabobject(
+		'statistics',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'statistics']),
+		get_string('nav_statistics', 'mod_dhbwio')
+	);
 }
 
 if (has_capability('mod/dhbwio:managetemplates', $context)) {
-    $tabs[] = new tabobject(
-        'emailtemplates',
-        new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'emailtemplates']),
-        get_string('nav_emailtemplates', 'mod_dhbwio')
-    );
+	$tabs[] = new tabobject(
+		'emailtemplates',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'emailtemplates']),
+		get_string('nav_emailtemplates', 'mod_dhbwio')
+	);
 }
+
+if (has_capability('mod/dhbwio:manageuniversities', $context)) {
+	$tabs[] = new tabobject(
+		'fristen',
+		new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'fristen']),
+		get_string('nav_fristen', 'mod_dhbwio')
+	);
+}
+
+$tabs[] = new tabobject(
+	'learningagreement',
+	new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']),
+	get_string('nav_learningagreement', 'mod_dhbwio')
+);
 
 echo $OUTPUT->tabtree($tabs, $tab);
 
 // Display the content based on the selected tab
 switch ($tab) {
-    case 'universities':
-        // Check if map view is enabled
-        if (!empty($dhbwio->enablemap)) {
-            // Get view parameter from URL
-            $view = optional_param('view', 'map', PARAM_ALPHA);
-            
-            $renderer = $PAGE->get_renderer('mod_dhbwio');
-            echo $renderer->render_university_view($dhbwio, $cm);
-        } else {
-            // Fallback to list view
-            $renderer = $PAGE->get_renderer('mod_dhbwio');
-            $renderer->display_universities_list($dhbwio, $cm);
-        }
-        break;
-        
-    case 'reports':
-        if (empty($dhbwio->enablereports)) {
-            // Reports are disabled, redirect to main view
-            redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id]));
-        }
-        
-        // Display reports
-        if (!empty($dhbwio->enablereports)) {
-            // Show add report button if student has permission
-            if (has_capability('mod/dhbwio:submitreport', $context)) {
-                $addurl = new moodle_url('/mod/dhbwio/report.php', [
-                    'cmid' => $cm->id,
-                    'action' => 'add'
-                ]);
-                
-                echo '<div class="dhbwio-actions mb-4">';
-                echo '<a href="' . $addurl . '" class="btn btn-primary">';
-                echo get_string('add_report', 'mod_dhbwio') . '</a>';
-                echo '</div>';
-            }
-            
-            // Get all reports
-            $reports = $DB->get_records('dhbwio_experience_reports', [
-                'dhbwio' => $dhbwio->id,
-                'visible' => 1
-            ], 'timecreated DESC');
-            
-            if (empty($reports)) {
-                echo $OUTPUT->notification(get_string('no_reports', 'mod_dhbwio'), 'info');
-            } else {
-                echo $OUTPUT->box_start('generalbox');
-                
-                foreach ($reports as $report) {
-                    // Get university and student details
-                    $university = $DB->get_record('dhbwio_universities', ['id' => $report->university_id]);
-                    $student = $DB->get_record('user', ['id' => $report->userid]);
-                    
-                    if (!$university || !$student) {
-                        continue;
-                    }
-                    
-                    // Get country name
-                    $countries = get_string_manager()->get_list_of_countries();
-                    $countryName = isset($countries[$university->country]) ? $countries[$university->country] : $university->country;
-                    
-                    echo '<div class="card mb-4">';
-                    echo '<div class="card-header">';
-                    echo '<h3>' . format_string($report->title) . '</h3>';
-                    
-                    // Display university and author
-                    echo '<p>';
-                    
-                    // Link to university detail page
-                    $universityurl = new moodle_url('/mod/dhbwio/university.php', [
-                        'cmid' => $cm->id,
-                        'university' => $university->id
-                    ]);
-                    
-                    echo '<a href="' . $universityurl . '">' . format_string($university->name) . '</a>';
-                    echo ' (' . $countryName . ')';
-                    echo ' | ' . get_string('by', 'mod_dhbwio') . ' ' . fullname($student);
-                    echo ' | ' . userdate($report->timecreated);
-                    
-                    // Display rating if any
-                    if (!empty($report->rating)) {
-                        echo ' | ' . get_string('rating', 'mod_dhbwio') . ': ';
-                        for ($i = 1; $i <= 5; $i++) {
-                            if ($i <= $report->rating) {
-                                echo '★';
-                            } else {
-                                echo '☆';
-                            }
-                        }
-                    }
-                    
-                    echo '</p>';
-                    echo '</div>'; // End card-header
-                    
-                    echo '<div class="card-body">';
-                    echo format_text($report->content, $report->contentformat);
-                    
-                    // Show edit/delete actions if user is the author
-                    if ($report->userid == $USER->id || has_capability('mod/dhbwio:manageuniversities', $context)) {
-                        echo '<div class="dhbwio-actions mt-3">';
-                        
-                        $editurl = new moodle_url('/mod/dhbwio/report.php', [
-                            'cmid' => $cm->id,
-                            'action' => 'edit',
-                            'report' => $report->id
-                        ]);
-                        
-                        $deleteurl = new moodle_url('/mod/dhbwio/report.php', [
-                            'cmid' => $cm->id,
-                            'action' => 'delete',
-                            'report' => $report->id,
-                            'sesskey' => sesskey()
-                        ]);
-                        
-                        echo '<a href="' . $editurl . '" class="btn btn-secondary btn-sm">';
-                        echo get_string('edit', 'mod_dhbwio') . '</a> ';
-                        
-                        echo '<a href="' . $deleteurl . '" class="btn btn-danger btn-sm" onclick="return confirm(\'' .
-                            get_string('delete_report_confirm', 'mod_dhbwio') . '\')">';
-                        echo get_string('delete', 'mod_dhbwio') . '</a>';
-                        
-                        echo '</div>';
-                    }
-                    
-                    echo '</div>'; // End card-body
-                    echo '</div>'; // End card
-                }
-                
-                echo $OUTPUT->box_end();
-            }
-        }
-        break;
-        
-    case 'manageunis':
+	case 'universities':
+		if (!empty($dhbwio->enablemap)) {
+			$renderer = $PAGE->get_renderer('mod_dhbwio');
+			echo $renderer->render_university_view($dhbwio, $cm);
+		} else {
+			$renderer = $PAGE->get_renderer('mod_dhbwio');
+			$renderer->display_universities_list($dhbwio, $cm);
+		}
+		break;
+
+	case 'bewerbungen':
+		// Try Generating new Dataform, if none is connected to this Activity-Instance
+		try {
+			$dataform = dataform_manager::get_course_dataform((int) $course->id);
+		} catch (moodle_exception $e) {
+			$dataid = \mod_dhbwio\local\dataform\default_form_manager::create_default_form((int) $course->id);
+			$dataform = dataform_manager::get_course_dataform((int) $course->id);
+		}
+		$dataid   = (int) $dataform->id;
+		$courseid = $course->id;
+
+		// Apply Rule for Manager-Authority
+		$canviewallapplications = has_capability('mod/dhbwio:viewallapplications', $context);
+
+		// Define entries: Manager everything, students only theirs
+		if ($canviewallapplications) {
+			$entries = entry_manager::get_entries($dataid);
+		} else {
+			$entries = entry_manager::get_user_entries($dataid, $USER->id);
+		}
+
+		// ── Fortschrittsbalken nur für Studierende ──────────────────────────
+		if (!$canviewallapplications) {
+			// Aktuellen Status des Studierenden ermitteln
+			$appstatuskey = null;
+			if (!empty($entries)) {
+				$firstentry   = reset($entries);
+				$appstatrec   = status_manager::get_status((int) $firstentry->statusid);
+				$appstatuskey = $appstatrec ? $appstatrec->shortname : null;
+			}
+
+			// Level-Zuordnung je Status
+			$isnachzureichen = ($appstatuskey === 'nachzureichen');
+			$isreject        = ($appstatuskey === 'abgelehnt');
+
+			if ($isnachzureichen) {
+				// 4-Schritt-Modus: Eingereicht → In Prüfung → Nachzureichen → Ergebnis
+				$islevel = [
+					'eingereicht'    => 1,
+					'in_pruefung'    => 2,
+					'nachzureichen'  => 3,
+					'angenommen'     => 4,
+					'abgelehnt'      => 4,
+				];
+				$curlevel = 3; // nachzureichen ist aktiv
+				$barsteps = [
+					['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
+					['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
+					['label' => get_string('appbar_nachzureichen','mod_dhbwio'), 'level' => 3],
+					['label' => get_string('appbar_result',       'mod_dhbwio'), 'level' => 4],
+				];
+			} else {
+				// Standard 3-Schritt-Modus
+				$islevel = [
+					'eingereicht' => 1,
+					'in_pruefung' => 2,
+					'angenommen'  => 3,
+					'abgelehnt'   => 3,
+				];
+				$curlevel = $appstatuskey ? ($islevel[$appstatuskey] ?? 0) : 0;
+
+				$step3label = get_string('appbar_result', 'mod_dhbwio');
+				if ($appstatuskey === 'angenommen') {
+					$step3label = get_string('appbar_accepted', 'mod_dhbwio');
+				} elseif ($appstatuskey === 'abgelehnt') {
+					$step3label = get_string('appbar_rejected', 'mod_dhbwio');
+				}
+				$barsteps = [
+					['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
+					['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
+					['label' => $step3label,                                      'level' => 3],
+				];
+			}
+
+			// ── Hinweis-Banner ────────────────────────────────────────────────
+			if (!empty($entries)) {
+				$firstentry = reset($entries);
+				if ($isnachzureichen) {
+					echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">';
+					echo get_string('alert_nachzureichen', 'mod_dhbwio');
+					echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
+					echo '</div>';
+				} elseif ($curlevel >= 3) {
+					$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $firstentry->id,
+					]);
+					if ($isreject) {
+						$alertclass = 'alert-danger';
+						$alertmsg   = get_string('alert_rejected', 'mod_dhbwio');
+					} else {
+						$alertclass = 'alert-success';
+						$alertmsg   = get_string('alert_accepted', 'mod_dhbwio');
+					}
+					echo '<div class="alert ' . $alertclass . ' alert-dismissible fade show" role="alert">';
+					echo $alertmsg . ' ';
+					echo html_writer::link($viewurl, get_string('alert_open_application', 'mod_dhbwio'), ['class' => 'alert-link fw-bold']);
+					echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>';
+					echo '</div>';
+				}
+			}
+
+			echo '<div class="dhbwio-appbar-container mb-4">';
+			echo '<div class="dhbwio-appbar-steps">';
+
+			$totalsteps = count($barsteps);
+			foreach ($barsteps as $si => $step) {
+				$steplevel = $step['level'];
+
+				if ($isnachzureichen && $si === 2) {
+					// "Nachzureichen" – aktiv (gelb/orange)
+					$circlass = 'dhbwio-appbar-circle-active';
+					$lblclass = 'dhbwio-appbar-label-active';
+					$icon     = '3';
+				} elseif ($curlevel > $steplevel) {
+					$circlass = 'dhbwio-appbar-circle-done';
+					$lblclass = 'dhbwio-appbar-label-done';
+					$icon     = '&#10003;';
+				} elseif ($curlevel === $steplevel && !$isnachzureichen) {
+					if ($isreject && $si === $totalsteps - 1) {
+						$circlass = 'dhbwio-appbar-circle-reject';
+						$lblclass = 'dhbwio-appbar-label-reject';
+						$icon     = '&#10007;';
+					} elseif ($curlevel >= 3) {
+						$circlass = 'dhbwio-appbar-circle-done';
+						$lblclass = 'dhbwio-appbar-label-done';
+						$icon     = '&#10003;';
+					} else {
+						$circlass = 'dhbwio-appbar-circle-active';
+						$lblclass = 'dhbwio-appbar-label-active';
+						$icon     = (string) $steplevel;
+					}
+				} else {
+					$circlass = 'dhbwio-appbar-circle-pending';
+					$lblclass = 'dhbwio-appbar-label-pending';
+					$icon     = (string) $steplevel;
+				}
+
+				echo '<div class="dhbwio-appbar-step">';
+				echo '<div class="dhbwio-appbar-circle ' . $circlass . '">' . $icon . '</div>';
+				echo '<div class="dhbwio-appbar-label ' . $lblclass . '">' . htmlspecialchars($step['label']) . '</div>';
+				echo '</div>';
+
+				if ($si < $totalsteps - 1) {
+					if ($curlevel > $steplevel) {
+						$linecolor = ($isnachzureichen && $si === 1) ? '#FFA000' : '#43A047';
+					} elseif ($isnachzureichen && $si === 1) {
+						$linecolor = '#FFA000';
+					} else {
+						$linecolor = '#dee2e6';
+					}
+					echo '<div class="dhbwio-appbar-line" style="background:' . $linecolor . '"></div>';
+				}
+			}
+
+			echo '</div>'; // dhbwio-appbar-steps
+			echo '</div>'; // dhbwio-appbar-container
+		}
+		// ────────────────────────────────────────────────────────────────────
+
+		// Generating "Apply now"-Button
+		$url = new moodle_url('/mod/dhbwio/application.php', [
+			'id'     => $cm->id,
+			'dataid' => $dataid,
+		]);
+
+		$matrixurl = new moodle_url('/local/zuweisungsmatrix/index.php', [
+			'courseid' => $courseid
+		]);
+
+		echo html_writer::link(
+			$url,
+			get_string('createapplication', 'dhbwio'),
+			['class' => 'btn btn-primary px-3 py-2']
+		);
+
+		if ($canviewallapplications) {
+			echo html_writer::link(
+				$matrixurl,
+				'Zuweisungsmatrix',
+				['class' => 'btn btn-primary px-3 py-2']
+			);
+		}
+
+		$erstwunschfield  = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
+		$studiengangfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
+		$vornamefield     = field_manager::get_field_by_name($dataid, 'VORNAME');
+		$nachnamefield    = field_manager::get_field_by_name($dataid, 'NACHNAME');
+		$emailfield       = field_manager::get_field_by_name($dataid, 'EMAIL');
+
+		if (empty($entries)) {
+			echo html_writer::tag('p', get_string('no_applications', 'dhbwio'));
+		} else {
+			$applications = [];
+
+			foreach ($entries as $entry) {
+				$erstwunsch = '-';
+				if ($erstwunschfield) {
+					$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
+				}
+
+				$statusrecord = status_manager::get_status((int) $entry->statusid);
+				if ($statusrecord) {
+					$statuskey = $statusrecord->shortname;
+					$strkey    = 'status_' . $statuskey;
+					$status    = get_string_manager()->string_exists($strkey, 'dhbwio')
+						? get_string($strkey, 'dhbwio')
+						: $statusrecord->label;
+				} else {
+					$statuskey = 'unknown';
+					$status = '-';
+				}
+
+				$statusclass = match ($statuskey) {
+					'eingereicht'   => 'status-submitted',
+					'in_pruefung'   => 'status-review',
+					'angenommen'    => 'status-approved',
+					'abgelehnt'     => 'status-rejected',
+					'nachzureichen' => 'status-review',
+					default         => 'status-default',
+				};
+
+				if ($canviewallapplications) {
+					$viewurl = new moodle_url('/mod/dhbwio/application_view.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$reviewurl = new moodle_url('/mod/dhbwio/application_review.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$actions = html_writer::link($viewurl, get_string('show', 'dhbwio')) . ' | ' .
+						html_writer::link($reviewurl, get_string('review', 'dhbwio'));
+
+					$vorname     = $vornamefield     ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id)     : '';
+					$nachname    = $nachnamefield    ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id)    : '';
+					$email       = $emailfield       ? entry_manager::get_content_value($entry->id, (int) $emailfield->id)       : '';
+					$studiengang = $studiengangfield ? entry_manager::get_content_value($entry->id, (int) $studiengangfield->id) : '';
+
+					$applications[] = [
+						'applicantname' => s(trim($vorname . ' ' . $nachname)),
+						'email'         => s($email),
+						'timecreated'   => userdate($entry->timecreated),
+						'timemodified'  => userdate($entry->timemodified),
+						'firstchoice'   => s($erstwunsch),
+						'status'        => s($status),
+						'statusclass'   => $statusclass,
+						'actions'       => $actions,
+						'studyprogram'  => s($studiengang),
+					];
+				} else {
+					$viewurl = new moodle_url('/mod/dhbwio/application.php', [
+						'id'      => $cm->id,
+						'dataid'  => $dataid,
+						'entryid' => $entry->id,
+					]);
+					$actions = html_writer::link($viewurl, get_string('show/edit', 'dhbwio'));
+
+					if (status_manager::is_accepted((int) $entry->statusid)) {
+						$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+							'id'      => $cm->id,
+							'dataid'  => $dataid,
+							'entryid' => $entry->id,
+						]);
+						$actions .= ' | ' . html_writer::link($laurl, get_string('learning_agreement', 'dhbwio'));
+					}
+
+					$applications[] = [
+						'timecreated'  => userdate($entry->timecreated),
+						'timemodified' => userdate($entry->timemodified),
+						'firstchoice'  => s($erstwunsch),
+						'status'       => s($status),
+						'statusclass'  => $statusclass,
+						'actions'      => $actions,
+					];
+				}
+			}
+
+			$templatecontext = [
+				'title'           => $canviewallapplications
+					? get_string('all_application_overview_title', 'dhbwio')
+					: get_string('application_overview_title', 'dhbwio'),
+				'isadmin'         => $canviewallapplications,
+				'hasapplications' => !empty($applications),
+				'applications'    => $applications,
+				'emptytext'       => $canviewallapplications
+					? get_string('all_emptytext', 'dhbwio')
+					: get_string('emptytext', 'dhbwio'),
+			];
+
+			echo $OUTPUT->render_from_template('mod_dhbwio/application_overview', $templatecontext);
+		}
+		break;
+
+	case 'reports':
+		if (empty($dhbwio->enablereports)) {
+			// Reports are disabled, redirect to main view
+			redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id]));
+		}
+
+		// Display reports
+		if (!empty($dhbwio->enablereports)) {
+			// Show add report button if student has permission
+			if (has_capability('mod/dhbwio:submitreport', $context)) {
+				$addurl = new moodle_url('/mod/dhbwio/report.php', [
+					'cmid' => $cm->id,
+					'action' => 'add'
+				]);
+
+				echo '<div class="dhbwio-actions mb-4">';
+				echo '<a href="' . $addurl . '" class="btn btn-primary">';
+				echo get_string('add_report', 'mod_dhbwio') . '</a>';
+				echo '</div>';
+			}
+
+			// Get all reports
+			$reports = $DB->get_records('dhbwio_experience_reports', [
+				'dhbwio' => $dhbwio->id,
+				'visible' => 1
+			], 'timecreated DESC');
+
+			if (empty($reports)) {
+				echo $OUTPUT->notification(get_string('no_reports', 'mod_dhbwio'), 'info');
+			} else {
+				echo $OUTPUT->box_start('generalbox');
+
+				foreach ($reports as $report) {
+					// Get university and student details
+					$university = $DB->get_record('dhbwio_universities', ['id' => $report->university_id]);
+					$student = $DB->get_record('user', ['id' => $report->userid]);
+
+					if (!$university || !$student) {
+						continue;
+					}
+
+					// Get country name
+					$countries = get_string_manager()->get_list_of_countries();
+					$countryName = isset($countries[$university->country]) ? $countries[$university->country] : $university->country;
+
+					echo '<div class="card mb-4">';
+					echo '<div class="card-header">';
+					echo '<h3>' . format_string($report->title) . '</h3>';
+
+					// Display university and author
+					echo '<p>';
+
+					// Link to university detail page
+					$universityurl = new moodle_url('/mod/dhbwio/university.php', [
+						'cmid' => $cm->id,
+						'university' => $university->id
+					]);
+
+					echo '<a href="' . $universityurl . '">' . format_string($university->name) . '</a>';
+					echo ' (' . $countryName . ')';
+					echo ' | ' . get_string('by', 'mod_dhbwio') . ' ' . fullname($student);
+					echo ' | ' . userdate($report->timecreated);
+
+					// Display rating if any
+					if (!empty($report->rating)) {
+						echo ' | ' . get_string('rating', 'mod_dhbwio') . ': ';
+						for ($i = 1; $i <= 5; $i++) {
+							if ($i <= $report->rating) {
+								echo '★';
+							} else {
+								echo '☆';
+							}
+						}
+					}
+
+					echo '</p>';
+					echo '</div>'; // End card-header
+
+					echo '<div class="card-body">';
+					echo format_text($report->content, $report->contentformat);
+
+					// Show edit/delete actions if user is the author
+					if ($report->userid == $USER->id || has_capability('mod/dhbwio:manageuniversities', $context)) {
+						echo '<div class="dhbwio-actions mt-3">';
+
+						$editurl = new moodle_url('/mod/dhbwio/report.php', [
+							'cmid' => $cm->id,
+							'action' => 'edit',
+							'report' => $report->id
+						]);
+
+						$deleteurl = new moodle_url('/mod/dhbwio/report.php', [
+							'cmid' => $cm->id,
+							'action' => 'delete',
+							'report' => $report->id,
+							'sesskey' => sesskey()
+						]);
+
+						echo '<a href="' . $editurl . '" class="btn btn-secondary btn-sm">';
+						echo get_string('edit', 'mod_dhbwio') . '</a> ';
+
+						echo '<a href="' . $deleteurl . '" class="btn btn-danger btn-sm" onclick="return confirm(\'' .
+							get_string('delete_report_confirm', 'mod_dhbwio') . '\')">';
+						echo get_string('delete', 'mod_dhbwio') . '</a>';
+
+						echo '</div>';
+					}
+
+					echo '</div>'; // End card-body
+					echo '</div>'; // End card
+				}
+
+				echo $OUTPUT->box_end();
+			}
+		}
+		break;
+
+	case 'manageunis':
 		// Check capability
 		require_capability('mod/dhbwio:manageuniversities', $context);
-		
+
 		// Display management interface
 		echo '<div class="dhbwio-manageuniversities">';
-		
+
 		// Add university button
 		$addurl = new moodle_url('/mod/dhbwio/university.php', [
 			'cmid' => $cm->id,
 			'action' => 'add'
 		]);
-		
+
 		echo '<div class="dhbwio-actions mb-4">';
 		echo '<a href="' . $addurl . '" class="btn btn-primary">';
 		echo get_string('add_university', 'mod_dhbwio') . '</a>';
 		echo '</div>';
-		
+
 		// Get all universities
 		$universities = $DB->get_records('dhbwio_universities', [
 			'dhbwio' => $dhbwio->id
 		], 'country, name');
-		
+
 		if (empty($universities)) {
 			echo $OUTPUT->notification(get_string('no_universities', 'mod_dhbwio'), 'info');
 		} else {
 			$countries = get_string_manager()->get_list_of_countries();
-			
+
 			echo $OUTPUT->box_start('generalbox');
-			
+
 			$table = new html_table();
 			$table->head = [
 				get_string('university_name', 'mod_dhbwio'),
@@ -283,63 +602,63 @@ switch ($tab) {
 				get_string('actions', 'mod_dhbwio')
 			];
 			$table->attributes['class'] = 'table table-striped table-hover';
-			
+
 			foreach ($universities as $university) {
 				// Get country name
 				$countryCode = $university->country;
 				$countryName = isset($countries[$countryCode]) ? $countries[$countryCode] : $countryCode;
-				
+
 				// Create action URLs
 				$editurl = new moodle_url('/mod/dhbwio/university.php', [
 					'cmid' => $cm->id,
 					'action' => 'edit',
 					'university' => $university->id
 				]);
-				
+
 				$deleteurl = new moodle_url('/mod/dhbwio/university.php', [
 					'cmid' => $cm->id,
 					'action' => 'delete',
 					'university' => $university->id,
 					'sesskey' => sesskey()
 				]);
-				
+
 				$viewurl = new moodle_url('/mod/dhbwio/university.php', [
 					'cmid' => $cm->id,
 					'university' => $university->id
 				]);
-				
+
 				$actions = [];
-				
+
 				// Edit action
 				$actions[] = html_writer::link(
-					$editurl, 
-					$OUTPUT->pix_icon('t/edit', get_string('edit')), 
+					$editurl,
+					$OUTPUT->pix_icon('t/edit', get_string('edit')),
 					['class' => 'btn btn-sm btn-outline-secondary', 'title' => get_string('edit')]
 				);
-				
+
 				// View action
 				$actions[] = html_writer::link(
-					$viewurl, 
-					$OUTPUT->pix_icon('i/preview', get_string('view')), 
+					$viewurl,
+					$OUTPUT->pix_icon('i/preview', get_string('view')),
 					['class' => 'btn btn-sm btn-outline-info', 'title' => get_string('view')]
 				);
-				
+
 				// Delete action
 				$actions[] = html_writer::link(
-					$deleteurl, 
-					$OUTPUT->pix_icon('t/delete', get_string('delete')), 
+					$deleteurl,
+					$OUTPUT->pix_icon('t/delete', get_string('delete')),
 					[
 						'class' => 'btn btn-sm btn-outline-danger',
 						'title' => get_string('delete'),
 						'onclick' => 'return confirm("' . get_string('delete_university_confirm', 'mod_dhbwio') . '")'
 					]
 				);
-				
+
 				// Active status display using badges like in email templates
-				$activestatus = $university->active ? 
-					'<span class="badge badge-success">' . get_string('active', 'mod_dhbwio') . '</span>' : 
+				$activestatus = $university->active ?
+					'<span class="badge badge-success">' . get_string('active', 'mod_dhbwio') . '</span>' :
 					'<span class="badge badge-secondary">' . get_string('inactive', 'mod_dhbwio') . '</span>';
-				
+
 				// Add table row
 				$table->data[] = [
 					format_string($university->name),
@@ -350,38 +669,122 @@ switch ($tab) {
 					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>'
 				];
 			}
-			
+
 			echo html_writer::table($table);
 			echo $OUTPUT->box_end();
 		}
-		
+
 		echo '</div>'; // End dhbwio-manageuniversities
 		break;
-        
-    case 'statistics':
-        // Check capability
-        require_capability('mod/dhbwio:viewreports', $context);
-        echo $OUTPUT->notification("Statistics feature is coming soon", 'info');
-        break;
-        
-    case 'emailtemplates':
+
+	case 'statistics':
+		// Check capability
+		require_capability('mod/dhbwio:viewreports', $context);
+		echo $OUTPUT->notification("Statistics feature is coming soon", 'info');
+		break;
+
+	case 'fristen':
+		require_capability('mod/dhbwio:manageuniversities', $context);
+
+		echo '<div class="dhbwio-fristen">';
+
+		// "Frist anlegen" button — nur für Manager
+		if (has_capability('mod/dhbwio:manageuniversities', $context)) {
+			$addurl = new moodle_url('/mod/dhbwio/frist.php', ['cmid' => $cm->id, 'action' => 'add']);
+			echo '<div class="dhbwio-actions mb-4">';
+			echo '<a href="' . $addurl . '" class="btn btn-primary">'
+				. get_string('frist_add', 'mod_dhbwio') . '</a>';
+			echo '</div>';
+		}
+
+		$fristen = $DB->get_records('dhbwio_fristen', ['dhbwio' => $dhbwio->id], 'jahrgang DESC, art');
+
+		if (empty($fristen)) {
+			echo $OUTPUT->notification(get_string('no_fristen', 'mod_dhbwio'), 'info');
+		} else {
+			$artlabels = [
+				'stipendium'         => get_string('frist_art_stipendium', 'mod_dhbwio'),
+				'bewerbung'          => get_string('frist_art_bewerbung', 'mod_dhbwio'),
+				'learning_agreement' => get_string('frist_art_learning_agreement', 'mod_dhbwio'),
+			];
+
+			echo $OUTPUT->box_start('generalbox');
+			$table = new html_table();
+			$table->head = [
+				get_string('frist_art', 'mod_dhbwio'),
+				get_string('frist_studiengang', 'mod_dhbwio'),
+				get_string('frist_jahrgang', 'mod_dhbwio'),
+				get_string('frist_deadline', 'mod_dhbwio'),
+				get_string('frist_kommentar', 'mod_dhbwio'),
+				get_string('actions', 'mod_dhbwio'),
+			];
+			$table->attributes['class'] = 'table table-striped table-hover';
+
+			foreach ($fristen as $frist) {
+				$artlabel = $artlabels[$frist->art] ?? $frist->art;
+				$sgLabel  = $frist->studiengang === 'alle'
+					? get_string('frist_alle_studiengaenge', 'mod_dhbwio')
+					: format_string($frist->studiengang);
+
+				$editurl = new moodle_url('/mod/dhbwio/frist.php', [
+					'cmid'    => $cm->id,
+					'action'  => 'edit',
+					'fristid' => $frist->id,
+				]);
+				$deleteurl = new moodle_url('/mod/dhbwio/frist.php', [
+					'cmid'    => $cm->id,
+					'action'  => 'delete',
+					'fristid' => $frist->id,
+					'sesskey' => sesskey(),
+				]);
+
+				$actions = [
+					html_writer::link($editurl,
+						$OUTPUT->pix_icon('t/edit', get_string('edit')),
+						['class' => 'btn btn-sm btn-outline-secondary']),
+					html_writer::link($deleteurl,
+						$OUTPUT->pix_icon('t/delete', get_string('delete')),
+						[
+							'class'   => 'btn btn-sm btn-outline-danger',
+							'onclick' => 'return confirm("' . get_string('frist_delete_confirm', 'mod_dhbwio') . '")',
+						]),
+				];
+
+				$table->data[] = [
+					$artlabel,
+					$sgLabel,
+					$frist->jahrgang,
+					!empty($frist->deadline) ? userdate($frist->deadline, get_string('strftimedate', 'langconfig')) : '—',
+					!empty($frist->kommentar) ? format_string($frist->kommentar) : '—',
+					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>',
+				];
+			}
+
+			echo html_writer::table($table);
+			echo $OUTPUT->box_end();
+		}
+
+		echo '</div>';
+		break;
+
+	case 'emailtemplates':
 		// Check capability
 		require_capability('mod/dhbwio:managetemplates', $context);
-		
+
 		// Display email template management interface
 		echo '<div class="dhbwio-emailtemplates">';
-		
+
 		// Get all templates for this instance
 		$templates = $DB->get_records('dhbwio_email_templates', ['dhbwio' => $dhbwio->id], 'type, lang, name');
-		
+
 		if (empty($templates)) {
 			echo $OUTPUT->notification(get_string('no_templates', 'mod_dhbwio'), 'info');
-			
+
 			// Show info about creating default templates
 			echo '<div class="alert alert-info">';
 			echo '<h5>' . get_string('create_default_templates', 'mod_dhbwio') . '</h5>';
 			echo '<p>' . get_string('create_default_templates_desc', 'mod_dhbwio') . '</p>';
-			
+
 			$createdefaulturl = new moodle_url('/mod/dhbwio/email_template.php', [
 				'cmid' => $cm->id,
 				'action' => 'createdefaults',
@@ -398,9 +801,9 @@ switch ($tab) {
 				'application_rejected' => get_string('template_application_rejected', 'mod_dhbwio'),
 				'application_inquiry' => get_string('template_application_inquiry', 'mod_dhbwio')
 			];
-			
+
 			echo $OUTPUT->box_start('generalbox');
-			
+
 			// Create single table for all templates
 			$table = new html_table();
 			$table->head = [
@@ -412,40 +815,46 @@ switch ($tab) {
 				get_string('actions', 'mod_dhbwio')
 			];
 			$table->attributes['class'] = 'table table-striped table-hover';
-			
+
 			$stringmanager = get_string_manager();
 			$languageList = $stringmanager->get_list_of_languages();
-			
+
 			foreach ($templates as $template) {
 				$langdisplay = isset($languageList[$template->lang]) ? $languageList[$template->lang] : $template->lang;
 				$typedisplay = isset($templatetypes[$template->type]) ? $templatetypes[$template->type] : $template->type;
-				
+
 				// Status display
-				$status = $template->enabled ? 
-					'<span class="badge badge-success">' . get_string('enabled', 'mod_dhbwio') . '</span>' : 
+				$status = $template->enabled ?
+					'<span class="badge badge-success">' . get_string('enabled', 'mod_dhbwio') . '</span>' :
 					'<span class="badge badge-secondary">' . get_string('disabled', 'mod_dhbwio') . '</span>';
-				
+
 				// Action links
 				$actions = [];
-				
+
 				// Edit
 				$editurl = new moodle_url('/mod/dhbwio/email_template.php', [
 					'cmid' => $cm->id,
 					'action' => 'edit',
 					'template' => $template->id
 				]);
-				$actions[] = html_writer::link($editurl, $OUTPUT->pix_icon('t/edit', get_string('edit')), 
-											['class' => 'btn btn-sm btn-outline-secondary']);
-				
+				$actions[] = html_writer::link(
+					$editurl,
+					$OUTPUT->pix_icon('t/edit', get_string('edit')),
+					['class' => 'btn btn-sm btn-outline-secondary']
+				);
+
 				// Preview
 				$previewurl = new moodle_url('/mod/dhbwio/email_template.php', [
 					'cmid' => $cm->id,
 					'action' => 'preview',
 					'template' => $template->id
 				]);
-				$actions[] = html_writer::link($previewurl, $OUTPUT->pix_icon('i/preview', get_string('preview')), 
-											['class' => 'btn btn-sm btn-outline-info']);
-				
+				$actions[] = html_writer::link(
+					$previewurl,
+					$OUTPUT->pix_icon('i/preview', get_string('preview')),
+					['class' => 'btn btn-sm btn-outline-info']
+				);
+
 				// Test email
 				$testurl = new moodle_url('/mod/dhbwio/email_template.php', [
 					'cmid' => $cm->id,
@@ -453,14 +862,17 @@ switch ($tab) {
 					'template' => $template->id,
 					'sesskey' => sesskey()
 				]);
-				$actions[] = html_writer::link($testurl, $OUTPUT->pix_icon('t/email', get_string('send_test_email', 'mod_dhbwio')), 
-											['class' => 'btn btn-sm btn-outline-warning']);
-				
+				$actions[] = html_writer::link(
+					$testurl,
+					$OUTPUT->pix_icon('t/email', get_string('send_test_email', 'mod_dhbwio')),
+					['class' => 'btn btn-sm btn-outline-warning']
+				);
+
 				// Truncate subject for display
-				$subjectdisplay = strlen($template->subject) > 50 ? 
-								substr($template->subject, 0, 50) . '...' : 
-								$template->subject;
-				
+				$subjectdisplay = strlen($template->subject) > 50 ?
+					substr($template->subject, 0, 50) . '...' :
+					$template->subject;
+
 				// Add table row
 				$table->data[] = [
 					format_string($template->name),
@@ -471,19 +883,220 @@ switch ($tab) {
 					'<div class="btn-group" role="group">' . implode('', $actions) . '</div>'
 				];
 			}
-			
+
 			echo html_writer::table($table);
 			echo $OUTPUT->box_end();
 		}
-		
+
 		echo '</div>'; // End dhbwio-emailtemplates
 		break;
-        
-    default:
-        // Default to universities view
-        $renderer = $PAGE->get_renderer('mod_dhbwio');
-        $renderer->display_universities_list($dhbwio, $cm);
-        break;
+
+	default:
+		// Default to universities view
+		$renderer = $PAGE->get_renderer('mod_dhbwio');
+		$renderer->display_universities_list($dhbwio, $cm);
+		break;
+
+	case 'learningagreement':
+		$iscoordinator = has_capability('mod/dhbwio:manageuniversities', $context);
+
+		echo '<div class="dhbwio-learningagreement">';
+		echo '<h3>' . get_string('nav_learningagreement', 'mod_dhbwio') . '</h3>';
+
+		$statuslabels = [
+			'pending'  => get_string('la_status_pending', 'mod_dhbwio'),
+			'approved' => get_string('la_status_approved', 'mod_dhbwio'),
+			'rejected' => get_string('la_status_rejected', 'mod_dhbwio'),
+		];
+		$doctypelabels = [
+			'learning_agreement' => get_string('la_doctype_learning_agreement', 'mod_dhbwio'),
+			'other_document'     => get_string('la_doctype_other_document', 'mod_dhbwio'),
+		];
+
+		if (!$iscoordinator) {
+			// Determine application status.
+			try {
+				$dataform_la = dataform_manager::get_course_dataform((int) $course->id);
+				$dataid_la   = (int) $dataform_la->id;
+			} catch (moodle_exception $e) {
+				$dataid_la = 0;
+			}
+			$appstatus_la     = null;
+			$appstatuskey_la  = null;
+			if ($dataid_la > 0) {
+				$userentries = entry_manager::get_user_entries($dataid_la, $USER->id);
+				if (!empty($userentries)) {
+					$ufirst        = reset($userentries);
+					$appstatus_la  = status_manager::get_status((int) $ufirst->statusid);
+					$appstatuskey_la = $appstatus_la ? $appstatus_la->shortname : null;
+				}
+			}
+
+			$isnachzureichen_tab = ($appstatuskey_la === 'nachzureichen');
+
+			// ── Upload buttons (immer sichtbar) ────────────────────────────
+			$lauploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+				'cmid'    => $cm->id,
+				'doctype' => 'learning_agreement',
+			]);
+			$otherurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+				'cmid'    => $cm->id,
+				'doctype' => 'other_document',
+			]);
+			echo '<div class="mb-3">';
+			if ($isnachzureichen_tab) {
+				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
+				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-secondary']);
+			} else {
+				echo '<button class="btn btn-secondary me-2" disabled>'
+					. get_string('la_create_btn', 'mod_dhbwio') . '</button>';
+				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
+				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-outline-secondary']);
+			}
+			echo '</div>';
+
+			// ── DELETE action ──────────────────────────────────────────────
+			$deletelaid = optional_param('deletelaid', 0, PARAM_INT);
+			if ($deletelaid > 0 && confirm_sesskey()) {
+				$delrec = $DB->get_record('dhbwio_learning_agreements', ['id' => $deletelaid, 'dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
+				if ($delrec) {
+					$fs = get_file_storage();
+					$fs->delete_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $delrec->id);
+					$DB->delete_records('dhbwio_learning_agreements', ['id' => $delrec->id]);
+				}
+				redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']));
+			}
+
+			// ── Document history ────────────────────────────────────────────
+			$allrecords = $DB->get_records('dhbwio_learning_agreements', [
+				'dhbwio' => $dhbwio->id,
+				'userid' => $USER->id,
+			], 'timecreated DESC');
+
+			echo '<h5 class="mt-4">' . get_string('la_doc_history', 'mod_dhbwio') . '</h5>';
+
+			if (empty($allrecords)) {
+				echo '<p class="text-muted">' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
+			} else {
+				$fs = get_file_storage();
+				$histable = new html_table();
+				$histable->head = [
+					get_string('la_col_doctype',  'mod_dhbwio'),
+					get_string('la_col_file',     'mod_dhbwio'),
+					get_string('la_col_status',   'mod_dhbwio'),
+					get_string('la_col_uploaded', 'mod_dhbwio'),
+					get_string('actions',         'mod_dhbwio'),
+				];
+				$histable->attributes['class'] = 'table table-striped table-hover';
+
+				foreach ($allrecords as $rec) {
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file    = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$statusbadge = '<span class="badge badge-'
+						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
+						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+
+					if (!empty($rec->comment)) {
+						$statusbadge .= '<br><small class="text-muted">' . s($rec->comment) . '</small>';
+					}
+
+					$deleteurl = new moodle_url('/mod/dhbwio/view.php', [
+						'id'         => $cm->id,
+						'tab'        => 'learningagreement',
+						'deletelaid' => $rec->id,
+						'sesskey'    => sesskey(),
+					]);
+
+					$histable->data[] = [
+						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
+						$filelink,
+						$statusbadge,
+						userdate($rec->timecreated),
+						html_writer::link(
+							$deleteurl,
+							get_string('delete'),
+							[
+								'class'   => 'btn btn-sm btn-outline-danger',
+								'onclick' => 'return confirm("' . get_string('la_delete_confirm', 'mod_dhbwio') . '")',
+							]
+						),
+					];
+				}
+				echo html_writer::table($histable);
+			}
+		} else {
+			// Coordinator view: all uploaded documents grouped by student.
+			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'userid ASC, timecreated DESC');
+
+			if (empty($records)) {
+				echo $OUTPUT->notification(get_string('la_no_submissions', 'mod_dhbwio'), 'info');
+			} else {
+				$fs = get_file_storage();
+
+				$table = new html_table();
+				$table->head = [
+					get_string('la_col_student',  'mod_dhbwio'),
+					get_string('la_col_doctype',  'mod_dhbwio'),
+					get_string('la_col_file',     'mod_dhbwio'),
+					get_string('la_col_submitted','mod_dhbwio'),
+					get_string('la_col_status',   'mod_dhbwio'),
+					get_string('actions',         'mod_dhbwio'),
+				];
+				$table->attributes['class'] = 'table table-striped table-hover';
+
+				foreach ($records as $rec) {
+					$student     = $DB->get_record('user', ['id' => $rec->userid]);
+					$studentname = $student ? fullname($student) : '(unbekannt)';
+
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file    = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$reviewurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+						'cmid'   => $cm->id,
+						'action' => 'review',
+						'laid'   => $rec->id,
+					]);
+
+					$statusbadge = '<span class="badge badge-'
+						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
+						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+
+					$table->data[] = [
+						$studentname,
+						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
+						$filelink,
+						userdate($rec->timecreated),
+						$statusbadge,
+						'<a href="' . $reviewurl . '" class="btn btn-sm btn-secondary">'
+							. get_string('la_review_btn', 'mod_dhbwio') . '</a>',
+					];
+				}
+
+				echo html_writer::table($table);
+			}
+		}
+
+		echo '</div>';
+		break;
 }
 
 echo $OUTPUT->footer();

@@ -1,0 +1,106 @@
+<div class="dhbwio-application-container">
+<form method="post" action="{{actionurl}}" class="dhbwio-application-form">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="dataid" value="{{dataid}}">
+    <input type="hidden" name="entryid" value="{{entryid}}">
+{{#showreviewresult}}
+<section class="dhbwio-form-section dhbwio-review-result-section">
+    <div class="dhbwio-form-section-header">
+        <span class="dhbwio-form-step-number">✓</span>
+        <h3>Rückmeldung des International Office</h3>
+    </div>
+
+    {{#acceptedchoicelabel}}
+        <div class="dhbwio-view-row row">
+            <div class="col-md-3 dhbwio-view-label">
+                <strong>Angenommen für</strong>
+            </div>
+            <div class="col-md-8 dhbwio-view-value">
+                {{acceptedchoicelabel}}
+            </div>
+        </div>
+    {{/acceptedchoicelabel}}
+
+    {{{reviewfields.KOMMENTAR_IO.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT.html}}}
+    {{{reviewfields.SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT.html}}}
+</section>
+{{/showreviewresult}}
+
+    <section class="dhbwio-form-section">
+        <div class="dhbwio-form-section-header">
+            <span class="dhbwio-form-step-number">1</span>
+            <h3>Persönliche Informationen</h3>
+        </div>
+
+        <h4>Persönliche Informationen</h4>
+
+        {{{fields.NACHNAME.html}}}
+        {{{fields.VORNAME.html}}}
+        {{{fields.GEBURTSDATUM.html}}}
+        {{{fields.NATIONALITAET.html}}}
+        {{{fields.MUTTERSPRACHE.html}}}
+
+        <h4>Kontaktdaten</h4>
+
+        {{{fields.EMAIL.html}}}
+    </section>
+
+    <section class="dhbwio-form-section">
+        <div class="dhbwio-form-section-header">
+            <span class="dhbwio-form-step-number">2</span>
+            <h3>Informationen zum Studium</h3>
+        </div>
+
+        <h4>Studium</h4>
+
+        {{{fields.STUDIENGANG.html}}}
+        {{{fields.STUDIENRICHTUNG.html}}}
+        {{{fields.KURSNAME.html}}}
+        {{{fields.STUDIENGANGSLEITUNG.html}}}
+        {{{fields.ABSPRACHE_MIT_STUDIENGANGSLEITUNG.html}}}
+        {{{fields.AKTUELLES_SEMESTER.html}}}
+
+        <h4>Partnerunternehmen</h4>
+
+        {{{fields.UNTERNEHMEN.html}}}
+        {{{fields.ANSPRECHPERSON_UNTERNEHMEN.html}}}
+        {{{fields.ANSPRECHPERSON_EMAIL.html}}}
+        {{{fields.ABSPRACHE_MIT_UNTERNEHMEN.html}}}
+    </section>
+
+    <section class="dhbwio-form-section">
+        <div class="dhbwio-form-section-header">
+            <span class="dhbwio-form-step-number">3</span>
+            <h3>Informationen zum Auslandssemester</h3>
+        </div>
+
+        <div class="dhbwio-form-info-box">
+            <strong>Hinweis zur Länder- bzw. Hochschulwahl:</strong><br>
+            Bitte wähle jede Hochschule nur einmal aus. Solltest du lediglich ein oder zwei Hochschulwünsche haben,
+            wähle bei den anderen Feldern <strong>„Keine“</strong> aus.
+        <br></br>
+        </div>
+
+        <h4>Länder- bzw. Hochschulwahl</h4>
+
+        {{{fields.ERSTWUNSCH.html}}}
+        {{{fields.ZWEITWUNSCH.html}}}
+        {{{fields.DRITTWUNSCH.html}}}
+
+        <h4>Sonstige Angaben</h4>
+
+        {{{fields.BENACHTEILIGUNG_BILDUNGSCHANCEN.html}}}
+        {{{fields.NACHRICHT.html}}}
+        {{{fields.VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT.html}}}
+        {{{fields.EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ.html}}}
+    </section>
+
+    <div class="dhbwio-application-actions">
+        <button type="submit" name="submitbutton" value="1" class="btn btn-primary">Speichern</button>
+        <a href="{{backurl}}" class="btn btn-secondary">Zurück zur Übersicht</a>
+    </div>
+</form>
+</div>

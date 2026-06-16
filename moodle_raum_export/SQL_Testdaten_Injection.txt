@@ -1,0 +1,243 @@
+-- Clean-Slate in SQL
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM mdl_dhbwio_dataform_contents;
+DELETE FROM mdl_dhbwio_dataform_entries;
+DELETE FROM mdl_dhbwio_dataform_fields;
+DELETE FROM mdl_dhbwio_dataform;
+
+DELETE FROM mdl_dhbwio_electives;
+DELETE FROM mdl_dhbwio_studytracks;
+DELETE FROM mdl_dhbwio_studyprograms;
+
+ALTER TABLE mdl_dhbwio_dataform_contents AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform_entries AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform_fields AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform AUTO_INCREMENT = 1;
+
+ALTER TABLE mdl_dhbwio_electives AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studytracks AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studyprograms AUTO_INCREMENT = 1;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- Testdatengenerierung via SQL
+
+-- ACHTUNG: Die Einträge für hiesige Studiengänge werden in Zukunft noch über eine separate Tabelle gesteuert!
+
+-- Die @dataid kann ohne den Clean-Slate an den Kurs angepasst werden
+-- Einfach die ID aus folgender Query nehmen:
+-- SELECT
+-- *
+-- FROM mdl_dhbwio_dataform
+-- 
+
+SET @dataid = 1;
+
+-- Bewerbung 1: Eingereicht
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid)
+VALUES
+(@dataid, 2, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, 15, 'Max'),
+(@entryid, 16, 'Mustermann'),
+(@entryid, 1, '968947200'),
+(@entryid, 2, 'mustermann.max.tinf22b3@dh-karlsruhe.de'),
+(@entryid, 24, 'Deutsch'),
+(@entryid, 25, 'Deutsch'),
+(@entryid, 30, 'Wirtschaftsinformatik'),
+(@entryid, 18, 'Software Engineering'),
+(@entryid, 17, 'TINF22B3'),
+(@entryid, 3, 'Prof. Dr. Müller'),
+(@entryid, 9, 'Ja'),
+(@entryid, 4, '4. Semester'),
+(@entryid, 26, 'SAP SE'),
+(@entryid, 27, 'Herr Schneider'),
+(@entryid, 28, 'schneider@sap.com'),
+(@entryid, 8, 'Ja'),
+(@entryid, 5, 'Kalifornien - California State University San Marcos'),
+(@entryid, 6, 'Finnland - South-Eastern Finland University of Applied Sciences'),
+(@entryid, 7, 'Keine'),
+(@entryid, 10, ''),
+(@entryid, 12, 'Ich interessiere mich besonders für internationale Projektarbeit.'),
+(@entryid, 11, 'Ja'),
+(@entryid, 13, 'Ja, ich habe die Datenschutzerklärung gelesen. Mit dem Absenden des Kontaktformulars erkläre ich mich damit einverstanden, dass die von mir angegebenen Daten zweckgebunden zur Bearbeitung meiner Anfrage verwendet werden.');
+
+-- Bewerbung 2: In Prüfung
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid)
+VALUES
+(@dataid, 3, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 2);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, 15, 'Lisa'),
+(@entryid, 16, 'Schneider'),
+(@entryid, 1, '1004572800'),
+(@entryid, 2, 'schneider.lisa.tinf23a1@dh-karlsruhe.de'),
+(@entryid, 24, 'Deutsch'),
+(@entryid, 25, 'Deutsch'),
+(@entryid, 30, 'Informatik'),
+(@entryid, 18, 'Künstliche Intelligenz'),
+(@entryid, 17, 'TINF23A1'),
+(@entryid, 3, 'Prof. Dr. Weber'),
+(@entryid, 9, 'Ja'),
+(@entryid, 4, '2. Semester'),
+(@entryid, 26, 'Bosch'),
+(@entryid, 27, 'Frau Weber'),
+(@entryid, 28, 'weber@bosch.de'),
+(@entryid, 8, 'Ja'),
+(@entryid, 5, 'Taiwan - Nationaluniversität Dong Hwa'),
+(@entryid, 6, 'Bulgarien - American University in Bulgaria'),
+(@entryid, 7, 'Costa Rica'),
+(@entryid, 10, 'Erste Person aus der Familie, die studiert.'),
+(@entryid, 12, 'Ich möchte meine Sprachkenntnisse und interkulturellen Kompetenzen erweitern.'),
+(@entryid, 11, 'Nein'),
+(@entryid, 13, 'Ja, ich habe die Datenschutzerklärung gelesen. Mit dem Absenden des Kontaktformulars erkläre ich mich damit einverstanden, dass die von mir angegebenen Daten zweckgebunden zur Bearbeitung meiner Anfrage verwendet werden.');
+
+-- Bewerbung 3: Angenommen
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid)
+VALUES
+(@dataid, 4, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 3);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, 15, 'Anna'),
+(@entryid, 16, 'Wagner'),
+(@entryid, 1, '915148800'),
+(@entryid, 2, 'wagner.anna.tibw21a2@dh-karlsruhe.de'),
+(@entryid, 24, 'Deutsch'),
+(@entryid, 25, 'Deutsch'),
+(@entryid, 30, 'BWL - International Business'),
+(@entryid, 18, 'International Business'),
+(@entryid, 17, 'TIBW21A2'),
+(@entryid, 3, 'Prof. Dr. Fischer'),
+(@entryid, 9, 'Ja'),
+(@entryid, 4, '6. Semester'),
+(@entryid, 26, 'Mercedes-Benz'),
+(@entryid, 27, 'Herr Schmidt'),
+(@entryid, 28, 'schmidt@mercedes-benz.com'),
+(@entryid, 8, 'Ja'),
+(@entryid, 5, 'Finnland - South-Eastern Finland University of Applied Sciences'),
+(@entryid, 6, 'Kalifornien - California State University San Marcos'),
+(@entryid, 7, 'Keine'),
+(@entryid, 10, ''),
+(@entryid, 12, 'Ich freue mich über die Möglichkeit, mein Studium international zu ergänzen.'),
+(@entryid, 11, 'Ja'),
+(@entryid, 13, 'Ja, ich habe die Datenschutzerklärung gelesen. Mit dem Absenden des Kontaktformulars erkläre ich mich damit einverstanden, dass die von mir angegebenen Daten zweckgebunden zur Bearbeitung meiner Anfrage verwendet werden.'),
+(@entryid, 14, 'Die Bewerbung wurde angenommen. Bitte die weiteren Unterlagen vorbereiten.'),
+(@entryid, 32, 'Ja'),
+(@entryid, 33, 'Nein'),
+(@entryid, 34, 'Nein');
+
+-- Bewerbung 4: Abgelehnt
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid)
+VALUES
+(@dataid, 5, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 4);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, 15, 'Tim'),
+(@entryid, 16, 'Becker'),
+(@entryid, 1, '978307200'),
+(@entryid, 2, 'becker.tim.tmb22a1@dh-karlsruhe.de'),
+(@entryid, 24, 'Deutsch'),
+(@entryid, 25, 'Deutsch'),
+(@entryid, 30, 'Maschinenbau'),
+(@entryid, 18, 'Produktionstechnik'),
+(@entryid, 17, 'TMB22A1'),
+(@entryid, 3, 'Prof. Dr. Klein'),
+(@entryid, 9, 'Nein'),
+(@entryid, 4, '4. Semester'),
+(@entryid, 26, 'Siemens'),
+(@entryid, 27, 'Frau Braun'),
+(@entryid, 28, 'braun@siemens.com'),
+(@entryid, 8, 'Ja'),
+(@entryid, 5, 'Kalifornien - California State University San Marcos'),
+(@entryid, 6, 'Taiwan - Nationaluniversität Dong Hwa'),
+(@entryid, 7, 'Bulgarien - American University in Bulgaria'),
+(@entryid, 10, ''),
+(@entryid, 12, 'Ich möchte technische Prozesse in einem internationalen Umfeld kennenlernen.'),
+(@entryid, 11, 'Nein'),
+(@entryid, 13, 'Ja, ich habe die Datenschutzerklärung gelesen. Mit dem Absenden des Kontaktformulars erkläre ich mich damit einverstanden, dass die von mir angegebenen Daten zweckgebunden zur Bearbeitung meiner Anfrage verwendet werden.'),
+(@entryid, 14, 'Die Bewerbung wurde abgelehnt, da keine Freigabe der Studiengangsleitung vorliegt.'),
+(@entryid, 32, 'Nein'),
+(@entryid, 33, 'Nein'),
+(@entryid, 34, 'Nein');
+
+-- Bewerbung 5: Angenommen
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid)
+VALUES
+(@dataid, 6, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 3);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, 15, 'Mira'),
+(@entryid, 16, 'Hoffmann'),
+(@entryid, 1, '994896000'),
+(@entryid, 2, 'hoffmann.mira.tww23b2@dh-karlsruhe.de'),
+(@entryid, 24, 'Deutsch'),
+(@entryid, 25, 'Deutsch'),
+(@entryid, 30, 'Wirtschaftsingenieurwesen'),
+(@entryid, 18, 'Technischer Vertrieb'),
+(@entryid, 17, 'TWW23B2'),
+(@entryid, 3, 'Prof. Dr. Neumann'),
+(@entryid, 9, 'Ja'),
+(@entryid, 4, '2. Semester'),
+(@entryid, 26, 'EnBW'),
+(@entryid, 27, 'Herr Keller'),
+(@entryid, 28, 'keller@enbw.com'),
+(@entryid, 8, 'Ja'),
+(@entryid, 5, 'Costa Rica'),
+(@entryid, 6, 'Finnland - South-Eastern Finland University of Applied Sciences'),
+(@entryid, 7, 'Keine'),
+(@entryid, 10, ''),
+(@entryid, 12, 'Ich interessiere mich besonders für Nachhaltigkeit und internationale Energieprojekte.'),
+(@entryid, 11, 'Ja'),
+(@entryid, 13, 'Ja, ich habe die Datenschutzerklärung gelesen. Mit dem Absenden des Kontaktformulars erkläre ich mich damit einverstanden, dass die von mir angegebenen Daten zweckgebunden zur Bearbeitung meiner Anfrage verwendet werden.'),
+(@entryid, 14, 'Die Bewerbung wurde angenommen. Erstwunsch wurde bestätigt.'),
+(@entryid, 32, 'Ja'),
+(@entryid, 33, 'Nein'),
+(@entryid, 34, 'Nein');
+
+
+
+--------------- STUDIENGÄNGE
+
+INSERT INTO mdl_dhbwio_studyprograms
+(de_name, en_name, active, sortorder, timecreated, timemodified)
+VALUES
+('Angewandte Gesundheits- und Pflegewissenschaften', 'Applied Health and Nursing Sciences', 1, 10, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Angewandte Hebammenwissenschaft', 'Applied Midwifery Science', 1, 20, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Physician Assistant / Arztassistent', 'Physician Assistant', 1, 30, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Elektro- und Informationstechnik', 'Electrical and Information Engineering', 1, 40, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Informatik', 'Computer Science', 1, 50, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Maschinenbau', 'Mechanical Engineering', 1, 60, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Mechatronik', 'Mechatronics', 1, 70, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Papiertechnik', 'Paper Technology', 1, 80, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sicherheitswesen', 'Safety Engineering', 1, 90, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sustainable Science and Technology', 'Sustainable Science and Technology', 1, 100, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsingenieurwesen', 'Industrial Engineering', 1, 110, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Bank', 'Business Administration - Banking', 1, 120, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Deutsch-Franz. Management', 'Business Administration - Franco-German Management', 1, 130, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Business Management', 'Business Administration - Digital Business Management', 1, 140, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Commerce Management', 'Business Administration - Digital Commerce Management', 1, 150, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Handel', 'Business Administration - Retail Management', 1, 160, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Industrie', 'Business Administration - Industry', 1, 170, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Versicherung', 'Business Administration - Insurance', 1, 180, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Data Science und Künstliche Intelligenz', 'Data Science and Artificial Intelligence', 1, 190, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('RSW - Steuern und Prüfungswesen', 'Accounting, Taxation and Auditing', 1, 200, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Unternehmertum', 'Entrepreneurship', 1, 210, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsinformatik', 'Business Information Systems', 1, 220, UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
