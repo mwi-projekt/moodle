@@ -227,18 +227,31 @@ class validation_manager
      * @param array $errors Fehlerliste.
      * @return void
      */
-    private static function validate_university_option(\stdClass $field, string $fieldname, $value, array &$errors): void
-    {
+    private static function validate_university_option(
+        \stdClass $field,
+        string $fieldname,
+        $value,
+        array &$errors
+    ): void {
         global $DB;
 
-        if (($field->name === 'ZWEITWUNSCH' || $field->name === 'DRITTWUNSCH') && $value === 'Keine') {
+        if (($field->name === 'ZWEITWUNSCH' || $field->name === 'DRITTWUNSCH')
+            && (string)$value === '0'
+        ) {
             return;
         }
 
-        $exists = $DB->record_exists_select(
+        if (!is_numeric($value)) {
+            $errors[$fieldname] = get_string('invaliddata', 'error');
+            return;
+        }
+
+        $exists = $DB->record_exists(
             'dhbwio_universities',
-            "active = 1 AND " . $DB->sql_concat('country', "' - '", 'name') . " = :label",
-            ['label' => (string) $value]
+            [
+                'id' => (int)$value,
+                'active' => 1,
+            ]
         );
 
         if (!$exists) {

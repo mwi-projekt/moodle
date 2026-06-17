@@ -346,9 +346,14 @@ switch ($tab) {
 
 			foreach ($entries as $entry) {
 				$erstwunsch = '-';
-				if ($erstwunschfield) {
-					$erstwunsch = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '-';
-				}
+					if ($erstwunschfield) {
+						$erstwunschvalue = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '';
+						if (is_numeric($erstwunschvalue) && (int)$erstwunschvalue > 0) {
+							$erstwunsch = entry_manager::get_university_label((int)$erstwunschvalue);
+						} else {
+							$erstwunsch = '-';
+						}
+					}
 
 				$statusrecord = status_manager::get_status((int) $entry->statusid);
 				if ($statusrecord) {

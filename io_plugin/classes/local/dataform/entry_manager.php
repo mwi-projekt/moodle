@@ -228,19 +228,13 @@ class entry_manager
 
         $DB->update_record('dhbwio_dataform_entries', $entry);
     }
-    public static function update_accepted_choice(int $entryid, ?string $acceptedchoice): void
+    public static function update_accepted_university(int $entryid, ?int $universityid): void
     {
         global $DB;
 
-        $allowed = [null, 'first', 'second', 'third'];
-
-        if (!in_array($acceptedchoice, $allowed, true)) {
-            throw new \coding_exception('Invalid accepted choice.');
-        }
-
         $record = (object) [
             'id' => $entryid,
-            'acceptedchoice' => $acceptedchoice,
+            'acceptedchoice' => $universityid,
             'timemodified' => time(),
         ];
 
@@ -258,6 +252,50 @@ class entry_manager
             'third' => 'Drittwunsch – ' . $getvalue('DRITTWUNSCH'),
             default => '-',
         };
+    }
+    public static function get_university_label(int $universityid): string
+    {
+        global $DB;
+
+        $university = $DB->get_record(
+            'dhbwio_universities',
+            ['id' => $universityid],
+            '*',
+            IGNORE_MISSING
+        );
+
+        if (!$university) {
+            return '-';
+        }
+
+        return trim($university->country . ' - ' . $university->name);
+    }
+    public static function get_accepted_university_label(\stdClass $entry, callable $getvalue): string
+    {
+        if (empty($entry->acceptedchoice)) {
+            return '-';
+        }
+
+        $acceptedid = (int)$entry->acceptedchoice;
+        $universitylabel = self::get_university_label($acceptedid);
+
+        $firstchoice = (int)$getvalue('ERSTWUNSCH');
+        $secondchoice = (int)$getvalue('ZWEITWUNSCH');
+        $thirdchoice = (int)$getvalue('DRITTWUNSCH');
+
+        if ($acceptedid === $firstchoice) {
+            return 'Erstwunsch – ' . $universitylabel;
+        }
+
+        if ($acceptedid === $secondchoice) {
+            return 'Zweitwunsch – ' . $universitylabel;
+        }
+
+        if ($acceptedid === $thirdchoice) {
+            return 'Drittwunsch – ' . $universitylabel;
+        }
+
+        return $universitylabel;
     }
     public static function get_status_by_shortname(string $shortname): ?\stdClass
     {

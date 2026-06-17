@@ -385,8 +385,8 @@ class default_form_manager
                 'name' => 'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST',
                 'description' => 'SGL-Freigabe für Erstwunsch',
                 'param1' => "Ja\nNein",
-                'scope' => field_manager::SCOPE_REVIEW,
-                'fieldgroup' => field_manager::GROUP_REVIEW,
+                'scope' => field_manager::SCOPE_DEPRECATED,
+                'fieldgroup' => field_manager::GROUP_TECHNICAL,
                 'sortorder' => 20
             ],
             [
@@ -394,8 +394,8 @@ class default_form_manager
                 'name' => 'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT',
                 'description' => 'SGL-Freigabe für Zweitwunsch',
                 'param1' => "Ja\nNein",
-                'scope' => field_manager::SCOPE_REVIEW,
-                'fieldgroup' => field_manager::GROUP_REVIEW,
+                'scope' => field_manager::SCOPE_DEPRECATED,
+                'fieldgroup' => field_manager::GROUP_TECHNICAL,
                 'sortorder' => 30
             ],
             [
@@ -403,9 +403,17 @@ class default_form_manager
                 'name' => 'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT',
                 'description' => 'SGL-Freigabe für Drittwunsch',
                 'param1' => "Ja\nNein",
+                'scope' => field_manager::SCOPE_DEPRECATED,
+                'fieldgroup' => field_manager::GROUP_TECHNICAL,
+                'sortorder' => 40
+            ],
+            [
+                'type' => 'select',
+                'name' => 'ANGENOMMEN_FUER',
+                'description' => 'SGL-Freigabe für Hochschule',
                 'scope' => field_manager::SCOPE_REVIEW,
                 'fieldgroup' => field_manager::GROUP_REVIEW,
-                'sortorder' => 40
+                'sortorder' => 20
             ],
         ];
     }

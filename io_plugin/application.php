@@ -198,7 +198,6 @@ foreach ($fields as $field) {
     if (isset($formvalues[$formfieldname])) {
 
         $value = $formvalues[$formfieldname];
-
     } else if (!empty($contents[$field->id])) {
 
         $value = $contents[$field->id]->content;
@@ -212,7 +211,8 @@ foreach ($fields as $field) {
             $field,
             (string)$value,
             (string)$error,
-            $applicationaccepted
+            $applicationaccepted,
+            (int)$dhbwio->id
         )
     ];
 }
@@ -222,7 +222,7 @@ echo $OUTPUT->header();
 $acceptedchoicelabel = '';
 
 if ($entryid > 0 && $entry) {
-    $getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+    $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
         $field = field_manager::get_field_by_name($dataid, $fieldname);
 
         if (!$field) {

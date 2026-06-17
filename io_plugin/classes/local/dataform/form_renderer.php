@@ -24,7 +24,8 @@ class form_renderer
         \stdClass $field,
         string $value = '',
         string $error = '',
-        bool $applicationaccepted = false
+        bool $applicationaccepted = false,
+        int $dhbwioid = 0
     ): string {
         $islockedchoicefield = $applicationaccepted && in_array($field->name, [
             'ERSTWUNSCH',
@@ -87,7 +88,7 @@ class form_renderer
                 if ($field->name === 'STUDIENGANG') {
                     $options = self::get_studyprogram_options();
                 } else if (self::is_university_choice_field($field)) {
-                    $options = self::get_university_options($field->name);
+                    $options = self::get_university_options($field->name, $dhbwioid);
                 } else {
                     $options = self::get_options_from_field($field);
                 }
@@ -324,25 +325,34 @@ class form_renderer
         return in_array($field->name, ['ERSTWUNSCH', 'ZWEITWUNSCH', 'DRITTWUNSCH'], true);
     }
 
-    private static function get_university_options(string $fieldname): array
+    private static function get_university_options(string $fieldname, int $dhbwioid): array
     {
         global $DB;
 
         $options = [];
 
+        if ($fieldname === 'ERSTWUNSCH') {
+            $options['0'] = 'Bitte Auswählen';
+        }
         if ($fieldname === 'ZWEITWUNSCH' || $fieldname === 'DRITTWUNSCH') {
-            $options['Keine'] = 'Keine';
+            $options['0'] = 'Keine';
+        }
+
+        $conditions = ['active' => 1];
+
+        if ($dhbwioid > 0) {
+            $conditions['dhbwio'] = $dhbwioid;
         }
 
         $universities = $DB->get_records(
             'dhbwio_universities',
-            ['active' => 1],
+            $conditions,
             'country ASC, name ASC'
         );
 
         foreach ($universities as $university) {
             $label = trim($university->country . ' - ' . $university->name);
-            $options[$label] = $label;
+            $options[(string)$university->id] = $label;
         }
 
         return $options;

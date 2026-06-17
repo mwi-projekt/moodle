@@ -101,13 +101,12 @@ if ($formdata = $mform->get_data()) {
 
         entry_manager::save_content($entryid, (int) $field->id, (string) $value);
 
-        $acceptedchoice = $formdata->acceptedchoice ?? null;
+    $accepteduniversityid = !empty($formdata->acceptedchoice)
+        ? (int)$formdata->acceptedchoice
+        : null;
 
-        if ($acceptedchoice === '') {
-            $acceptedchoice = null;
-        }
-
-        entry_manager::update_accepted_choice($entryid, $acceptedchoice);
+    // entry_manager::update_accepted_university($entryid, $accepteduniversityid);
+    $entry->acceptedchoice = $accepteduniversityid;
     }
 
     $entry->timemodified = time();
