@@ -40,7 +40,7 @@ class mod_dataform_filter_search_testcase extends advanced_testcase {
      *
      * This is executed before running any test in this file.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $DB;
 
         $this->resetAfterTest();

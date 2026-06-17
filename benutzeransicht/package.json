@@ -1,0 +1,19 @@
+{
+  "name": "moodle-mod_benutzeransicht",
+  "version": "1.0.0",
+  "description": "Moodle plugin mod_benutzeransicht frontend build setup",
+  "private": true,
+  "scripts": {
+    "lint": "grunt lint",
+    "build": "grunt build",
+    "watch": "grunt watch"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "eslint": "^9.26.0",
+    "grunt": "^1.6.1",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-eslint": "^25.0.0"
+  }
+}

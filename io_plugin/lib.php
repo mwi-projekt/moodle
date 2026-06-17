@@ -883,19 +883,6 @@ function dhbwio_send_email_notification($type, $dhbwio_id, $to_user_id, $params 
         $message = str_replace('{' . $key . '}', $value, $message);
     }
     
-    // Log the email for debugging (optional)
-    if (debugging('', DEBUG_DEVELOPER)) {
-        $logdata = [
-            'type' => $type,
-            'to_user' => $to_user_id,
-            'entry_id' => $entry_id,
-            'subject' => $subject,
-            'submission_date' => $allparams['SUBMISSION_DATE'],
-            'variables_used' => array_keys($allparams)
-        ];
-        debugging('Sending email notification: ' . json_encode($logdata), DEBUG_DEVELOPER);
-    }
-    
     // Send email via Moodle API
     return email_to_user(
         $user, 
@@ -965,4 +952,27 @@ function dhbwio_send_automatic_notification($dhbwio_id, $userid, $status, $addit
     $template_type = $type_mapping[trim(strtolower($status))];
     
     return dhbwio_send_email_notification($template_type, $dhbwio_id, $userid, $additional_params, null, $entry_id);
+}
+
+/**
+ * Checks whether a user already has an active application for a dhbwio instance.
+ *
+ * An application is considered active when an application_received log entry exists
+ * for the user in dhbwio_email_log. Returns an error string when a duplicate is
+ * detected so callers can pass it directly to the form layer.
+ *
+ * @param int $dhbwio_id The dhbwio instance ID.
+ * @param int $userid    The user ID to check.
+ * @return string|null   Error key 'application_already_submitted', or null if no duplicate.
+ */
+function dhbwio_check_existing_application(int $dhbwio_id, int $userid): ?string {
+    global $DB;
+
+    $exists = $DB->record_exists('dhbwio_email_log', [
+        'dhbwio_id'  => $dhbwio_id,
+        'user_id'    => $userid,
+        'email_type' => 'application_received',
+    ]);
+
+    return $exists ? 'application_already_submitted' : null;
 }

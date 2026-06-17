@@ -146,9 +146,9 @@ class mod_dataform_grade_manager {
                 foreach ($gitems as $gitem) {
                     $itemnumber = $gitem->itemnumber;
                     // Attach guide.
-                    $gitem->gradeguide = !empty($gdef[$itemnumber]['ru']) ? $gdef[$itemnumber]['ru'] : null;
+                    @($gitem->gradeguide = !empty($gdef[$itemnumber]['ru']) ? $gdef[$itemnumber]['ru'] : null);
                     // Attach calc.
-                    $gitem->gradecalc = !empty($gdef[$itemnumber]['ca']) ? $gdef[$itemnumber]['ca'] : null;
+                    @($gitem->gradecalc = !empty($gdef[$itemnumber]['ca']) ? $gdef[$itemnumber]['ca'] : null);
                     // Sort by itemnumber.
                     $items[$itemnumber] = $gitem;
                 }
@@ -504,7 +504,7 @@ class mod_dataform_grade_manager {
                         $roleid,
                         $df->context,
                         true,
-                        user_picture::fields('u'),
+                        \core_user\fields::for_userpic()->get_sql('u', true, '', 'id', false)->selects,
                         'u.lastname ASC',
                         true,
                         $df->currentgroup,
@@ -521,7 +521,7 @@ class mod_dataform_grade_manager {
                     $roleid,
                     $df->context,
                     true,
-                    user_picture::fields('u'),
+                    \core_user\fields::for_userpic()->get_sql('u', true, '', 'id', false)->selects,
                     'u.lastname ASC',
                     true,
                     $df->currentgroup
@@ -968,9 +968,9 @@ class mod_dataform_grade_manager {
             $gdef = ($df = $this->df) ? $df->grade_items : null;
 
             // Attach guide.
-            $gitem->gradeguide = !empty($gdef[$itemnumber]['ru']) ? $gdef[$itemnumber]['ru'] : null;
+            @($gitem->gradeguide = !empty($gdef[$itemnumber]['ru']) ? $gdef[$itemnumber]['ru'] : null);
             // Attach calc.
-            $gitem->gradecalc = !empty($gdef[$itemnumber]['ca']) ? $gdef[$itemnumber]['ca'] : null;
+            @($gitem->gradecalc = !empty($gdef[$itemnumber]['ca']) ? $gdef[$itemnumber]['ca'] : null);
         }
         return $gitem;
     }

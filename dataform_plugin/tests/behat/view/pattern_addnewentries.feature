@@ -10,7 +10,7 @@ Feature: Pattern ##addnewentries##.
         And the following dataform "views" exist:
             | name     | type      | dataform  | default   |
             | View 01  | aligned   | dataform1 | 1         |
-        And view "View 01" in dataform "1" has the following view template:
+        And view "View 01" in dataform "dataform1" has the following view template:
             """
             ##addnewentries##
             ##entries##
@@ -35,7 +35,7 @@ Feature: Pattern ##addnewentries##.
         And the following dataform "views" exist:
             | name     | type      | dataform  | default   |
             | View 01  | aligned   | dataform1 | 1         |
-        And view "View 01" in dataform "1" has the following view template:
+        And view "View 01" in dataform "dataform1" has the following view template:
             """
             ##addnewentries##
             ##entries##

@@ -46,13 +46,4 @@ class field_deleted extends field_base {
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
-    /**
-     * Get the legacy event log data.
-     *
-     * @return array
-     */
-    public function get_legacy_logdata() {
-        return array($this->courseid, 'dataform', 'fields delete', 'field/index.php?d=' . $this->other['dataid'] . '&amp;delete=' .
-            $this->objectid, $this->objectid, $this->contextinstanceid);
-    }
 }

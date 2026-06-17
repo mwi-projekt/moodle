@@ -48,27 +48,25 @@ foreach ($hochschulen_raw as $record) {
     ];
 }
 
+// === STUDIERENDE AUS DHBWIO-DATAFORM HOLEN ===
+$dataformid = 1;
+
 $entriesql = "
     SELECT e.id AS entryid,
-           MAX(CASE WHEN f.name = 'VORNAME' THEN c.content ELSE NULL END) AS vorname,
-           MAX(CASE WHEN f.name = 'NACHNAME' THEN c.content ELSE NULL END) AS nachname,
-           MAX(CASE WHEN f.name = 'ERSTWUNSCH' THEN uniw1.name END) AS Erstwunsch,
-           MAX(CASE WHEN f.name = 'ZWEITWUNSCH' THEN uniw2.name END) AS Zweitwunsch,
-           MAX(CASE WHEN f.name = 'DRITTWUNSCH' THEN uniw3.name END) AS Drittwunsch
-    FROM {dataform_entries} e
-    JOIN {dataform_contents} c ON c.entryid = e.id
-    JOIN {dataform_fields} f ON f.id = c.fieldid
-    LEFT JOIN {dhbwio_universities} uniw1 
-        ON uniw1.id = c.content AND f.name = 'ERSTWUNSCH'
-    LEFT JOIN {dhbwio_universities} uniw2 
-        ON uniw2.id = c.content AND f.name = 'ZWEITWUNSCH'
-    LEFT JOIN {dhbwio_universities} uniw3 
-        ON uniw3.id = c.content AND f.name = 'DRITTWUNSCH'
-    WHERE e.state <> 3
+           MAX(CASE WHEN c.fieldid = 15 THEN c.content END) AS vorname,
+           MAX(CASE WHEN c.fieldid = 16 THEN c.content END) AS nachname,
+           MAX(CASE WHEN c.fieldid = 5  THEN c.content END) AS Erstwunsch,
+           MAX(CASE WHEN c.fieldid = 6  THEN c.content END) AS Zweitwunsch,
+           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS Drittwunsch,
+           MAX(e.within_deadline) AS within_deadline
+    FROM {dhbwio_dataform_entries} e
+    JOIN {dhbwio_dataform_contents} c ON c.entryid = e.id
+    WHERE e.dataid = ?
+      AND e.state <> 3
     GROUP BY e.id
 ";
 
-$studenten = $DB->get_records_sql($entriesql);
+$studenten = $DB->get_records_sql($entriesql, [$dataformid]);
 // Bestehende Zuweisungen abrufen
 //$zuweisungen = $DB->get_records('local_matrixzuweisung', null, '', 'studentid, hochschule');
 
@@ -87,19 +85,21 @@ $studenten = $DB->get_records_sql($entriesql);
             $idx = 0;
             foreach ($studenten as $s) {
                 $id = "student-" . (int)$s->entryid;
+                $within = isset($s->within_deadline) ? (int)$s->within_deadline : 0;
+                $deadlineclass = $within ? 'within-deadline' : 'outside-deadline';
 
-                echo "<div class='student' id='$id' draggable='true'
-                    data-studentid='" . (int)$s->entryid . "'
-                    ondragstart=\"event.dataTransfer.setData('text/plain', '$id')\">
-                    <strong>" . htmlspecialchars($s->vorname . ' ' . $s->nachname) . "</strong><br>
-                    <div class='wuensche'>
-                    <small>
-                    1. " . htmlspecialchars($s->erstwunsch) . "<br>
-                    2. " . htmlspecialchars($s->zweitwunsch) . "<br>
-                    3. " . htmlspecialchars($s->drittwunsch) . "
-                    </small>
-                    </div>
-                    </div>";
+                // Wenn außerhalb der Deadline: kleines Ausrufezeichen mit Tooltip anzeigen
+                $warning = '';
+                if (!$within) {
+                    $warning = "<span class='deadline-warning' title='Der Bewerber hat sich nach Ende der Deadline angemeldet'>⚠</span>";
+                }
+
+                echo "<div class='student $deadlineclass' id='$id' draggable='true'"
+                   . " data-studentid='" . (int)$s->entryid . "' data-within-deadline='" . $within . "'"
+                   . " ondragstart=\"event.dataTransfer.setData('text/plain', '$id')\">"
+                   . $warning
+                   . "<strong>" . htmlspecialchars($s->vorname . ' ' . $s->nachname) . "</strong><br>"
+                   . "<div class='wuensche'>\n                    <small>\n                    1. " . htmlspecialchars($s->erstwunsch) . "<br>\n                    2. " . htmlspecialchars($s->zweitwunsch) . "<br>\n                    3. " . htmlspecialchars($s->drittwunsch) . "\n                    </small>\n                    </div>\n                    </div>";
             }
             ?>
         </div>
@@ -108,7 +108,10 @@ $studenten = $DB->get_records_sql($entriesql);
     <!--Zuweisungsmatrix-->
     <div style="overflow-x: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <h3 style="margin: 0;">Zuweisung</h3>
+            <div>
+                <h3 style="margin: 0;">Zuweisung</h3>
+                <small id="matrixNameDisplay" style="color: #666; margin-top: 4px; display: block;">Keine gespeicherte Matrix geöffnet</small>
+            </div>
             <label style="font-weight: normal;">
                 <input type="checkbox" id="showWishes" checked>
                 Wünsche anzeigen
@@ -184,6 +187,27 @@ $studenten = $DB->get_records_sql($entriesql);
     </div>
 </div>
 
+<div id="matrixSaveModal" class="matrix-modal" hidden>
+    <div class="matrix-modal-content" role="dialog" aria-modal="true" aria-labelledby="matrixSaveTitle">
+        <div class="matrix-modal-header">
+            <h3 id="matrixSaveTitle">Matrix speichern</h3>
+            <button type="button" class="matrix-modal-close" onclick="closeMatrixSaveModal()" aria-label="Dialog schließen">×</button>
+        </div>
+
+        <label for="matrixSaveNameInput" class="matrix-modal-label">Name für die Zuweisungsrunde</label>
+        <input id="matrixSaveNameInput" type="text" class="matrix-search-input" placeholder="z. B. Sommersemester 2026">
+
+        <div id="matrixSaveStatus" class="matrix-modal-status"></div>
+
+        <div class="matrix-modal-actions">
+            <button type="button" class="red-button" onclick="confirmSaveMatrixWithName()">Speichern</button>
+            <button type="button" class="red-button" onclick="closeMatrixSaveModal()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
 
 <?php
 echo $OUTPUT->footer();
+
+
