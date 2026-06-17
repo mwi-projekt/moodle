@@ -198,7 +198,7 @@ class dataformfield_entryauthor_renderer extends mod_dataform\pluginbase\datafor
             $user = $USER;
         } else {
             $user = new stdClass;
-            foreach (explode(',', user_picture::fields()) as $userfield) {
+            foreach (\core_user\fields::for_userpic()->get_required_fields() as $userfield) {
                 if ($userfield == 'id') {
                     $user->id = $entry->uid;
                 } else {
@@ -299,7 +299,7 @@ class dataformfield_entryauthor_renderer extends mod_dataform\pluginbase\datafor
 
         $patterns = array();
 
-        foreach (explode(',', user_picture::fields()) as $internalname) {
+        foreach (\core_user\fields::for_userpic()->get_required_fields() as $internalname) {
             $patterns["[[$fieldname:{$internalname}]]"] = array(true, $cat);
         }
 

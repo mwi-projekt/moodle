@@ -124,6 +124,10 @@ class dataformfield_entry_entry extends \mod_dataform\pluginbase\dataformfield_i
     /**
      *
      */
+    public function get_simple_search_elements() {
+        return [];
+    }
+
     public function get_entry_ids_for_element($element) {
         global $DB;
 

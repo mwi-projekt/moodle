@@ -13,7 +13,7 @@ Feature: Filtering
             | name         | type      | dataform  | default   |
             | Main View    | grid      | dataform1 | 1         |
 
-        And view "Main View" in dataform "1" has the following view template:
+        And view "Main View" in dataform "dataform1" has the following view template:
             """
             <div>
                 <div class="addnewentry-wrapper">##addnewentry##</div>
@@ -36,7 +36,7 @@ Feature: Filtering
             </div>
             """
 
-        And view "Main View" in dataform "1" has the following entry template:
+        And view "Main View" in dataform "dataform1" has the following entry template:
             """
             <tr>
                 <td>[[entryid]]</td>

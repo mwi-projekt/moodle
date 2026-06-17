@@ -42,7 +42,7 @@ class dataformview_csv_import_testcase extends advanced_testcase {
      *
      * This is executed before running any test in this file.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
 
         // Create a course we are going to add a data module to.

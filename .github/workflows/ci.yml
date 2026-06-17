@@ -44,8 +44,8 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
-          coverage: none
           ini-values: max_input_vars=5000
+          coverage: pcov
 
       # Composer-Paket-Cache beschleunigt den moodle-plugin-ci-Install
       - name: Composer-Cache wiederherstellen
@@ -66,11 +66,16 @@ jobs:
       # --plugin ./dataform_plugin: relativer Pfad zum Plugin im Repo
       # --db-host 127.0.0.1: PostgreSQL-Service (nicht "localhost" wegen IPv6)
       - name: Moodle + Plugin installieren
-        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
+
+      - name: Benötigte Locales installieren
+        run: sudo locale-gen en_AU.UTF-8
 
       # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
+      # --coverage-clover: Clover-XML im internen Build-Verzeichnis
+      # --coverage-text: gibt Zusammenfassung direkt im Actions-Log aus
       - name: PHPUnit ausführen
-        run: moodle-plugin-ci phpunit --fail-on-warning
+        run: moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Job 2: Behat
@@ -94,17 +99,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      # --shm-size=2g ist PFLICHT: Chrome crasht sonst bei komplexen Seiten.
-      # Alle 25 Feature-Dateien haben @javascript → Selenium wird immer benötigt.
-      selenium:
-        image: selenium/standalone-chrome:latest
-        options: --shm-size=2g
-        ports:
-          - 4444:4444
-
-    env:
-      MOODLE_BEHAT_WDHOST: http://localhost:4444/wd/hub
-
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v4
@@ -114,8 +108,8 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, mbstring, zip, gd, intl, xml, soap, pgsql
-          coverage: none
           ini-values: max_input_vars=5000
+          coverage: none
 
       - name: Composer-Cache wiederherstellen
         uses: actions/cache@v4
@@ -129,23 +123,20 @@ jobs:
       - name: ci/bin zum PATH hinzufügen
         run: echo "$(cd ci && pwd)/bin" >> $GITHUB_PATH
 
-      # Selenium startet asynchron – ohne Warteloop schlagen die ersten Tests
-      # mit Verbindungsfehlern fehl, bevor der Container bereit ist.
-      - name: Auf Selenium warten
-        run: |
-          echo "Warte auf Selenium..."
-          for i in $(seq 1 20); do
-            if curl -sSf http://localhost:4444/status > /dev/null 2>&1; then
-              echo "Selenium bereit (Versuch $i)."
-              break
-            fi
-            echo "  Versuch $i/20 – noch nicht bereit, warte 5s..."
-            sleep 5
-          done
-          curl -sSf http://localhost:4444/status || { echo "Selenium nicht erreichbar!"; exit 1; }
+      - name: Benötigte Locales installieren
+        run: sudo locale-gen en_AU.UTF-8
 
       - name: Moodle + Plugin installieren
-        run: moodle-plugin-ci install --plugin ./dataform_plugin --db-host 127.0.0.1
+        run: moodle-plugin-ci install --plugin ./dataform_plugin --plugin ./io_plugin --db-host 127.0.0.1
+
+      # moodle-plugin-ci kopiert --plugin-Abhaengigkeiten nicht zuverlaessig ins
+      # Moodle-Verzeichnis. Symlink manuell anlegen und danach die Behat-Testseite
+      # neu initialisieren, damit mod_dataform in der Behat-DB registriert wird.
+      - name: dataform-Plugin kopieren
+        run: cp -r $GITHUB_WORKSPACE/dataform_plugin $GITHUB_WORKSPACE/moodle/mod/dataform
+
+      - name: Behat-Testseite neu initialisieren
+        run: php $GITHUB_WORKSPACE/moodle/admin/tool/behat/cli/init.php
 
       # --profile chrome: @javascript-Szenarien brauchen das Chrome-Profil
       # --auto-rerun 1:   fehlgeschlagene Szenarien 1× wiederholen (reduziert
@@ -162,3 +153,5 @@ jobs:
           path: ${{ env.MOODLE_DATA }}/behat_screenshots/
           if-no-files-found: ignore
           retention-days: 7
+
+      #testrun    

@@ -11,7 +11,7 @@ Feature: Dataform activity individualized
         # As teacher1 add a dataform and an entry
         Then I see "This dataform appears to be new or with incomplete setup"
 
-        When I navigate to "Edit settings" in current page administration
+        When I navigate to "Settings" in current page administration
         And I expand all fieldsets
         And I set the field "Separate participants" to "Yes"
         And I press "Save and display"
@@ -93,15 +93,15 @@ Feature: Dataform activity individualized
         And I do not see "student2"
 
         # Try accessing student1's entry
-        Then I go to dataform page "view.php?d=1&view=1&eids=2"
+        Then I go to dataform "dataform1" view "View 01" page "eids=user:student1"
         And I see "student1"
 
         # Try viewing student2's entry
-        Then I go to dataform page "view.php?d=1&view=1&eids=4"
+        Then I go to dataform "dataform1" view "View 01" page "eids=user:student2"
         And I do not see "student2"
 
         # Try editing student2's entry
-        Given I go to dataform page "view.php?d=1&view=1&editentries=4"
+        Given I go to dataform "dataform1" view "View 01" page "editentries=user:student2"
         And I do not see "student2"
         And I do not see "Save"
 

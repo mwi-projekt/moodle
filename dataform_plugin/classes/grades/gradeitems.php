@@ -14,36 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The mod_dataform view accessed event.
- *
- * @property-read array $other {
- *      Extra information about event.
- *
- *      string viewname the name of the view.
- *      int dataid the id of the dataform activity.
- * }
- *
- * @package    mod_dataform
- * @copyright  2014 Itamar Tzadok <itamar@substantialmethods.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-namespace mod_dataform\event;
+namespace mod_dataform\grades;
 
 defined('MOODLE_INTERNAL') || die();
 
-class view_viewed extends view_base {
+class gradeitems extends \core_grades\component_gradeitems
+    implements \core_grades\local\gradeitem\itemnumber_mapping,
+               \core_grades\local\gradeitem\advancedgrading_mapping {
 
-    /**
-     * Init method.
-     *
-     * @return void
-     */
-    protected function init() {
-        $this->data['objecttable'] = 'dataform_views';
-        $this->data['crud'] = 'r';
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+    public static function get_itemname_mapping_for_component(string $component = ''): array {
+        return [
+            0 => '',
+        ];
     }
 
+    public static function get_advancedgrading_itemnames(): array {
+        return [];
+    }
 }

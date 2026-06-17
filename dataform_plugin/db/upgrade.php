@@ -1020,7 +1020,7 @@ function xmldb_dataform_upgrade_2014041100($dbman, $oldversion) {
 
             // Entry author.
             $fieldname = get_string('fieldname', 'dataformfield_entryauthor');
-            foreach (explode(',', user_picture::fields()) as $internalname) {
+            foreach (\core_user\fields::for_userpic()->get_required_fields() as $internalname) {
                 $replacements["##author:{$internalname}##"] = "[[$fieldname:$internalname]]";
             }
             foreach (array('username', 'name', 'edit', 'picturelarge') as $pvar) {
