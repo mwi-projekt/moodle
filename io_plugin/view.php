@@ -415,10 +415,9 @@ switch ($tab) {
 					$actions = html_writer::link($viewurl, get_string('show/edit', 'dhbwio'));
 
 					if (status_manager::is_accepted((int) $entry->statusid)) {
-						$laurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+						$laurl = new moodle_url('/mod/dhbwio/learning_agreement_formular.php', [
 							'id'      => $cm->id,
-							'dataid'  => $dataid,
-							'entryid' => $entry->id,
+							'app_entryid' => $entry->id,
 						]);
 						$actions .= ' | ' . html_writer::link($laurl, get_string('learning_agreement', 'dhbwio'));
 					}
