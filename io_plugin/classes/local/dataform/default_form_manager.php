@@ -259,7 +259,7 @@ class default_form_manager
                 'sortorder' => 30
             ],
             [
-                'type' => 'text',
+                'type' => 'select',
                 'name' => 'STUDIENRICHTUNG',
                 'description' => 'Studienrichtung des Bewerbers (optionale Angabe)',
                 'scope' => field_manager::SCOPE_STUDENT,
@@ -411,8 +411,8 @@ class default_form_manager
                 'type' => 'select',
                 'name' => 'ANGENOMMEN_FUER',
                 'description' => 'SGL-Freigabe für Hochschule',
-                'scope' => field_manager::SCOPE_REVIEW,
-                'fieldgroup' => field_manager::GROUP_REVIEW,
+                'scope' => field_manager::SCOPE_DEPRECATED,
+                'fieldgroup' => field_manager::GROUP_TECHNICAL,
                 'sortorder' => 20
             ],
         ];
