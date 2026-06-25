@@ -87,6 +87,8 @@ class form_renderer
 
                 if ($field->name === 'STUDIENGANG') {
                     $options = self::get_studyprogram_options();
+                } else if ($field->name === 'STUDIENRICHTUNG') {
+                    $options = self::get_studytrack_options();
                 } else if (self::is_university_choice_field($field)) {
                     $options = self::get_university_options($field->name, $dhbwioid);
                 } else {
@@ -414,6 +416,28 @@ class form_renderer
                 : $record->de_name;
 
             $options[$record->de_name] = $label;
+        }
+
+        return $options;
+    }
+    private static function get_studytrack_options(): array
+    {
+        global $DB;
+
+        $options = ['' => get_string('choose')];
+
+        $records = $DB->get_records(
+            'dhbwio_studytracks',
+            ['active' => 1],
+            'sortorder ASC, de_name ASC'
+        );
+
+        foreach ($records as $record) {
+            $label = current_language() === 'en'
+                ? $record->en_name
+                : $record->de_name;
+
+            $options[(string)$record->id] = $label;
         }
 
         return $options;
