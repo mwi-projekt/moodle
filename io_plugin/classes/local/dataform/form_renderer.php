@@ -415,7 +415,7 @@ class form_renderer
                 ? $record->en_name
                 : $record->de_name;
 
-            $options[$record->de_name] = $label;
+            $options[(string)$record->id] = $label;
         }
 
         return $options;

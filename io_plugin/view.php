@@ -335,6 +335,8 @@ switch ($tab) {
 		}
 
 		$erstwunschfield  = field_manager::get_field_by_name($dataid, 'ERSTWUNSCH');
+		$zweitwunschfield = field_manager::get_field_by_name($dataid, 'ZWEITWUNSCH');
+		$drittwunschfield = field_manager::get_field_by_name($dataid, 'DRITTWUNSCH');
 		$studiengangfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
 		$vornamefield     = field_manager::get_field_by_name($dataid, 'VORNAME');
 		$nachnamefield    = field_manager::get_field_by_name($dataid, 'NACHNAME');
@@ -359,6 +361,18 @@ switch ($tab) {
 				$accepteduniversity = entry_manager::get_accepted_university_label(
 					$entry,
 					$getvalue
+				);
+
+				$firstchoice = entry_manager::format_university_choice(
+					$getvalue('ERSTWUNSCH')
+				);
+
+				$secondchoice = entry_manager::format_university_choice(
+					$getvalue('ZWEITWUNSCH')
+				);
+
+				$thirdchoice = entry_manager::format_university_choice(
+					$getvalue('DRITTWUNSCH')
 				);
 
 				$statusrecord = status_manager::get_status((int) $entry->statusid);
@@ -399,14 +413,27 @@ switch ($tab) {
 					$vorname     = $vornamefield     ? entry_manager::get_content_value($entry->id, (int) $vornamefield->id)     : '';
 					$nachname    = $nachnamefield    ? entry_manager::get_content_value($entry->id, (int) $nachnamefield->id)    : '';
 					$email       = $emailfield       ? entry_manager::get_content_value($entry->id, (int) $emailfield->id)       : '';
-					$studiengang = $studiengangfield ? entry_manager::get_content_value($entry->id, (int) $studiengangfield->id) : '';
+					$studiengang = '';
+
+					if ($studiengangfield) {
+						$studiengangvalue = entry_manager::get_content_value(
+							$entry->id,
+							(int)$studiengangfield->id
+						);
+
+						if (is_numeric($studiengangvalue) && (int)$studiengangvalue > 0) {
+							$studiengang = entry_manager::get_studyprogram_label((int)$studiengangvalue);
+						} else {
+							$studiengang = (string)$studiengangvalue;
+						}
+					}
 
 					$applications[] = [
 						'applicantname' => s(trim($vorname . ' ' . $nachname)),
 						'email'         => s($email),
 						'timecreated'   => userdate($entry->timecreated),
 						'timemodified'  => userdate($entry->timemodified),
-						'firstchoice'   => s($accepteduniversity),
+						'acceptedchoice'   => s($accepteduniversity),
 						'status'        => s($status),
 						'statusclass'   => $statusclass,
 						'actions'       => $actions,
@@ -430,8 +457,10 @@ switch ($tab) {
 
 					$applications[] = [
 						'timecreated'  => userdate($entry->timecreated),
-						'timemodified' => userdate($entry->timemodified),
-						'firstchoice'  => s($accepteduniversity),
+						'acceptedchoice'  => s($accepteduniversity),
+						'firstchoice'    => s($firstchoice),
+						'secondchoice'   => s($secondchoice),
+						'thirdchoice'    => s($thirdchoice),
 						'status'       => s($status),
 						'statusclass'  => $statusclass,
 						'actions'      => $actions,

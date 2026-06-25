@@ -1,0 +1,355 @@
+-- Course-Module-ID und Activity-ID ermitteln:
+SELECT
+    cm.id AS coursemoduleid,
+    d.id AS dhbwioid,
+    d.name
+FROM mdl_course_modules cm
+JOIN mdl_modules m ON m.id = cm.module
+JOIN mdl_dhbwio d ON d.id = cm.instance
+WHERE m.name = 'dhbwio';
+
+-- Dataform-ID ermitteln:
+SELECT
+    df.id AS dataid,
+    df.course
+FROM mdl_dhbwio_dataform df;
+
+===============================================================
+
+
+-- Clean-Slate in SQL
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM mdl_dhbwio_dataform_contents;
+DELETE FROM mdl_dhbwio_dataform_entries;
+DELETE FROM mdl_dhbwio_dataform_fields;
+DELETE FROM mdl_dhbwio_dataform;
+
+DELETE FROM mdl_dhbwio_electives;
+DELETE FROM mdl_dhbwio_studytracks;
+DELETE FROM mdl_dhbwio_studyprograms;
+
+DELETE FROM mdl_dhbwio_universities;
+
+ALTER TABLE mdl_dhbwio_dataform_contents AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform_entries AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform_fields AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_dataform AUTO_INCREMENT = 1;
+
+ALTER TABLE mdl_dhbwio_electives AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studytracks AUTO_INCREMENT = 1;
+ALTER TABLE mdl_dhbwio_studyprograms AUTO_INCREMENT = 1;
+
+ALTER TABLE mdl_dhbwio_universities AUTO_INCREMENT = 1;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+-- ============================================================
+-- DHBWIO Testdaten
+-- ============================================================
+-- Vorher anpassen:
+SET @dataid = 1;
+SET @dhbwioid = 13;
+
+SET @now = UNIX_TIMESTAMP();
+
+-- Status-IDs ermitteln
+SELECT id INTO @status_eingereicht FROM mdl_dhbwio_application_status WHERE shortname = 'eingereicht';
+SELECT id INTO @status_pruefung    FROM mdl_dhbwio_application_status WHERE shortname = 'in_pruefung';
+SELECT id INTO @status_angenommen  FROM mdl_dhbwio_application_status WHERE shortname = 'angenommen';
+SELECT id INTO @status_abgelehnt   FROM mdl_dhbwio_application_status WHERE shortname = 'abgelehnt';
+
+-- Field-IDs ermitteln
+SELECT id INTO @f_geburtsdatum FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'GEBURTSDATUM';
+SELECT id INTO @f_email FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'EMAIL';
+SELECT id INTO @f_sgl FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'STUDIENGANGSLEITUNG';
+SELECT id INTO @f_semester FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'AKTUELLES_SEMESTER';
+SELECT id INTO @f_erst FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ERSTWUNSCH';
+SELECT id INTO @f_zweit FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ZWEITWUNSCH';
+SELECT id INTO @f_dritt FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'DRITTWUNSCH';
+SELECT id INTO @f_abs_unternehmen FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ABSPRACHE_MIT_UNTERNEHMEN';
+SELECT id INTO @f_abs_sgl FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ABSPRACHE_MIT_STUDIENGANGSLEITUNG';
+SELECT id INTO @f_benachteiligung FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'BENACHTEILIGUNG_BILDUNGSCHANCEN';
+SELECT id INTO @f_veroeffentlichung FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'VEROEFFENTLICHUNG_MAILADRESSE_UND_BERICHT';
+SELECT id INTO @f_nachricht FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'NACHRICHT';
+SELECT id INTO @f_datenschutz FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ';
+SELECT id INTO @f_kommentar FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'KOMMENTAR_IO';
+SELECT id INTO @f_vorname FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'VORNAME';
+SELECT id INTO @f_nachname FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'NACHNAME';
+SELECT id INTO @f_kurs FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'KURSNAME';
+SELECT id INTO @f_studienrichtung FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'STUDIENRICHTUNG';
+SELECT id INTO @f_nationalitaet FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'NATIONALITAET';
+SELECT id INTO @f_muttersprache FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'MUTTERSPRACHE';
+SELECT id INTO @f_unternehmen FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'UNTERNEHMEN';
+SELECT id INTO @f_ansprechperson FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ANSPRECHPERSON_UNTERNEHMEN';
+SELECT id INTO @f_ansprechperson_email FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'ANSPRECHPERSON_EMAIL';
+SELECT id INTO @f_studiengang FROM mdl_dhbwio_dataform_fields WHERE dataid = @dataid AND name = 'STUDIENGANG';
+
+-- Universitäten anlegen
+INSERT INTO mdl_dhbwio_universities
+(dhbwio, name, country, city, address, postal_code, latitude, longitude, website, description, descriptionformat, requirements, available_slots, semester_start, semester_end, semester_fees, fee_currency, accommodation_type, active, timemodified)
+SELECT @dhbwioid, 'American University in Bulgaria', 'BG', 'Blagoevgrad', 'Svoboda Bachvarova 12', '2700', 42.015073, 23.096943, 'https://www.aubg.edu/region-selector/', '', 1, '', 12, 1, 1, 0.00, 'EUR', 'dorm', 1, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'American University in Bulgaria');
+
+INSERT INTO mdl_dhbwio_universities
+(dhbwio, name, country, city, address, postal_code, latitude, longitude, website, description, descriptionformat, requirements, available_slots, semester_start, semester_end, semester_fees, fee_currency, accommodation_type, active, timemodified)
+SELECT @dhbwioid, 'California State University San Marcos', 'US', 'San Marcos', 'Twin Oaks Valley Rd', '92096', 33.103587, -117.170658, '', '', 1, '', 10, 1, 1, 0.00, 'EUR', 'dorm', 1, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'California State University San Marcos');
+
+INSERT INTO mdl_dhbwio_universities
+(dhbwio, name, country, city, address, postal_code, latitude, longitude, website, description, descriptionformat, requirements, available_slots, semester_start, semester_end, semester_fees, fee_currency, accommodation_type, active, timemodified)
+SELECT @dhbwioid, 'Nationaluniversität Dong Hwa', 'TW', 'Hualien', 'Daxue Rd 1', '974', 23.897325, 121.542578, '', '', 1, '', 8, 1, 1, 0.00, 'EUR', 'dorm', 1, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'Nationaluniversität Dong Hwa');
+
+INSERT INTO mdl_dhbwio_universities
+(dhbwio, name, country, city, address, postal_code, latitude, longitude, website, description, descriptionformat, requirements, available_slots, semester_start, semester_end, semester_fees, fee_currency, accommodation_type, active, timemodified)
+SELECT @dhbwioid, 'South-Eastern Finland University of Applied Sciences', 'FI', 'Kouvola', 'Paraatikenttä 7', '45100', 60.871481, 26.686558, '', '', 1, '', 10, 1, 1, 0.00, 'EUR', 'dorm', 1, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'South-Eastern Finland University of Applied Sciences');
+
+INSERT INTO mdl_dhbwio_universities
+(dhbwio, name, country, city, address, postal_code, latitude, longitude, website, description, descriptionformat, requirements, available_slots, semester_start, semester_end, semester_fees, fee_currency, accommodation_type, active, timemodified)
+SELECT @dhbwioid, 'Instituto Tecnológico de Costa Rica', 'CR', 'Cartago', '', '30109', 9.845435, -83.900123, '', '', 1, '', 9, 1, 1, 0.00, 'EUR', 'dorm', 1, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'Instituto Tecnológico de Costa Rica');
+
+SELECT id INTO @uni_bg FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'American University in Bulgaria';
+SELECT id INTO @uni_us FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'California State University San Marcos';
+SELECT id INTO @uni_tw FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'Nationaluniversität Dong Hwa';
+SELECT id INTO @uni_fi FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'South-Eastern Finland University of Applied Sciences';
+SELECT id INTO @uni_cr FROM mdl_dhbwio_universities WHERE dhbwio = @dhbwioid AND name = 'Instituto Tecnológico de Costa Rica';
+
+-- STUDIENGÄNGE generieren
+
+INSERT INTO mdl_dhbwio_studyprograms
+(de_name, en_name, active, sortorder, timecreated, timemodified)
+VALUES
+('Angewandte Gesundheits- und Pflegewissenschaften', 'Applied Health and Nursing Sciences', 1, 10, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Angewandte Hebammenwissenschaft', 'Applied Midwifery Science', 1, 20, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Physician Assistant / Arztassistent', 'Physician Assistant', 1, 30, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Elektro- und Informationstechnik', 'Electrical and Information Engineering', 1, 40, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Informatik', 'Computer Science', 1, 50, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Maschinenbau', 'Mechanical Engineering', 1, 60, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Mechatronik', 'Mechatronics', 1, 70, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Papiertechnik', 'Paper Technology', 1, 80, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sicherheitswesen', 'Safety Engineering', 1, 90, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Sustainable Science and Technology', 'Sustainable Science and Technology', 1, 100, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsingenieurwesen', 'Industrial Engineering', 1, 110, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Bank', 'Business Administration - Banking', 1, 120, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Deutsch-Franz. Management', 'Business Administration - Franco-German Management', 1, 130, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Business Management', 'Business Administration - Digital Business Management', 1, 140, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Digital Commerce Management', 'Business Administration - Digital Commerce Management', 1, 150, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Handel', 'Business Administration - Retail Management', 1, 160, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Industrie', 'Business Administration - Industry', 1, 170, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('BWL - Versicherung', 'Business Administration - Insurance', 1, 180, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Data Science und Künstliche Intelligenz', 'Data Science and Artificial Intelligence', 1, 190, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('RSW - Steuern und Prüfungswesen', 'Accounting, Taxation and Auditing', 1, 200, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Unternehmertum', 'Entrepreneurship', 1, 210, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()),
+('Wirtschaftsinformatik', 'Business Information Systems', 1, 220, UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+
+-- Studiengänge referenzieren
+SELECT id INTO @sp_winf FROM mdl_dhbwio_studyprograms WHERE de_name = 'Wirtschaftsinformatik';
+SELECT id INTO @sp_inf FROM mdl_dhbwio_studyprograms WHERE de_name = 'Informatik';
+SELECT id INTO @sp_bwl FROM mdl_dhbwio_studyprograms WHERE de_name = 'BWL - Industrie';
+SELECT id INTO @sp_masch FROM mdl_dhbwio_studyprograms WHERE de_name = 'Maschinenbau';
+SELECT id INTO @sp_wing FROM mdl_dhbwio_studyprograms WHERE de_name = 'Wirtschaftsingenieurwesen';
+
+-- Studienrichtungen anlegen
+INSERT INTO mdl_dhbwio_studytracks
+(studyprogramid, de_name, en_name, active, sortorder, timecreated, timemodified)
+SELECT @sp_winf, 'Software Engineering', 'Software Engineering', 1, 10, @now, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_winf AND de_name = 'Software Engineering');
+
+INSERT INTO mdl_dhbwio_studytracks
+(studyprogramid, de_name, en_name, active, sortorder, timecreated, timemodified)
+SELECT @sp_inf, 'Künstliche Intelligenz', 'Artificial Intelligence', 1, 20, @now, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_inf AND de_name = 'Künstliche Intelligenz');
+
+INSERT INTO mdl_dhbwio_studytracks
+(studyprogramid, de_name, en_name, active, sortorder, timecreated, timemodified)
+SELECT @sp_bwl, 'International Business', 'International Business', 1, 30, @now, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_bwl AND de_name = 'International Business');
+
+INSERT INTO mdl_dhbwio_studytracks
+(studyprogramid, de_name, en_name, active, sortorder, timecreated, timemodified)
+SELECT @sp_masch, 'Produktionstechnik', 'Production Engineering', 1, 40, @now, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_masch AND de_name = 'Produktionstechnik');
+
+INSERT INTO mdl_dhbwio_studytracks
+(studyprogramid, de_name, en_name, active, sortorder, timecreated, timemodified)
+SELECT @sp_wing, 'Technischer Vertrieb', 'Technical Sales', 1, 50, @now, @now
+WHERE NOT EXISTS (SELECT 1 FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_wing AND de_name = 'Technischer Vertrieb');
+
+SELECT id INTO @track_winf FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_winf AND de_name = 'Software Engineering';
+SELECT id INTO @track_inf FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_inf AND de_name = 'Künstliche Intelligenz';
+SELECT id INTO @track_bwl FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_bwl AND de_name = 'International Business';
+SELECT id INTO @track_masch FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_masch AND de_name = 'Produktionstechnik';
+SELECT id INTO @track_wing FROM mdl_dhbwio_studytracks WHERE studyprogramid = @sp_wing AND de_name = 'Technischer Vertrieb';
+
+-- ============================================================
+-- Bewerbungen
+-- ============================================================
+
+-- 1 Eingereicht
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid, acceptedchoice, within_deadline)
+VALUES (@dataid, 2, 0, @now, @now, 0, @status_eingereicht, NULL, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, @f_vorname, 'Max'),
+(@entryid, @f_nachname, 'Mustermann'),
+(@entryid, @f_geburtsdatum, '968947200'),
+(@entryid, @f_email, 'mustermann.max.tinf22b3@dh-karlsruhe.de'),
+(@entryid, @f_nationalitaet, 'Deutsch'),
+(@entryid, @f_muttersprache, 'Deutsch'),
+(@entryid, @f_studiengang, @sp_winf),
+(@entryid, @f_studienrichtung, @track_winf),
+(@entryid, @f_kurs, 'TINF22B3'),
+(@entryid, @f_sgl, 'Prof. Dr. Müller'),
+(@entryid, @f_abs_sgl, 'Ja'),
+(@entryid, @f_semester, '4. Semester'),
+(@entryid, @f_unternehmen, 'SAP SE'),
+(@entryid, @f_ansprechperson, 'Herr Schneider'),
+(@entryid, @f_ansprechperson_email, 'schneider@sap.com'),
+(@entryid, @f_abs_unternehmen, 'Ja'),
+(@entryid, @f_erst, @uni_us),
+(@entryid, @f_zweit, @uni_fi),
+(@entryid, @f_dritt, 0),
+(@entryid, @f_benachteiligung, ''),
+(@entryid, @f_nachricht, 'Ich interessiere mich besonders für internationale Projektarbeit.'),
+(@entryid, @f_veroeffentlichung, 'Ja'),
+(@entryid, @f_datenschutz, 'Ja');
+
+-- 2 In Prüfung
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid, acceptedchoice, within_deadline)
+VALUES (@dataid, 3, 0, @now, @now, 0, @status_pruefung, NULL, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, @f_vorname, 'Lisa'),
+(@entryid, @f_nachname, 'Schneider'),
+(@entryid, @f_geburtsdatum, '1004572800'),
+(@entryid, @f_email, 'schneider.lisa.tinf23a1@dh-karlsruhe.de'),
+(@entryid, @f_nationalitaet, 'Deutsch'),
+(@entryid, @f_muttersprache, 'Deutsch'),
+(@entryid, @f_studiengang, @sp_inf),
+(@entryid, @f_studienrichtung, @track_inf),
+(@entryid, @f_kurs, 'TINF23A1'),
+(@entryid, @f_sgl, 'Prof. Dr. Weber'),
+(@entryid, @f_abs_sgl, 'Ja'),
+(@entryid, @f_semester, '2. Semester'),
+(@entryid, @f_unternehmen, 'Bosch'),
+(@entryid, @f_ansprechperson, 'Frau Weber'),
+(@entryid, @f_ansprechperson_email, 'weber@bosch.de'),
+(@entryid, @f_abs_unternehmen, 'Ja'),
+(@entryid, @f_erst, @uni_tw),
+(@entryid, @f_zweit, @uni_bg),
+(@entryid, @f_dritt, @uni_cr),
+(@entryid, @f_benachteiligung, 'Erste Person aus der Familie, die studiert.'),
+(@entryid, @f_nachricht, 'Ich möchte meine Sprachkenntnisse und interkulturellen Kompetenzen erweitern.'),
+(@entryid, @f_veroeffentlichung, 'Nein'),
+(@entryid, @f_datenschutz, 'Ja');
+
+-- 3 Angenommen
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid, acceptedchoice, within_deadline)
+VALUES (@dataid, 4, 0, @now, @now, 0, @status_angenommen, @uni_fi, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, @f_vorname, 'Anna'),
+(@entryid, @f_nachname, 'Wagner'),
+(@entryid, @f_geburtsdatum, '915148800'),
+(@entryid, @f_email, 'wagner.anna.tibw21a2@dh-karlsruhe.de'),
+(@entryid, @f_nationalitaet, 'Deutsch'),
+(@entryid, @f_muttersprache, 'Deutsch'),
+(@entryid, @f_studiengang, @sp_bwl),
+(@entryid, @f_studienrichtung, @track_bwl),
+(@entryid, @f_kurs, 'TIBW21A2'),
+(@entryid, @f_sgl, 'Prof. Dr. Fischer'),
+(@entryid, @f_abs_sgl, 'Ja'),
+(@entryid, @f_semester, '6. Semester'),
+(@entryid, @f_unternehmen, 'Mercedes-Benz'),
+(@entryid, @f_ansprechperson, 'Herr Schmidt'),
+(@entryid, @f_ansprechperson_email, 'schmidt@mercedes-benz.com'),
+(@entryid, @f_abs_unternehmen, 'Ja'),
+(@entryid, @f_erst, @uni_fi),
+(@entryid, @f_zweit, @uni_us),
+(@entryid, @f_dritt, 0),
+(@entryid, @f_benachteiligung, ''),
+(@entryid, @f_nachricht, 'Ich freue mich über die Möglichkeit, mein Studium international zu ergänzen.'),
+(@entryid, @f_veroeffentlichung, 'Ja'),
+(@entryid, @f_datenschutz, 'Ja'),
+(@entryid, @f_kommentar, 'Die Bewerbung wurde angenommen. Erstwunsch wurde bestätigt.');
+
+-- 4 Abgelehnt
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid, acceptedchoice, within_deadline)
+VALUES (@dataid, 5, 0, @now, @now, 0, @status_abgelehnt, NULL, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, @f_vorname, 'Tim'),
+(@entryid, @f_nachname, 'Becker'),
+(@entryid, @f_geburtsdatum, '978307200'),
+(@entryid, @f_email, 'becker.tim.tmb22a1@dh-karlsruhe.de'),
+(@entryid, @f_nationalitaet, 'Deutsch'),
+(@entryid, @f_muttersprache, 'Deutsch'),
+(@entryid, @f_studiengang, @sp_masch),
+(@entryid, @f_studienrichtung, @track_masch),
+(@entryid, @f_kurs, 'TMB22A1'),
+(@entryid, @f_sgl, 'Prof. Dr. Klein'),
+(@entryid, @f_abs_sgl, 'Nein'),
+(@entryid, @f_semester, '4. Semester'),
+(@entryid, @f_unternehmen, 'Siemens'),
+(@entryid, @f_ansprechperson, 'Frau Braun'),
+(@entryid, @f_ansprechperson_email, 'braun@siemens.com'),
+(@entryid, @f_abs_unternehmen, 'Ja'),
+(@entryid, @f_erst, @uni_us),
+(@entryid, @f_zweit, @uni_tw),
+(@entryid, @f_dritt, @uni_bg),
+(@entryid, @f_benachteiligung, ''),
+(@entryid, @f_nachricht, 'Ich möchte technische Prozesse in einem internationalen Umfeld kennenlernen.'),
+(@entryid, @f_veroeffentlichung, 'Nein'),
+(@entryid, @f_datenschutz, 'Ja'),
+(@entryid, @f_kommentar, 'Die Bewerbung wurde abgelehnt, da keine Freigabe der Studiengangsleitung vorliegt.');
+
+-- 5 Angenommen
+INSERT INTO mdl_dhbwio_dataform_entries
+(dataid, userid, groupid, timecreated, timemodified, state, statusid, acceptedchoice, within_deadline)
+VALUES (@dataid, 6, 0, @now, @now, 0, @status_angenommen, @uni_cr, 1);
+
+SET @entryid = LAST_INSERT_ID();
+
+INSERT INTO mdl_dhbwio_dataform_contents (entryid, fieldid, content) VALUES
+(@entryid, @f_vorname, 'Mira'),
+(@entryid, @f_nachname, 'Hoffmann'),
+(@entryid, @f_geburtsdatum, '994896000'),
+(@entryid, @f_email, 'hoffmann.mira.tww23b2@dh-karlsruhe.de'),
+(@entryid, @f_nationalitaet, 'Deutsch'),
+(@entryid, @f_muttersprache, 'Deutsch'),
+(@entryid, @f_studiengang, @sp_wing),
+(@entryid, @f_studienrichtung, @track_wing),
+(@entryid, @f_kurs, 'TWW23B2'),
+(@entryid, @f_sgl, 'Prof. Dr. Neumann'),
+(@entryid, @f_abs_sgl, 'Ja'),
+(@entryid, @f_semester, '2. Semester'),
+(@entryid, @f_unternehmen, 'EnBW'),
+(@entryid, @f_ansprechperson, 'Herr Keller'),
+(@entryid, @f_ansprechperson_email, 'keller@enbw.com'),
+(@entryid, @f_abs_unternehmen, 'Ja'),
+(@entryid, @f_erst, @uni_cr),
+(@entryid, @f_zweit, @uni_fi),
+(@entryid, @f_dritt, 0),
+(@entryid, @f_benachteiligung, ''),
+(@entryid, @f_nachricht, 'Ich interessiere mich besonders für Nachhaltigkeit und internationale Energieprojekte.'),
+(@entryid, @f_veroeffentlichung, 'Ja'),
+(@entryid, @f_datenschutz, 'Ja'),
+(@entryid, @f_kommentar, 'Die Bewerbung wurde angenommen. Erstwunsch wurde bestätigt.');
