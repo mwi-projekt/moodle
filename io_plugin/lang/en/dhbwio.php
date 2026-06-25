@@ -522,3 +522,4 @@ $string['status_abgelehnt'] = 'Rejected';
 $string['choose'] = 'Choose';
 $string['minimumage16'] = 'Applicant has to be at least 16 years old.';
 $string['choicetaken'] = 'This selection has already been used for another request.';
+$string['accepted_university'] = 'Assigned university';

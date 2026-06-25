@@ -196,7 +196,7 @@ switch ($tab) {
 				$barsteps = [
 					['label' => get_string('appbar_submitted',    'mod_dhbwio'), 'level' => 1],
 					['label' => get_string('appbar_under_review', 'mod_dhbwio'), 'level' => 2],
-					['label' => get_string('appbar_nachzureichen','mod_dhbwio'), 'level' => 3],
+					['label' => get_string('appbar_nachzureichen', 'mod_dhbwio'), 'level' => 3],
 					['label' => get_string('appbar_result',       'mod_dhbwio'), 'level' => 4],
 				];
 			} else {
@@ -325,6 +325,7 @@ switch ($tab) {
 			['class' => 'btn btn-primary px-3 py-2']
 		);
 
+		// Generating "Zuweisungsmatrix"-Button
 		if ($canviewallapplications) {
 			echo html_writer::link(
 				$matrixurl,
@@ -345,15 +346,20 @@ switch ($tab) {
 			$applications = [];
 
 			foreach ($entries as $entry) {
-				$erstwunsch = '-';
-					if ($erstwunschfield) {
-						$erstwunschvalue = entry_manager::get_content_value($entry->id, (int) $erstwunschfield->id) ?? '';
-						if (is_numeric($erstwunschvalue) && (int)$erstwunschvalue > 0) {
-							$erstwunsch = entry_manager::get_university_label((int)$erstwunschvalue);
-						} else {
-							$erstwunsch = '-';
-						}
+				$getvalue = static function (string $fieldname) use ($dataid, $entry) {
+					$field = field_manager::get_field_by_name($dataid, $fieldname);
+
+					if (!$field) {
+						return '';
 					}
+
+					return entry_manager::get_content_value($entry->id, (int)$field->id) ?? '';
+				};
+
+				$accepteduniversity = entry_manager::get_accepted_university_label(
+					$entry,
+					$getvalue
+				);
 
 				$statusrecord = status_manager::get_status((int) $entry->statusid);
 				if ($statusrecord) {
@@ -400,7 +406,7 @@ switch ($tab) {
 						'email'         => s($email),
 						'timecreated'   => userdate($entry->timecreated),
 						'timemodified'  => userdate($entry->timemodified),
-						'firstchoice'   => s($erstwunsch),
+						'firstchoice'   => s($accepteduniversity),
 						'status'        => s($status),
 						'statusclass'   => $statusclass,
 						'actions'       => $actions,
@@ -425,7 +431,7 @@ switch ($tab) {
 					$applications[] = [
 						'timecreated'  => userdate($entry->timecreated),
 						'timemodified' => userdate($entry->timemodified),
-						'firstchoice'  => s($erstwunsch),
+						'firstchoice'  => s($accepteduniversity),
 						'status'       => s($status),
 						'statusclass'  => $statusclass,
 						'actions'      => $actions,
@@ -743,15 +749,19 @@ switch ($tab) {
 				]);
 
 				$actions = [
-					html_writer::link($editurl,
+					html_writer::link(
+						$editurl,
 						$OUTPUT->pix_icon('t/edit', get_string('edit')),
-						['class' => 'btn btn-sm btn-outline-secondary']),
-					html_writer::link($deleteurl,
+						['class' => 'btn btn-sm btn-outline-secondary']
+					),
+					html_writer::link(
+						$deleteurl,
 						$OUTPUT->pix_icon('t/delete', get_string('delete')),
 						[
 							'class'   => 'btn btn-sm btn-outline-danger',
 							'onclick' => 'return confirm("' . get_string('frist_delete_confirm', 'mod_dhbwio') . '")',
-						]),
+						]
+					),
 				];
 
 				$table->data[] = [
@@ -998,8 +1008,12 @@ switch ($tab) {
 					if (!empty($files)) {
 						$file    = reset($files);
 						$fileurl = moodle_url::make_pluginfile_url(
-							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
-							$file->get_filepath(), $file->get_filename()
+							$context->id,
+							'mod_dhbwio',
+							'learning_agreements',
+							$rec->id,
+							$file->get_filepath(),
+							$file->get_filename()
 						);
 						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
 					} else {
@@ -1052,7 +1066,7 @@ switch ($tab) {
 					get_string('la_col_student',  'mod_dhbwio'),
 					get_string('la_col_doctype',  'mod_dhbwio'),
 					get_string('la_col_file',     'mod_dhbwio'),
-					get_string('la_col_submitted','mod_dhbwio'),
+					get_string('la_col_submitted', 'mod_dhbwio'),
 					get_string('la_col_status',   'mod_dhbwio'),
 					get_string('actions',         'mod_dhbwio'),
 				];
@@ -1066,8 +1080,12 @@ switch ($tab) {
 					if (!empty($files)) {
 						$file    = reset($files);
 						$fileurl = moodle_url::make_pluginfile_url(
-							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
-							$file->get_filepath(), $file->get_filename()
+							$context->id,
+							'mod_dhbwio',
+							'learning_agreements',
+							$rec->id,
+							$file->get_filepath(),
+							$file->get_filename()
 						);
 						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
 					} else {

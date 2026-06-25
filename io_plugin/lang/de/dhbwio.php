@@ -550,3 +550,4 @@ $string['status_abgelehnt'] = 'Abgelehnt';
 $string['choose'] = 'Bitte auswählen';
 $string['minimumage16'] = 'Der Bewerber muss mindestens 16 Jahre alt sein.';
 $string['choicetaken'] = 'Diese Auswahl wurde bereits bei einem anderen Wunsch verwendet.';
+$string['accepted_university'] = 'Zugewiesene Hochschule';
