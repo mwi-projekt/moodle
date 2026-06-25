@@ -26,12 +26,19 @@ class view_renderer
     ): string {
         $label = self::get_display_label($field);
         $value = trim($value) !== '' ? $value : '-';
+
         if ($field->type === 'time' && is_numeric($value)) {
             $value = userdate((int) $value, get_string('strftimedatefullshort'));
         }
+
         if (self::is_university_choice_field($field) && $value !== '-' && is_numeric($value)) {
             $value = self::get_university_label((int) $value);
         }
+
+        if ($field->name === 'STUDIENRICHTUNG' && $value !== '-' && is_numeric($value)) {
+            $value = self::get_studytrack_label((int) $value);
+        }
+
         $rowclass = $alternate
             ? 'dhbwio-view-row dhbwio-view-row-alt row'
             : 'dhbwio-view-row row';
@@ -112,7 +119,7 @@ class view_renderer
 
         return trim($label);
     }
-        private static function is_university_choice_field(\stdClass $field): bool
+    private static function is_university_choice_field(\stdClass $field): bool
     {
         return in_array($field->name, [
             'ERSTWUNSCH',
@@ -137,5 +144,24 @@ class view_renderer
         }
 
         return trim($university->name);
+    }
+    private static function get_studytrack_label(int $studytrackid): string
+    {
+        global $DB;
+
+        $track = $DB->get_record(
+            'dhbwio_studytracks',
+            ['id' => $studytrackid],
+            '*',
+            IGNORE_MISSING
+        );
+
+        if (!$track) {
+            return '-';
+        }
+
+        return current_language() === 'en'
+            ? $track->en_name
+            : $track->de_name;
     }
 }

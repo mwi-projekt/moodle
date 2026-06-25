@@ -270,6 +270,20 @@ class entry_manager
 
         return trim($university->country . ' - ' . $university->name);
     }
+
+    public static function format_university_choice($value): string
+    {
+        if ($value === '' || $value === null || (string)$value === '0') {
+            return 'Keine';
+        }
+
+        if (!is_numeric($value)) {
+            return (string)$value;
+        }
+
+        return self::get_university_label((int)$value);
+    }
+
     public static function get_accepted_university_label(\stdClass $entry, callable $getvalue): string
     {
         if (empty($entry->acceptedchoice)) {

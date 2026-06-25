@@ -469,9 +469,9 @@ function xmldb_dhbwio_upgrade($oldversion)
             'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ' => [field_manager::SCOPE_STUDENT, field_manager::GROUP_STATEMENTS, 40],
 
             'KOMMENTAR_IO' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 10],
-            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 20],
-            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 30],
-            'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => [field_manager::SCOPE_REVIEW, field_manager::GROUP_REVIEW, 40],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ERST' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 20],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_ZWEIT' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 30],
+            'SGL_HOCHSCHULZIEL_ERLAUBNIS_DRITT' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 40],
 
             'STRASSE' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 90],
             'HAUSNUMMER' => [field_manager::SCOPE_DEPRECATED, field_manager::GROUP_TECHNICAL, 100],
@@ -552,7 +552,7 @@ function xmldb_dhbwio_upgrade($oldversion)
 
         //upgrade_mod_savepoint(true, $newversion, 'dhbwio');
     }
-/*
+    /*
     if ($oldversion < 2026060800) {
 
         // Sicherheitsnetz: dhbwio_fristen Tabelle erstellen falls sie noch nicht existiert.
@@ -984,46 +984,54 @@ function xmldb_dhbwio_upgrade($oldversion)
                 $dbman->create_table($table);
             }
 
-            // Create dhbwio_la_contents
-            $table = new xmldb_table('dhbwio_la_contents');
-            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
-            $table->add_field('la_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
-            $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('vorname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('studiengang', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('studienrichtung', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('wahlmodul', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('gasthochschule', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('zeitraum_von', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
-            $table->add_field('zeitraum_bis', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+        $table->add_key('application_entryid_fk', XMLDB_KEY_FOREIGN, array('application_entryid'), 'dhbwio_dataform_entries', array('id'));
 
-            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-            $table->add_key('la_id_fk', XMLDB_KEY_FOREIGN, array('la_id'), 'dhbwio_la', array('id'));
-
-            if (!$dbman->table_exists($table)) {
-                $dbman->create_table($table);
-            }
-
-            // Create dhbwio_la_module
-            $table = new xmldb_table('dhbwio_la_module');
-            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
-            $table->add_field('la_contents_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
-            $table->add_field('modul_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
-            $table->add_field('ects', XMLDB_TYPE_CHAR, '50', null, false, '');
-            $table->add_field('teilpruefungsanteil', XMLDB_TYPE_CHAR, '100', null, false, '');
-            $table->add_field('anrechnungs_lv', XMLDB_TYPE_CHAR, '255', null, false, '');
-            $table->add_field('credits', XMLDB_TYPE_CHAR, '50', null, false, '');
-
-            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-            $table->add_key('la_contents_id_fk', XMLDB_KEY_FOREIGN, array('la_contents_id'), 'dhbwio_la_contents', array('id'));
-
-            if (!$dbman->table_exists($table)) {
-                $dbman->create_table($table);
-            }
-
-            // Savepoint
-            upgrade_mod_savepoint(true, $newversion, 'dhbwio');
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
         }
+
+        // Create dhbwio_la_contents
+        $table = new xmldb_table('dhbwio_la_contents');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('la_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('vorname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('studiengang', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('studienrichtung', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('wahlmodul', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('gasthochschule', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('zeitraum_von', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_field('zeitraum_bis', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('la_id_fk', XMLDB_KEY_FOREIGN, array('la_id'), 'dhbwio_la', array('id'));
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Create dhbwio_la_module
+        $table = new xmldb_table('dhbwio_la_module');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('la_contents_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
+        $table->add_field('modul_name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, '');
+        $table->add_field('ects', XMLDB_TYPE_CHAR, '50', null, false, '');
+        $table->add_field('teilpruefungsanteil', XMLDB_TYPE_CHAR, '100', null, false, '');
+        $table->add_field('anrechnungs_lv', XMLDB_TYPE_CHAR, '255', null, false, '');
+        $table->add_field('credits', XMLDB_TYPE_CHAR, '50', null, false, '');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('la_contents_id_fk', XMLDB_KEY_FOREIGN, array('la_contents_id'), 'dhbwio_la_contents', array('id'));
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Savepoint
+        upgrade_mod_savepoint(true, $newversion, 'dhbwio');
+    }
     if ($oldversion <= 2026061702) { // Nutze hier deine nächste Plugin-Version
         $table = new xmldb_table('dhbwio_la');
         $field = new xmldb_field('application_entryid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid'); // 'userid' ist das vorherige Feld
@@ -1033,6 +1041,36 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         upgrade_mod_savepoint(true, 2026061703, 'dhbwio');
+    }
+
+    if ($oldversion < 2026062501) {
+        $table = new xmldb_table('dhbwio_dataform_entries');
+
+        $field = new xmldb_field(
+            'acceptedchoice',
+            XMLDB_TYPE_INTEGER,
+            '10',
+            null,
+            null,
+            null,
+            null,
+            'statusid'
+        );
+
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_type($table, $field);
+            $dbman->change_field_notnull($table, $field);
+            $dbman->change_field_default($table, $field);
+        }
+
+        $DB->execute("
+        UPDATE {dhbwio_dataform_entries}
+           SET acceptedchoice = NULL
+         WHERE acceptedchoice = 1
+           AND statusid NOT IN (3, 4)
+    ");
+
+        upgrade_mod_savepoint(true, 2026062501, 'dhbwio');
     }
 
     return true;

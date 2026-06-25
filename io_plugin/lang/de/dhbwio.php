@@ -568,3 +568,6 @@ $string['la_emptytext'] = 'Noch kein Learning Agreement erstellt';
 $string['lachangessaved'] = 'Änderungen gespeichert';
 $string['nav_learningagreements'] = 'Learning Agreements';
 $string['la_recreate_button'] = 'Neues LA erstellen';
+$string['minimumage16'] = 'Der Bewerber muss mindestens 16 Jahre alt sein.';
+$string['choicetaken'] = 'Diese Auswahl wurde bereits bei einem anderen Wunsch verwendet.';
+$string['accepted_university'] = 'Zugewiesene Hochschule';
