@@ -548,3 +548,23 @@ $string['status_in_pruefung'] = 'In Prüfung';
 $string['status_angenommen'] = 'Angenommen';
 $string['status_abgelehnt'] = 'Abgelehnt';
 $string['choose'] = 'Bitte auswählen';
+
+
+// DHBWIO Learning Agreement Strings
+$string['la_step_create'] = 'Erstellen des LA';
+$string['la_step_under_review'] = 'In Überprüfung';
+$string['la_step_revision_needed'] = 'Nachbearbeitung nötig';
+$string['la_step_result'] = 'Ergebnis';
+$string['la_step_accepted'] = 'Angenommen';
+$string['la_step_rejected'] = 'Abgelehnt';
+$string['la_create_button'] = 'LA erstellen';
+$string['la_recreate_confirm'] = 'Aktuelles LA löschen und neues erstellen?';
+$string['no_learning_agreements'] = 'Keine Learning Agreements vorhanden';
+$string['lashow/edit'] = 'Anzeigen/Editieren';
+$string['all_la_overview_title'] = 'Alle Learning Agreements ';
+$string['la_overview_title'] = 'Mein Learning Agreement';
+$string['all_la_emptytext'] = 'Keine Learning Agreements vorhanden';
+$string['la_emptytext'] = 'Noch kein Learning Agreement erstellt';
+$string['lachangessaved'] = 'Änderungen gespeichert';
+$string['nav_learningagreements'] = 'Learning Agreements';
+$string['la_recreate_button'] = 'Neues LA erstellen';

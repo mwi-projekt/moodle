@@ -101,4 +101,15 @@ $capabilities = [
         ],
     ],
 
+    // Ability to view all learning agreements.
+    'mod/dhbwio:viewalllearningagreements' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
 ];

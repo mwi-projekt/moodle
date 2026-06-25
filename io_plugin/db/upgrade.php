@@ -32,7 +32,7 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     $dbman = $DB->get_manager();
 
-    $newversion = 2026061702;
+    $newversion = 2026062502;
 
     // Add missing fields for DataForm integration and utilization settings
     if ($oldversion < $newversion) {
@@ -925,6 +925,45 @@ function xmldb_dhbwio_upgrade($oldversion)
 
     if ($oldversion < $newversion) {
 
+            //crete dhbwio_la_status
+            $table = new xmldb_table('dhbwio_la_status');
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE,null);
+            $table->add_field('shortname', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL,null, '');
+            $table->add_field('label', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL,null, '');
+            $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, '');
+            $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL,null, '0');
+            $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL,null, '1');
+            $table->add_field('isinitial', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL,null, '0');
+            $table->add_field('isaccepted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL,null, '0');
+            $table->add_field('isrejected', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL,null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL,null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL,null, '0');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+            $table->add_index('shortname_idx', XMLDB_INDEX_UNIQUE, array('shortname'));
+
+            if (!$dbman->table_exists($table)) {
+                $dbman->create_table($table);
+            }
+
+            // Insert initial records into dhbwio_la_status
+            $initial_statuses = [
+                ['shortname' => 'erstellen', 'label' => 'Erstellen', 'description' => 'Der Learning Agreement Antrag wurde erstellt.', 'sortorder' => 1, 'active' => 1, 'isinitial' => 1, 'isaccepted' => 0, 'isrejected' => 0],
+                ['shortname' => 'ueberarbeitung_noetig', 'label' => 'Überarbeitung nötig', 'description' => 'Der Learning Agreement Antrag muss überarbeitet werden.', 'sortorder' => 2, 'active' => 1, 'isinitial' => 0, 'isaccepted' => 0, 'isrejected' => 0],
+                ['shortname' => 'in_ueberpruefung', 'label' => 'In Überprüfung', 'description' => 'Der Learning Agreement Antrag wird überprüft.', 'sortorder' => 3, 'active' => 1, 'isinitial' => 0, 'isaccepted' => 0, 'isrejected' => 0],
+                ['shortname' => 'akzeptiert', 'label' => 'Akzeptiert', 'description' => 'Der Learning Agreement Antrag wurde akzeptiert.', 'sortorder' => 4, 'active' => 1, 'isinitial' => 0, 'isaccepted' => 1, 'isrejected' => 0],
+                ['shortname' => 'abgelehnt', 'label' => 'Abgelehnt', 'description' => 'Der Learning Agreement Antrag wurde abgelehnt.', 'sortorder' => 5, 'active' => 1, 'isinitial' => 0, 'isaccepted' => 0, 'isrejected' => 1],
+            ];
+            // Insert each initial status into the database
+            foreach ($initial_statuses as $status) {
+                if(!$DB->record_exists('dhbwio_la_status', ['shortname' => $status['shortname']])) {
+                    $status['timecreated'] = time();
+                    $status['timemodified'] = time();
+                    $DB->insert_record('dhbwio_la_status', (object)$status);
+                }
+            }
+
+
             // Create dhbwio_la
             $table = new xmldb_table('dhbwio_la');
             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
@@ -933,10 +972,13 @@ function xmldb_dhbwio_upgrade($oldversion)
             $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
             $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
             $table->add_field('lasteditedby', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
+            $table->add_field('status', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, '0');
+            $table->add_field('note', XMLDB_TYPE_TEXT, null, null, null, '');
 
             $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
             $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
             $table->add_key('application_entryid_fk', XMLDB_KEY_FOREIGN, array('application_entryid'), 'dhbwio_dataform_entries', array('id'));
+            $table->add_key('status_fk', XMLDB_KEY_FOREIGN, array('status'), 'dhbwio_la_status', array('id'));
 
             if (!$dbman->table_exists($table)) {
                 $dbman->create_table($table);

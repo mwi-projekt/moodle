@@ -1,11 +1,13 @@
 <?php
 require_once('../../config.php');
+use mod_dhbwio\local\dataform\la_manager;
 
 require_sesskey();
 
 $cmid = required_param('id', PARAM_INT);
 $entryid = optional_param('entryid', 0, PARAM_INT);
 $app_entryid = required_param('app_entryid', PARAM_INT); // Neue Parameterübergabe empfangen
+$studiengang = optional_param('studiengang', 0, PARAM_INT);
 
 // CM laden
 $cm = get_coursemodule_from_id('dhbwio', $cmid, 0, false, IGNORE_MISSING);
@@ -73,12 +75,13 @@ global $USER, $DB;
 $content = [
     'name' => $nachname,
     'vorname' => $vorname,
-    'studiengang' => '', // Platzhalter, falls benötigt
+    'studiengang' => $studiengang,
     'studienrichtung' => $studienrichtung,
     'wahlmodul' => $wahlmodul,
     'gasthochschule' => $gasthochschule,
     'zeitraum_von' => !empty($zeitraum_von_str) ? strtotime($zeitraum_von_str) : 0,
     'zeitraum_bis' => !empty($zeitraum_bis_str) ? strtotime($zeitraum_bis_str) : 0,
+    'status' => 1, // Standardstatus, kann angepasst werden
 ];
 
 $modules = [];
@@ -93,7 +96,8 @@ foreach ($courses as $c) {
 }
 
 // Prüfen, ob der Benutzer bereits ein Learning Agreement FÜR DIESE Bewerbung hat.
-$existing_la = $DB->get_record('dhbwio_la', ['userid' => $USER->id, 'application_entryid' => $app_entryid], 'id', IGNORE_MISSING);
+$existing_la = la_manager::get_la_by_userid($USER->id);
+//$existing_la = $DB->get_record('dhbwio_la', ['userid' => $USER->id, 'application_entryid' => $app_entryid], 'id', IGNORE_MISSING);
 
 if ($existing_la) {
     // Wenn ein LA existiert, die zugehörige Content-ID holen.
@@ -116,4 +120,4 @@ if ($existing_la) {
 // Weiterleitung zur Übersichtsseite mod/dhbwio/view.php
 $redirecturl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id]);
 
-redirect($redirecturl, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
+redirect($redirecturl, get_string('lachangessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
