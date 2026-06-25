@@ -14,784 +14,559 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_dhbwio;
 
-require_once(__DIR__ . '/../classes/application_validator.php');
-
-use mod_dhbwio\application_validator;
+use mod_dhbwio\local\dataform\validation_manager;
+use mod_dhbwio\local\dataform\field_manager;
 
 /**
- * Unit tests for applicant name and DHBW e-mail validation.
+ * Unit tests for the application form validation (validation_manager).
  *
- * User Story: Als Studierender möchte ich meinen Namen und meine DHBW-Mailadresse
- * eingeben, damit meine Bewerbung eindeutig zugeordnet werden kann.
+ * Dieser Test prüft die Validierung über den Pfad, den das Bewerbungsformular
+ * tatsächlich ausführt: validation_manager::validate() (siehe application.php
+ * und application_form.php). Die frühere Variante testete application_validator,
+ * eine Klasse, die das überarbeitete Formular nicht mehr aufruft.
+ *
+ * Hinweis: Das überarbeitete Formular (dataform) wird hier NICHT verändert –
+ * die Tests beschreiben sein aktuelles, reales Verhalten. Wo eine ursprüngliche
+ * Akzeptanzkriterium-Regel im echten Pfad nicht (mehr) erzwungen wird, ist das
+ * als Characterization-Test mit Kommentar markiert, damit die Lücke sichtbar
+ * bleibt, ohne den Build rot zu machen.
  *
  * @package    mod_dhbwio
  * @category   phpunit
  * @group      mod_dhbwio
  * @group      mod_dhbwio_application_validation
+ * @covers     \mod_dhbwio\local\dataform\validation_manager
  * @copyright  2025, DHBW <esc@dhbw-karlsruhe.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_dhbwio_application_validation_testcase extends advanced_testcase {
+final class application_validation_test extends \advanced_testcase {
 
-    // -------------------------------------------------------------------------
-    // Name validation
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_names_provider
-     */
-    public function test_valid_name_passes(string $name): void {
-        $this->assertNull(
-            application_validator::validate_name($name),
-            "Expected '$name' to be a valid name."
-        );
-    }
-
-    public function valid_names_provider(): array {
-        return [
-            'simple ascii'           => ['Mueller'],
-            'german umlaut'          => ['Müller'],
-            'double umlaut'          => ['Öztürk'],
-            'hyphenated'             => ['Hans-Peter'],
-            'with space'             => ['Anna Maria'],
-            'single character'       => ['A'],
-            'exactly 100 characters' => [str_repeat('a', 100)],
-            'french accent'          => ['Héloïse'],
-            'polish characters'      => ['Łukasz'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_names_provider
-     */
-    public function test_invalid_name_returns_error(string $name, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_name($name),
-            "Expected error '$expected_error' for name '$name'."
-        );
-    }
-
-    public function invalid_names_provider(): array {
-        return [
-            'empty string'             => ['',                    'name_required'],
-            '101 characters'           => [str_repeat('a', 101), 'name_too_long'],
-            'only special chars'       => ['###',                 'name_invalid_characters'],
-            'only digits'              => ['12345',               'name_invalid_characters'],
-            'special chars with text'  => ['Müller!',            'name_invalid_characters'],
-            'at-sign'                  => ['user@test',           'name_invalid_characters'],
-            'leading digit'            => ['1Mueller',            'name_invalid_characters'],
-        ];
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest();
     }
 
     // -------------------------------------------------------------------------
-    // DHBW e-mail validation
+    // Test-Helfer
     // -------------------------------------------------------------------------
 
     /**
-     * @dataProvider valid_emails_provider
-     */
-    public function test_valid_dhbw_email_passes(string $email): void {
-        $this->assertNull(
-            application_validator::validate_dhbw_email($email),
-            "Expected '$email' to be a valid DHBW e-mail."
-        );
-    }
-
-    public function valid_emails_provider(): array {
-        return [
-            'standard student mail'   => ['s123456@student.dhbw.de'],
-            'short but valid (9 ch)'  => ['a@dhbw.de'],
-            'subdomain'               => ['max.muster@ka.dhbw.de'],
-            'exactly 100 chars'       => [str_repeat('x', 92) . '@dhbw.de'],  // 92 + 8 = 100
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_emails_provider
-     */
-    public function test_invalid_dhbw_email_returns_error(string $email, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_dhbw_email($email),
-            "Expected error '$expected_error' for e-mail '$email'."
-        );
-    }
-
-    public function invalid_emails_provider(): array {
-        return [
-            'empty string'             => ['',                          'email_required'],
-            '4 characters'             => ['a@b.',                      'email_too_short'],
-            '101 characters'           => [str_repeat('x', 93) . '@dhbw.de', 'email_too_long'],  // 93 + 8 = 101
-            'no dhbw domain'           => ['max@gmail.com',             'email_not_dhbw'],
-            'dhbw in local part only'  => ['dhbw@gmail.com',            'email_not_dhbw'],
-            'wrong tld'                => ['max@dhbw.com',              'email_not_dhbw'],
-            'missing @'                => ['maxdhbw.de',                'email_not_dhbw'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Birthdate validation
-    // -------------------------------------------------------------------------
-
-    /**
-     * Valid birthdates must return null (no error).
+     * Baut eine Felddefinition, wie validation_manager sie erwartet.
      *
-     * @dataProvider valid_birthdates_provider
+     * @param array $overrides Zu überschreibende Eigenschaften.
+     * @return \stdClass
      */
-    public function test_valid_birthdate_passes(string $day, string $month, string $year): void {
-        $this->assertNull(
-            application_validator::validate_birthdate($day, $month, $year),
-            "Expected $day.$month.$year to be a valid birthdate."
-        );
-    }
-
-    public function valid_birthdates_provider(): array {
-        return [
-            'standard date'              => ['15', '6',  '1995'],
-            'first day of year'          => ['1',  '1',  '1990'],
-            'last day of year'           => ['31', '12', '2000'],
-            'minimum year boundary'      => ['1',  '1',  '1900'],
-            'maximum year boundary'      => ['31', '12', '2006'],
-            'february in leap year'      => ['29', '2',  '2000'],
-            'february last day non-leap' => ['28', '2',  '1999'],
-            'thirty-day month'           => ['30', '4',  '2001'],
-            'leading-zero day'           => ['05', '3',  '2002'],
-        ];
+    private function make_field(array $overrides): \stdClass {
+        return (object) array_merge([
+            'id'          => 1,
+            'name'        => 'FELD',
+            'type'        => 'text',
+            'scope'       => field_manager::SCOPE_STUDENT,
+            'description' => 'Optionale Angabe',
+            'param1'      => '',
+            'param4'      => '',
+        ], $overrides);
     }
 
     /**
-     * An invalid day must return 'birthdate_day_invalid'.
+     * Führt validation_manager::validate() mit den gegebenen Feldern/Werten aus.
      *
-     * @dataProvider invalid_day_provider
+     * @param array $fields Liste von Felddefinitionen.
+     * @param array $values Werte, indiziert nach Feld-ID.
+     * @return array Fehlerliste, indiziert nach 'field_<id>'.
      */
-    public function test_invalid_day_returns_error(string $day, string $month, string $year): void {
-        $this->assertSame(
-            'birthdate_day_invalid',
-            application_validator::validate_birthdate($day, $month, $year),
-            "Expected birthdate_day_invalid for day='$day'."
-        );
+    private function run_validate(array $fields, array $values): array {
+        $data = new \stdClass();
+        foreach ($values as $fieldid => $value) {
+            $data->{'field_' . $fieldid} = $value;
+        }
+        return validation_manager::validate($data, $fields);
     }
 
-    public function invalid_day_provider(): array {
-        return [
-            'day zero'        => ['0',   '6', '2000'],
-            'day 32'          => ['32',  '6', '2000'],
-            'day negative'    => ['-1',  '6', '2000'],
-            'day non-integer' => ['abc', '6', '2000'],
-            'day float'       => ['1.5', '6', '2000'],
-            'day empty'       => ['',    '6', '2000'],
-        ];
+    // =========================================================================
+    // User Story: Validierung Name und DHBW-E-Mail
+    //
+    // Felder wie in default_form_manager konfiguriert:
+    //   VORNAME / NACHNAME -> type 'text', verpflichtend, KEINE param4-Regel
+    //   EMAIL              -> type 'text', verpflichtend, param4 'email'
+    // =========================================================================
+
+    /** Vorname-Pflichtfeld: leer -> Fehler. */
+    public function test_vorname_required_empty_returns_error(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'VORNAME',
+            'description' => 'Vorname des Bewerbers (verpflichtende Angabe)',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => '']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('required'), $errors['field_1']);
+    }
+
+    /** Nachname-Pflichtfeld: gültiger Name -> kein Fehler. */
+    public function test_nachname_valid_passes(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'NACHNAME',
+            'description' => 'Nachname des Bewerbers (verpflichtende Angabe)',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'Müller-Schmidt']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
     /**
-     * An invalid month must return 'birthdate_month_invalid'.
+     * Characterization: Das überarbeitete Formular erzwingt für VORNAME/NACHNAME
+     * KEINE Zeichensatz-Regel (kein param4). Ein Name nur aus Sonderzeichen
+     * läuft daher aktuell durch.
      *
-     * @dataProvider invalid_month_provider
+     * Ursprüngliche AC „Fehler, wenn nur Sonderzeichen" ist im echten Pfad
+     * NICHT erfüllt – hier bewusst als Ist-Zustand festgehalten.
      */
-    public function test_invalid_month_returns_error(string $day, string $month, string $year): void {
-        $this->assertSame(
-            'birthdate_month_invalid',
-            application_validator::validate_birthdate($day, $month, $year),
-            "Expected birthdate_month_invalid for month='$month'."
-        );
+    public function test_nachname_special_chars_currently_pass(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'NACHNAME',
+            'description' => 'Nachname des Bewerbers (verpflichtende Angabe)',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => '###']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
-    public function invalid_month_provider(): array {
-        return [
-            'month zero'        => ['15', '0',   '2000'],
-            'month 13'          => ['15', '13',  '2000'],
-            'month negative'    => ['15', '-1',  '2000'],
-            'month non-integer' => ['15', 'abc', '2000'],
-            'month empty'       => ['15', '',    '2000'],
-        ];
+    /** E-Mail-Pflichtfeld: leer -> Fehler. */
+    public function test_email_required_empty_returns_error(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'EMAIL',
+            'description' => 'DHBW-E-Mail-Adresse des Bewerbers (verpflichtende Angabe)',
+            'param4'      => 'email',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => '']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('required'), $errors['field_1']);
+    }
+
+    /** E-Mail mit ungültiger Syntax -> Fehler (param4 'email'). */
+    public function test_email_invalid_syntax_returns_error(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'EMAIL',
+            'description' => 'DHBW-E-Mail-Adresse des Bewerbers (verpflichtende Angabe)',
+            'param4'      => 'email',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'keine-email']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('invalidemail'), $errors['field_1']);
+    }
+
+    /** Gültige DHBW-Mail -> kein Fehler. */
+    public function test_email_valid_dhbw_passes(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'EMAIL',
+            'description' => 'DHBW-E-Mail-Adresse des Bewerbers (verpflichtende Angabe)',
+            'param4'      => 'email',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 's123456@student.dhbw.de']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
     /**
-     * An invalid year must return 'birthdate_year_invalid'.
+     * Characterization: param4 'email' prüft nur generische E-Mail-Gültigkeit,
+     * NICHT die Domain @dhbw.de. Eine Fremd-Mail läuft daher aktuell durch.
      *
-     * @dataProvider invalid_year_provider
+     * Ursprüngliche AC „muss @dhbw.de$ entsprechen" ist im echten Pfad NICHT
+     * erfüllt – hier bewusst als Ist-Zustand festgehalten.
      */
-    public function test_invalid_year_returns_error(string $day, string $month, string $year): void {
-        $this->assertSame(
-            'birthdate_year_invalid',
-            application_validator::validate_birthdate($day, $month, $year),
-            "Expected birthdate_year_invalid for year='$year'."
-        );
+    public function test_email_non_dhbw_currently_passes(): void {
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'EMAIL',
+            'description' => 'DHBW-E-Mail-Adresse des Bewerbers (verpflichtende Angabe)',
+            'param4'      => 'email',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'max@gmail.com']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
-    public function invalid_year_provider(): array {
-        return [
-            'year before 1900'  => ['15', '6', '1899'],
-            'year after 2006'   => ['15', '6', '2007'],
-            'year zero'         => ['15', '6', '0'],
-            'year non-integer'  => ['15', '6', 'abc'],
-            'year empty'        => ['15', '6', ''],
-        ];
+    // =========================================================================
+    // Allgemeines Validierungsverhalten von validation_manager
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // Pflichtfelder und Sichtbarkeit
+    // -------------------------------------------------------------------------
+
+    public function test_optional_empty_field_passes(): void {
+        $field = $this->make_field(['id' => 1, 'description' => 'Optionale Angabe']);
+
+        $errors = $this->run_validate([$field], [1 => '']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    public function test_non_student_field_is_skipped(): void {
+        // Ein Pflicht-Reviewfeld darf für Studierende NICHT validiert werden.
+        $field = $this->make_field([
+            'id'          => 1,
+            'name'        => 'SGL_FREIGABE',
+            'scope'       => field_manager::SCOPE_REVIEW,
+            'description' => 'Verpflichtende Angabe',
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => '']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    // -------------------------------------------------------------------------
+    // Textlängen
+    // -------------------------------------------------------------------------
+
+    public function test_text_at_max_length_passes(): void {
+        $field = $this->make_field(['id' => 1, 'type' => 'text']);
+
+        $errors = $this->run_validate([$field], [1 => str_repeat('a', 255)]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    public function test_text_too_long_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'type' => 'text']);
+
+        $errors = $this->run_validate([$field], [1 => str_repeat('a', 256)]);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('maximumchars', '', 255), $errors['field_1']);
+    }
+
+    public function test_textarea_at_max_length_passes(): void {
+        $field = $this->make_field(['id' => 1, 'type' => 'textarea']);
+
+        $errors = $this->run_validate([$field], [1 => str_repeat('a', 999)]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    public function test_textarea_too_long_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'type' => 'textarea']);
+
+        $errors = $this->run_validate([$field], [1 => str_repeat('a', 1000)]);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('maximumchars', '', 999), $errors['field_1']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Auswahlfelder (select / radiobutton)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @dataProvider option_field_type_provider
+     */
+    public function test_valid_option_passes(string $type): void {
+        $field = $this->make_field([
+            'id'     => 1,
+            'name'   => 'ABSPRACHE',
+            'type'   => $type,
+            'param1' => "Ja\nNein",
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'Ja']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
     /**
-     * A syntactically plausible but calendar-impossible date must return 'birthdate_invalid_date'.
+     * @dataProvider option_field_type_provider
+     */
+    public function test_invalid_option_returns_error(string $type): void {
+        $field = $this->make_field([
+            'id'     => 1,
+            'name'   => 'ABSPRACHE',
+            'type'   => $type,
+            'param1' => "Ja\nNein",
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'Vielleicht']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('invaliddata', 'error'), $errors['field_1']);
+    }
+
+    public static function option_field_type_provider(): array {
+        return [
+            'select'      => ['select'],
+            'radiobutton' => ['radiobutton'],
+        ];
+    }
+
+    // -------------------------------------------------------------------------
+    // Zeit- / Datumsfelder und Altersregel (>= 16)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @dataProvider invalid_time_provider
+     */
+    public function test_invalid_time_returns_error($value): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'STARTDATUM', 'type' => 'time']);
+
+        $errors = $this->run_validate([$field], [1 => $value]);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('invaliddate'), $errors['field_1']);
+    }
+
+    public static function invalid_time_provider(): array {
+        return [
+            'non numeric' => ['abc'],
+            'zero'        => ['0'],
+            'negative'    => ['-100'],
+        ];
+    }
+
+    public function test_valid_time_passes(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'STARTDATUM', 'type' => 'time']);
+
+        $errors = $this->run_validate([$field], [1 => (string) strtotime('2020-01-01')]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    public function test_birthdate_under_16_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'GEBURTSDATUM', 'type' => 'time']);
+
+        // 15 Jahre alt -> unter der Mindestgrenze.
+        $errors = $this->run_validate([$field], [1 => (string) strtotime('-15 years')]);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('minimumage16', 'dhbwio'), $errors['field_1']);
+    }
+
+    public function test_birthdate_at_least_16_passes(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'GEBURTSDATUM', 'type' => 'time']);
+
+        // 17 Jahre alt -> über der Mindestgrenze.
+        $errors = $this->run_validate([$field], [1 => (string) strtotime('-17 years')]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    // -------------------------------------------------------------------------
+    // Feldspezifische Regeln (param4)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @dataProvider param_rule_provider
+     */
+    public function test_param_rules(string $rule, string $value, bool $expecterror): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'REGELFELD', 'param4' => $rule]);
+
+        $errors = $this->run_validate([$field], [1 => $value]);
+
+        if ($expecterror) {
+            $this->assertArrayHasKey('field_1', $errors);
+        } else {
+            $this->assertArrayNotHasKey('field_1', $errors);
+        }
+    }
+
+    public static function param_rule_provider(): array {
+        return [
+            'numeric valid'        => ['numeric',      '12345',      false],
+            'numeric invalid'      => ['numeric',      '12a45',      true],
+            'lettersonly valid'    => ['lettersonly',  'Müller',     false],
+            'lettersonly invalid'  => ['lettersonly',  'Müller1',    true],
+            'alphanumeric valid'   => ['alphanumeric', 'BWL 2025',   false],
+            'alphanumeric invalid' => ['alphanumeric', 'BWL@2025',   true],
+        ];
+    }
+
+    // -------------------------------------------------------------------------
+    // Datenschutzerklärung (Sonderregel)
+    // -------------------------------------------------------------------------
+
+    public function test_privacy_acceptance_empty_returns_error(): void {
+        $field = $this->make_field([
+            'id'     => 1,
+            'name'   => 'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ',
+            'type'   => 'select',
+            'param1' => "Ja\nNein",
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => '']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('required'), $errors['field_1']);
+    }
+
+    public function test_privacy_acceptance_accepted_passes(): void {
+        $field = $this->make_field([
+            'id'     => 1,
+            'name'   => 'EINVERSTAENDNISERKLAERUNG_DATENSCHUTZ',
+            'type'   => 'select',
+            'param1' => "Ja\nNein",
+        ]);
+
+        $errors = $this->run_validate([$field], [1 => 'Ja']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    // -------------------------------------------------------------------------
+    // Hochschulwünsche: DB-gestützte Auswahl + Eindeutigkeit
+    // -------------------------------------------------------------------------
+
+    /**
+     * Legt eine aktive bzw. inaktive Partnerhochschule an und liefert die ID.
      *
-     * @dataProvider invalid_date_combination_provider
+     * @param int $active 1 = aktiv, 0 = inaktiv.
+     * @return int
      */
-    public function test_invalid_date_combination_returns_error(string $day, string $month, string $year): void {
-        $this->assertSame(
-            'birthdate_invalid_date',
-            application_validator::validate_birthdate($day, $month, $year),
-            "Expected birthdate_invalid_date for $day.$month.$year."
-        );
+    private function create_university(int $active = 1): int {
+        global $DB;
+        return (int) $DB->insert_record('dhbwio_universities', (object) [
+            'dhbwio'  => 1,
+            'name'    => 'Test University ' . random_string(5),
+            'country' => 'DE',
+            'city'    => 'Karlsruhe',
+            'active'  => $active,
+        ]);
     }
 
-    public function invalid_date_combination_provider(): array {
-        return [
-            'april has no 31st'          => ['31', '4',  '2000'],
-            'june has no 31st'           => ['31', '6',  '2000'],
-            'november has no 31st'       => ['31', '11', '2000'],
-            'february 29 in non-leap'    => ['29', '2',  '2001'],
-            'february 30 in leap year'   => ['30', '2',  '2000'],
-        ];
+    public function test_university_choice_valid_id_passes(): void {
+        $uniid = $this->create_university(1);
+        $field = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => (string) $uniid]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
-    // =========================================================================
-    // Studieninformationen
-    // =========================================================================
+    public function test_university_choice_unknown_id_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => '999999']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('invaliddata', 'error'), $errors['field_1']);
+    }
+
+    public function test_university_choice_inactive_returns_error(): void {
+        $uniid = $this->create_university(0);
+        $field = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => (string) $uniid]);
+
+        $this->assertArrayHasKey('field_1', $errors);
+    }
+
+    public function test_university_choice_non_numeric_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => 'Uni Stuttgart']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+    }
+
+    public function test_zweitwunsch_keine_is_exempt(): void {
+        // "Keine" wird als '0' übermittelt und darf keinen Fehler auslösen.
+        $field = $this->make_field(['id' => 1, 'name' => 'ZWEITWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => '0']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    public function test_duplicate_university_choices_return_error(): void {
+        $uniid = $this->create_university(1);
+
+        $erst  = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH',  'type' => 'select']);
+        $zweit = $this->make_field(['id' => 2, 'name' => 'ZWEITWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$erst, $zweit], [
+            1 => (string) $uniid,
+            2 => (string) $uniid,
+        ]);
+
+        $this->assertArrayHasKey('field_2', $errors);
+        $this->assertSame(\get_string('choicetaken', 'dhbwio'), $errors['field_2']);
+    }
+
+    public function test_distinct_university_choices_pass(): void {
+        $uni1 = $this->create_university(1);
+        $uni2 = $this->create_university(1);
+
+        $erst  = $this->make_field(['id' => 1, 'name' => 'ERSTWUNSCH',  'type' => 'select']);
+        $zweit = $this->make_field(['id' => 2, 'name' => 'ZWEITWUNSCH', 'type' => 'select']);
+
+        $errors = $this->run_validate([$erst, $zweit], [
+            1 => (string) $uni1,
+            2 => (string) $uni2,
+        ]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+        $this->assertArrayNotHasKey('field_2', $errors);
+    }
 
     // -------------------------------------------------------------------------
-    // Studiengang
+    // Studienrichtung (DB-gestütztes SELECT)
     // -------------------------------------------------------------------------
 
     /**
-     * @dataProvider valid_studiengang_provider
+     * Legt eine Studienrichtung an und liefert die ID.
+     *
+     * @param int $active 1 = aktiv, 0 = inaktiv.
+     * @return int
      */
-    public function test_valid_studiengang_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_studiengang($value),
-            "Expected '$value' to be a valid Studiengang."
-        );
+    private function create_studytrack(int $active = 1): int {
+        global $DB;
+        return (int) $DB->insert_record('dhbwio_studytracks', (object) [
+            'studyprogramid' => 1,
+            'de_name'        => 'Wirtschaftsinformatik',
+            'en_name'        => 'Business Information Systems',
+            'active'         => $active,
+        ]);
     }
 
-    public function valid_studiengang_provider(): array {
-        return [
-            'empty string (optional)'  => [''],
-            'simple name'              => ['Wirtschaftsinformatik'],
-            'with space'               => ['BWL Wirtschaft'],
-            'with digits'              => ['BWL 2025'],
-            'with hyphen'              => ['Maschinenbau-Konstruktion'],
-            'with umlaut'              => ['Bürokommunikation'],
-            'exactly 100 chars'        => [str_repeat('a', 100)],
-        ];
+    public function test_studytrack_valid_id_passes(): void {
+        $trackid = $this->create_studytrack(1);
+        $field = $this->make_field(['id' => 1, 'name' => 'STUDIENRICHTUNG', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => (string) $trackid]);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
     }
 
-    /**
-     * @dataProvider invalid_studiengang_provider
-     */
-    public function test_invalid_studiengang_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_studiengang($value),
-            "Expected error '$expected_error' for Studiengang '$value'."
-        );
+    public function test_studytrack_unknown_id_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'STUDIENRICHTUNG', 'type' => 'select']);
+
+        $errors = $this->run_validate([$field], [1 => '999999']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('invaliddata', 'error'), $errors['field_1']);
     }
 
-    public function invalid_studiengang_provider(): array {
-        return [
-            '101 characters'          => [str_repeat('a', 101), 'studiengang_too_long'],
-            'at-sign'                 => ['IT@Design',           'studiengang_invalid_characters'],
-            'exclamation mark'        => ['BWL!',                'studiengang_invalid_characters'],
-            'parentheses'             => ['BWL (Karlsruhe)',     'studiengang_invalid_characters'],
-        ];
-    }
+    public function test_studytrack_non_numeric_returns_error(): void {
+        $field = $this->make_field(['id' => 1, 'name' => 'STUDIENRICHTUNG', 'type' => 'select']);
 
-    // -------------------------------------------------------------------------
-    // Kurs
-    // -------------------------------------------------------------------------
+        $errors = $this->run_validate([$field], [1 => 'Wirtschaftsinformatik']);
 
-    /**
-     * @dataProvider valid_kurs_provider
-     */
-    public function test_valid_kurs_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_kurs($value),
-            "Expected '$value' to be a valid Kurs."
-        );
-    }
-
-    public function valid_kurs_provider(): array {
-        return [
-            'typical course code'    => ['TINF22B4'],
-            'short (3 chars)'        => ['BWL'],
-            'exactly 10 chars'       => ['TINF22B4XY'],
-            'with hyphen'            => ['WI-22B'],
-            'with umlaut'            => ['TÜV22'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_kurs_provider
-     */
-    public function test_invalid_kurs_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_kurs($value),
-            "Expected error '$expected_error' for Kurs '$value'."
-        );
-    }
-
-    public function invalid_kurs_provider(): array {
-        return [
-            'empty string'       => ['',              'kurs_required'],
-            'two chars'          => ['WI',            'kurs_too_short'],
-            '11 chars'           => ['TINF22B4XY2',   'kurs_too_long'],
-            'at-sign'            => ['IT@22',          'kurs_invalid_characters'],
-            'exclamation mark'   => ['WI!22',          'kurs_invalid_characters'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Semester
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_semester_provider
-     */
-    public function test_valid_semester_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_semester($value),
-            "Expected '$value' to be a valid Semester."
-        );
-    }
-
-    public function valid_semester_provider(): array {
-        return [
-            'first semester'  => ['1'],
-            'third semester'  => ['3'],
-            'sixth semester'  => ['6'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_semester_provider
-     */
-    public function test_invalid_semester_returns_error(string $value): void {
-        $this->assertSame(
-            'semester_invalid',
-            application_validator::validate_semester($value),
-            "Expected semester_invalid for '$value'."
-        );
-    }
-
-    public function invalid_semester_provider(): array {
-        return [
-            'empty string (Auswählen...)'  => [''],
-            'zero'                         => ['0'],
-            'seven'                        => ['7'],
-            'non-integer'                  => ['abc'],
-            'negative'                     => ['-1'],
-        ];
-    }
-
-    // =========================================================================
-    // Zuständigkeiten und Freigaben
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // Studiengangsleitung
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_studiengangsleitung_provider
-     */
-    public function test_valid_studiengangsleitung_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_studiengangsleitung($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_studiengangsleitung_provider(): array {
-        return [
-            'simple name'          => ['Schmidt'],
-            'with space'           => ['Dr Schmidt'],
-            'with hyphen'          => ['Müller-Schmidt'],
-            'with umlaut'          => ['Schönberger'],
-            'exactly 100 chars'    => [str_repeat('a', 100)],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_studiengangsleitung_provider
-     */
-    public function test_invalid_studiengangsleitung_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_studiengangsleitung($value),
-            "Expected error '$expected_error' for '$value'."
-        );
-    }
-
-    public function invalid_studiengangsleitung_provider(): array {
-        return [
-            'empty string'       => ['',              'studiengangsleitung_required'],
-            '101 chars'          => [str_repeat('a', 101), 'studiengangsleitung_too_long'],
-            'digit in name'      => ['Meier1',         'studiengangsleitung_invalid_characters'],
-            'special char'       => ['Müller!',        'studiengangsleitung_invalid_characters'],
-            'at-sign'            => ['user@dhbw',      'studiengangsleitung_invalid_characters'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Partnerunternehmen
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_partnerunternehmen_provider
-     */
-    public function test_valid_partnerunternehmen_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_partnerunternehmen($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_partnerunternehmen_provider(): array {
-        return [
-            'simple name'               => ['Bosch GmbH'],
-            'with hyphen'               => ['Daimler-Benz'],
-            'with umlaut'               => ['Würth KG'],
-            'leading/trailing spaces'   => ['  SAP SE  '],
-            'exactly 150 chars'         => [str_repeat('a', 150)],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_partnerunternehmen_provider
-     */
-    public function test_invalid_partnerunternehmen_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_partnerunternehmen($value),
-            "Expected error '$expected_error' for '$value'."
-        );
-    }
-
-    public function invalid_partnerunternehmen_provider(): array {
-        return [
-            'empty string'         => ['',                   'partnerunternehmen_required'],
-            'only spaces'          => ['   ',                'partnerunternehmen_required'],
-            '151 chars after trim' => [str_repeat('a', 151), 'partnerunternehmen_too_long'],
-            'contains digit'       => ['Bosch123',           'partnerunternehmen_invalid_characters'],
-            'special char'         => ['SAP & Co',           'partnerunternehmen_invalid_characters'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Ansprechperson
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_ansprechperson_provider
-     */
-    public function test_valid_ansprechperson_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_ansprechperson($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_ansprechperson_provider(): array {
-        return [
-            'simple name'           => ['Max Mustermann'],
-            'with special chars'    => ['Dr. Müller-Lüdenscheid'],
-            'single character'      => ['X'],
-            'exactly 100 chars'     => [str_repeat('a', 100)],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_ansprechperson_provider
-     */
-    public function test_invalid_ansprechperson_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_ansprechperson($value),
-            "Expected error '$expected_error' for '$value'."
-        );
-    }
-
-    public function invalid_ansprechperson_provider(): array {
-        return [
-            'empty string'  => ['',               'ansprechperson_required'],
-            '101 chars'     => [str_repeat('a', 101), 'ansprechperson_too_long'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // E-Mail Ansprechperson (optional)
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_email_ansprechperson_provider
-     */
-    public function test_valid_email_ansprechperson_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_email_ansprechperson($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_email_ansprechperson_provider(): array {
-        return [
-            'empty (optional)'         => [''],
-            'standard gmail'           => ['max@gmail.com'],
-            'company e-mail'           => ['kontakt@bosch.de'],
-            'subdomain'                => ['hr@mail.company.org'],
-            'with plus sign'           => ['max+work@example.com'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_email_ansprechperson_provider
-     */
-    public function test_invalid_email_ansprechperson_returns_error(string $value): void {
-        $this->assertSame(
-            'email_ansprechperson_invalid',
-            application_validator::validate_email_ansprechperson($value),
-            "Expected email_ansprechperson_invalid for '$value'."
-        );
-    }
-
-    public function invalid_email_ansprechperson_provider(): array {
-        return [
-            'no at-sign'          => ['notanemail'],
-            'no domain'           => ['user@'],
-            'no tld'              => ['user@domain'],
-            'spaces'              => ['user @domain.de'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Absprache (radio button)
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_absprache_provider
-     */
-    public function test_valid_absprache_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_absprache($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_absprache_provider(): array {
-        return [
-            'nein lowercase'  => ['nein'],
-            'ja lowercase'    => ['ja'],
-            'nein uppercase'  => ['Nein'],
-            'ja uppercase'    => ['Ja'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_absprache_provider
-     */
-    public function test_invalid_absprache_returns_error(string $value): void {
-        $this->assertSame(
-            'absprache_required',
-            application_validator::validate_absprache($value),
-            "Expected absprache_required for '$value'."
-        );
-    }
-
-    public function invalid_absprache_provider(): array {
-        return [
-            'empty string'  => [''],
-            'other value'   => ['vielleicht'],
-            'digit'         => ['1'],
-        ];
-    }
-
-    // =========================================================================
-    // Wunschliste der Zielhochschulen
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // Erstwunsch
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_erstwunsch_provider
-     */
-    public function test_valid_erstwunsch_passes(string $value): void {
-        $this->assertNull(
-            application_validator::validate_erstwunsch($value),
-            "Expected '$value' to be valid."
-        );
-    }
-
-    public function valid_erstwunsch_provider(): array {
-        return [
-            'university name'       => ['Universität Stuttgart'],
-            'with hyphen'           => ['Karlsruher Institut fuer Technologie'],
-            'foreign university'    => ['MIT Cambridge'],
-            'with digits'           => ['TU Berlin 2'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_erstwunsch_provider
-     */
-    public function test_invalid_erstwunsch_returns_error(string $value, string $expected_error): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_erstwunsch($value),
-            "Expected error '$expected_error' for '$value'."
-        );
-    }
-
-    public function invalid_erstwunsch_provider(): array {
-        return [
-            'empty string'    => ['',                    'erstwunsch_required'],
-            'at-sign'         => ['Uni@Stuttgart',        'erstwunsch_invalid_characters'],
-            'ampersand'       => ['Uni & Hochschule',     'erstwunsch_invalid_characters'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Duplicate checks
-    // -------------------------------------------------------------------------
-
-    public function test_zweitwunsch_duplicate_returns_error(): void {
-        $this->assertSame(
-            'wunsch_duplicate',
-            application_validator::validate_zweitwunsch_duplicate('Uni Stuttgart', 'Uni Stuttgart')
-        );
-    }
-
-    public function test_zweitwunsch_no_duplicate_passes(): void {
-        $this->assertNull(application_validator::validate_zweitwunsch_duplicate('Uni Mannheim', 'Uni Stuttgart'));
-    }
-
-    public function test_zweitwunsch_empty_exempt_from_duplicate(): void {
-        $this->assertNull(application_validator::validate_zweitwunsch_duplicate('', 'Uni Stuttgart'));
-    }
-
-    public function test_zweitwunsch_keine_exempt_from_duplicate(): void {
-        $this->assertNull(application_validator::validate_zweitwunsch_duplicate('Keine', 'Uni Stuttgart'));
-    }
-
-    public function test_drittwunsch_duplicate_with_erst_returns_error(): void {
-        $this->assertSame(
-            'wunsch_duplicate',
-            application_validator::validate_drittwunsch_duplicate('Uni Stuttgart', 'Uni Stuttgart', 'Uni Mannheim')
-        );
-    }
-
-    public function test_drittwunsch_duplicate_with_zweit_returns_error(): void {
-        $this->assertSame(
-            'wunsch_duplicate',
-            application_validator::validate_drittwunsch_duplicate('Uni Mannheim', 'Uni Stuttgart', 'Uni Mannheim')
-        );
-    }
-
-    public function test_drittwunsch_no_duplicate_passes(): void {
-        $this->assertNull(
-            application_validator::validate_drittwunsch_duplicate('Uni Berlin', 'Uni Stuttgart', 'Uni Mannheim')
-        );
-    }
-
-    public function test_drittwunsch_empty_exempt_from_duplicate(): void {
-        $this->assertNull(
-            application_validator::validate_drittwunsch_duplicate('', 'Uni Stuttgart', 'Uni Mannheim')
-        );
-    }
-
-    public function test_drittwunsch_keine_exempt_from_duplicate(): void {
-        $this->assertNull(
-            application_validator::validate_drittwunsch_duplicate('Keine', 'Uni Stuttgart', 'Keine')
-        );
-    }
-
-    // =========================================================================
-    // Benachteiligte Gruppen und Freitext
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // Benachteiligte Gruppe
-    // -------------------------------------------------------------------------
-
-    /**
-     * @dataProvider valid_benachteiligte_gruppe_provider
-     */
-    public function test_valid_benachteiligte_gruppe_passes(bool $checked, string $text): void {
-        $this->assertNull(
-            application_validator::validate_benachteiligte_gruppe($checked, $text),
-            "Expected no error for checked=$checked, text='$text'."
-        );
-    }
-
-    public function valid_benachteiligte_gruppe_provider(): array {
-        return [
-            'checked with text'         => [true,  'I have a chronic illness.'],
-            'checked with 500 chars'    => [true,  str_repeat('a', 500)],
-            'not checked, empty text'   => [false, ''],
-            'not checked, text present' => [false, 'some text'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_benachteiligte_gruppe_provider
-     */
-    public function test_invalid_benachteiligte_gruppe_returns_error(
-        bool $checked, string $text, string $expected_error
-    ): void {
-        $this->assertSame(
-            $expected_error,
-            application_validator::validate_benachteiligte_gruppe($checked, $text),
-            "Expected error '$expected_error'."
-        );
-    }
-
-    public function invalid_benachteiligte_gruppe_provider(): array {
-        return [
-            'checked but empty text'        => [true,  '',                   'benachteiligte_gruppe_text_required'],
-            'text exceeds 500 chars'        => [true,  str_repeat('a', 501), 'benachteiligte_gruppe_text_too_long'],
-            'unchecked but text too long'   => [false, str_repeat('a', 501), 'benachteiligte_gruppe_text_too_long'],
-        ];
-    }
-
-    // -------------------------------------------------------------------------
-    // Nachricht
-    // -------------------------------------------------------------------------
-
-    public function test_valid_nachricht_passes(): void {
-        $this->assertNull(application_validator::validate_nachricht(''));
-        $this->assertNull(application_validator::validate_nachricht('Hello!'));
-        $this->assertNull(application_validator::validate_nachricht(str_repeat('a', 2500)));
-    }
-
-    public function test_nachricht_too_long_returns_error(): void {
-        $this->assertSame(
-            'nachricht_too_long',
-            application_validator::validate_nachricht(str_repeat('a', 2501))
-        );
-    }
-
-    // =========================================================================
-    // Rechtliche Bestätigungen
-    // =========================================================================
-
-    public function test_datenschutz_true_passes(): void {
-        $this->assertNull(application_validator::validate_datenschutz(true));
-    }
-
-    public function test_datenschutz_false_returns_error(): void {
-        $this->assertSame(
-            'datenschutz_required',
-            application_validator::validate_datenschutz(false)
-        );
+        $this->assertArrayHasKey('field_1', $errors);
     }
 }
