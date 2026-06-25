@@ -3,20 +3,15 @@
 require_once('../../config.php');
 require_once(__DIR__ . '/locallib.php');
 
+use mod_dhbwio\local\dataform\la_manager;
+
 global $USER, $DB;
 
 $cmid = required_param('id', PARAM_INT);
-$app_entryid = required_param('app_entryid', PARAM_INT); // Neue Parameterübergabe der Bewerbungs-ID
-
-// Existierendes LA für diese Bewerbungs-ID suchen
-$la_record = $DB->get_record('dhbwio_la', ['application_entryid' => $app_entryid, 'userid' => $USER->id]);
-$entryid = $la_record ? $la_record->id : 0;
-
 $cm = null;
 if ($cmid > 0) {
     $cm = get_coursemodule_from_id('dhbwio', $cmid, 0, false, IGNORE_MISSING);
 }
-
 if (!$cm) {
     throw new moodle_exception('invalidcmid', 'error');
 }
@@ -25,12 +20,26 @@ $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$PAGE->set_url(new moodle_url('/mod/dhbwio/learning_agreement.php', [
-    'id' => $cm->id,
-    'app_entryid' => $app_entryid // Parameter an URL anhängen
-]));
+
+$PAGE->set_url(new moodle_url('/mod/dhbwio/learning_agreement.php', ['id' => $cm->id]));
 $PAGE->set_context($context);
 $PAGE->set_title('Learning Agreement');
+
+
+$entryid = 0;
+$app_entryid = 0;
+//schauen ob der Nutzer bereits ein Learning Agreement hat, wenn ja, dann die ID laden, wenn nein, dann die letzte Bewerbung laden
+if(la_manager::get_la_by_userid($USER->id)){
+    $la_record = la_manager::get_la_by_userid($USER->id);
+    $entryid = $la_record->id;
+    $app_entryid = $la_record->app_entryid;
+} else {
+    $app_record = la_manager::get_last_modified_app_for_user($USER->id);
+    $app_entryid = $app_record->id ?? 0;
+}
+
+
+
 $PAGE->set_heading(format_string($course->fullname));
 
 // Load plugin CSS
@@ -97,35 +106,51 @@ $content = $la_data->content ?? new stdClass();
 
 // Werte aus der spezifischen Bewerbung vorbefüllen, falls es ein neues LA ist
 if ($entryid == 0) {
-    $content->name = $USER->lastname;
-    $content->vorname = $USER->firstname;
-    $content->studienrichtung = '';
-
     // Die genaue Bewerbung (app_entryid) aus Dataform abrufen
-    $dhbwio_entry = $DB->get_record('dhbwio_dataform_entries', ['id' => $app_entryid, 'userid' => $USER->id]);
-
-    if ($dhbwio_entry) {
-        $sql_contents = "SELECT f.name, c.content
-                           FROM {dhbwio_dataform_contents} c
-                           JOIN {dhbwio_dataform_fields} f ON f.id = c.fieldid
-                          WHERE c.entryid = :entryid";
-        $form_contents = $DB->get_records_sql_menu($sql_contents, ['entryid' => $dhbwio_entry->id]);
-
-        foreach ($form_contents as $fieldname => $val) {
-            $fieldname_lower = strtolower($fieldname);
-
-            if (strpos($fieldname_lower, 'nachname') !== false || strpos($fieldname_lower, 'lastname') !== false) {
-                if (!empty($val)) $content->name = $val;
-            }
-            if (strpos($fieldname_lower, 'vorname') !== false || strpos($fieldname_lower, 'firstname') !== false) {
-                if (!empty($val)) $content->vorname = $val;
-            }
-            if (strpos($fieldname_lower, 'studienrichtung') !== false || strpos($fieldname_lower, 'studytrack') !== false) {
-                if (!empty($val)) $content->studienrichtung = $val;
-            }
+    $app_entry_record = $DB->get_record_sql('SELECT * FROM {dhbwio_dataform_entries} WHERE id = ? ORDER BY timemodified DESC LIMIT 1', [$app_entryid], IGNORE_MISSING);
+    if(!$app_entry_record || $app_entryid == 0) {
+            throw new moodle_exception($app_entryid, 'dhbwio');
         }
+
+    $name = $DB->get_field('dhbwio_dataform_contents', 'content', ['entryid' => $app_entry_record->id, 'fieldid' => 16], IGNORE_MISSING);
+    $vorname = $DB->get_field('dhbwio_dataform_contents', 'content', ['entryid' => $app_entry_record->id, 'fieldid' => 15], IGNORE_MISSING);
+    $studiengang = $DB->get_field('dhbwio_dataform_contents', 'content', ['entryid' => $app_entry_record->id, 'fieldid' => 30], IGNORE_MISSING);
+    $studienrichtungname = $DB->get_field('dhbwio_dataform_contents', 'content', ['entryid' => $app_entry_record->id, 'fieldid' => 18], IGNORE_MISSING);
+    $gasthochschulid = $DB->get_field('dhbwio_dataform_entries', 'acceptedchoice', ['id' => $app_entry_record->id], IGNORE_MISSING);
+    $gasthochschule = $DB->get_field('dhbwio_universities', 'name', ['id' => $gasthochschulid], IGNORE_MISSING);
+
+    if(!$name || !$vorname || !$studiengang || !$studienrichtungname || !$gasthochschule) {
+        throw new moodle_exception($$app_entry_record->id, 'dhbwio');
     }
+
+    //studienrichtung auf der Bewerbung aktuell noch per Textfeld gesetzt daher nach studienrichtungsname in der Tabelle dhbwio_studytracks suchen und die ID zurückgeben
+    $studienrichtung = $DB->get_field('dhbwio_studytracks', 'id', ['de_name' => $studienrichtungname], IGNORE_MISSING);
+
+    /**
+//     $name = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 16],'content', IGNORE_MISSING);
+//     $vorname = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 15],'content', IGNORE_MISSING);
+//     $studiengang = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 30],'content', IGNORE_MISSING);
+//     $studienrichtungname = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 18],'content', IGNORE_MISSING);
+//     $gasthochschulid = $DB->get_record('dhbwio_dataform_entries',['id' => $app_entry_record->id],'acceptedchoice', IGNORE_MISSING);
+//     $gasthochschule = $DB->get_record('dhbwio_universities',['id' => $gasthochschulid],'name', IGNORE_MISSING);
+//
+//
+//     //studienrichtung auf der Bewerbung aktuell noch per Textfeld gesetzt daher nach studienrichtungsname in der Tabelle dhbwio_studytracks suchen und die ID zurückgeben
+//     $studienrichtung = $DB->get_record('dhbwio_studytracks',['de_name' => $studienrichtungname],'id', IGNORE_MISSING);
+    */
+
+    $content->name = $name;
+    $content->vorname = $vorname;
+    $content->studiengang = $studiengang;
+    $content->studienrichtung = $studienrichtungname;
+    $content->gasthochschule = $gasthochschule;
+
+    if(!$content->name || !$content->vorname || !$content->studiengang || !$content->studienrichtung || !$content->gasthochschule) {
+        throw new moodle_exception($content->name, 'dhbwio');
+    }
+
 }
+
 
 // Wahlmodule basierend auf der (vor-)gewählten Studienrichtung ermitteln
 $wahlmodul_options = [];
@@ -205,16 +230,19 @@ if (empty($courserows)) {
     $courserows[] = ['row_number' => 1, 'modul_name' => '', 'ects' => '', 'anteil' => '', 'partnerhochschule_value' => '', 'credits' => ''];
     $courserows[] = ['row_number' => 2, 'modul_name' => '', 'ects' => '', 'anteil' => '', 'partnerhochschule_value' => '', 'credits' => ''];
 }
-
+// Back URL to the learning agreement overview page on the learningagreement tab
+// URL should be like http://localhost/mod/dhbwio/view.php?id=25&tab=learningagreement
+$backurl ='/mod/dhbwio/view.php?id=' . $cm->id . '&tab=learningagreement';
 $templatecontext = [
     'actionurl' => (string)new moodle_url('/mod/dhbwio/learning_agreement_submit.php'),
     'sesskey' => sesskey(),
     'id' => $cm->id,
     'entryid' => $entryid, // Interne LA ID
     'app_entryid' => $app_entryid, // Übermitteln, damit submit.php sie mitspeichern kann
+    'studiengang' => $content->studiengang ?? '',
     'fields' => $fields,
     'courserows' => $courserows,
-    'backurl' => (string)new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id])
+    'backurl' => (string)str_replace('&amp;', '&',new moodle_url($backurl)),
 ];
 
 echo $OUTPUT->render_from_template('mod_dhbwio/learning_agreement_formular', $templatecontext);

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="2026061702" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/dhbwio/db" VERSION="2026062502" COMMENT="XMLDB file for Moodle mod_dhbwio including internal dataform schema" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="dhbwio" COMMENT="Each record represents one dhbwio activity instance">
       <FIELDS>
@@ -402,6 +402,27 @@
       </INDEXES>
     </TABLE>
 
+      <!-- Learning Agreement Status table -->
+      <TABLE NAME="dhbwio_la_status" COMMENT="Learning Agreement Status definitions">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="shortname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+                <FIELD NAME="isinitial" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="isapproved" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="isrejected" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="shortname_unique" TYPE="unique" FIELDS="shortname"/>
+            </KEYS>
+      </TABLE>
+
       <!-- Learning Agreement metadata table -->
       <TABLE NAME="dhbwio_la" COMMENT="LA metadata: owner, creation and edit info">
           <FIELDS>
@@ -411,11 +432,14 @@
               <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
               <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
               <FIELD NAME="lasteditedby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+              <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Status of the Learning Agreement, referencing dhbwio_la_status"/>
+              <FIELD NAME="note" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional note for the Learning Agreement"/>
           </FIELDS>
           <KEYS>
               <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
               <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-                <KEY NAME="application_entryid_fk" TYPE="foreign" FIELDS="application_entryid" REFTABLE="dhbwio_dataform_entries" REFFIELDS="id"/>
+              <KEY NAME="application_entryid_fk" TYPE="foreign" FIELDS="application_entryid" REFTABLE="dhbwio_dataform_entries" REFFIELDS="id"/>
+              <KEY NAME="status_fk" TYPE="foreign" FIELDS="status" REFTABLE="dhbwio_la_status" REFFIELDS="id"/>
           </KEYS>
       </TABLE>
 
