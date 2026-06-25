@@ -984,13 +984,6 @@ function xmldb_dhbwio_upgrade($oldversion)
                 $dbman->create_table($table);
             }
 
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
-        $table->add_key('application_entryid_fk', XMLDB_KEY_FOREIGN, array('application_entryid'), 'dhbwio_dataform_entries', array('id'));
-
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
 
         // Create dhbwio_la_contents
         $table = new xmldb_table('dhbwio_la_contents');
