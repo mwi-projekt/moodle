@@ -54,34 +54,8 @@ try {
     }
 
     if ($action === 'load') {
-        if ($masterid <= 0) {
-            throw new Exception('Keine gültige Matrix-ID angegeben.');
-        }
-
-        $master = $DB->get_record('local_matrixzuweisung_master', ['id' => $masterid]);
-        if (!$master) {
-            throw new Exception('Die ausgewählte Matrix wurde nicht gefunden.');
-        }
-        $details = $DB->get_records('local_matrixzuweisung_details', ['masterid' => $masterid], 'id ASC');
-
-        $result = [];
-        foreach ($details as $detail) {
-            $result[] = [
-                'studentid' => (int) $detail->studentid,
-                'universityid' => (int) $detail->universityid,
-            ];
-        }
-
-        echo json_encode([
-            'success' => true,
-            'matrix' => [
-                'id' => (int) $master->id,
-                'name' => $master->name,
-                'timecreated' => (int) $master->timecreated,
-                'timemodified' => (int) $master->timemodified,
-                'details' => $result,
-            ],
-        ]);
+        // Laden (inkl. Validierung) liegt in der testbaren Repository-Klasse.
+        echo json_encode(\local_zuweisungsmatrix\matrix_repository::load($masterid));
         exit;
     }
 
