@@ -162,6 +162,7 @@ function dhbwio_create_full_la($userid, $content, $modules, $app_entryid = 0) {
     $la->timecreated = time();
     $la->timemodified = time();
     $la->lasteditedby = $userid;
+    $la->status = 1;
 
     $la_id = $DB->insert_record('dhbwio_la', $la);
 

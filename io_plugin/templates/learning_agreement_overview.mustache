@@ -1,0 +1,50 @@
+<div class="dhbwio-learning-agreement-overview container-fluid">
+
+    <h3>{{title}}</h3>
+
+    {{#haslearningagreements}}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    {{#isadmin}}
+                        <th>{{#str}} applicant_name, dhbwio {{/str}}</th>
+                        <th>{{#str}} studyprogram, dhbwio {{/str}}</th>
+                    {{/isadmin}}
+                <th>{{#str}} created, dhbwio {{/str}}</th>
+                <th>{{#str}} modified, dhbwio {{/str}}</th>
+                <th>{{#str}} university, dhbwio {{/str}}</th>
+                {{#isadmin}}<th>{{#str}} status, dhbwio {{/str}}</th>{{/isadmin}}
+                <th>{{#str}} action, dhbwio {{/str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#learningagreements}}
+                    <tr>
+                        {{#isadmin}}
+                            <td>{{applicantname}}</td>
+                            <td>{{studyprogram}}</td>
+                        {{/isadmin}}
+                        <td>{{timecreated}}</td>
+                        <td>{{timemodified}}</td>
+                        <td>{{university}}</td>
+                        {{#isadmin}}
+                        <td>
+                            <span class="dhbwio-status-badge {{statusclass}}">
+                                {{status}}
+                            </span>
+                        </td>
+                        {{/isadmin}}
+                        <td>
+                            {{{actions}}}
+                        </td>
+                    </tr>
+                {{/learningagreements}}
+            </tbody>
+        </table>
+    {{/haslearningagreements}}
+
+    {{^haslearningagreements}}
+        <p>{{emptytext}}</p>
+    {{/haslearningagreements}}
+
+</div>
