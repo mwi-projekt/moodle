@@ -55,9 +55,9 @@ $entriesql = "
     SELECT e.id AS entryid,
            MAX(CASE WHEN c.fieldid = 15 THEN c.content END) AS vorname,
            MAX(CASE WHEN c.fieldid = 16 THEN c.content END) AS nachname,
-           MAX(CASE WHEN c.fieldid = 5  THEN c.content END) AS Erstwunsch,
-           MAX(CASE WHEN c.fieldid = 6  THEN c.content END) AS Zweitwunsch,
-           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS Drittwunsch,
+           MAX(CASE WHEN c.fieldid = 5  THEN c.content END) AS erstwunsch_id,
+           MAX(CASE WHEN c.fieldid = 6  THEN c.content END) AS zweitwunsch_id,
+           MAX(CASE WHEN c.fieldid = 7  THEN c.content END) AS drittwunsch_id,
            MAX(e.within_deadline) AS within_deadline
     FROM {dhbwio_dataform_entries} e
     JOIN {dhbwio_dataform_contents} c ON c.entryid = e.id
@@ -67,8 +67,31 @@ $entriesql = "
 ";
 
 $studenten = $DB->get_records_sql($entriesql, [$dataformid]);
-// Bestehende Zuweisungen abrufen
-//$zuweisungen = $DB->get_records('local_matrixzuweisung', null, '', 'studentid, hochschule');
+
+// Mapping: Hochschul-IDs zu Namen aus mdl_dhbwio_universities
+$alle_unis_ids = [];
+foreach ($studenten as $s) {
+    if (!empty($s->erstwunsch_id)) $alle_unis_ids[] = (int)$s->erstwunsch_id;
+    if (!empty($s->zweitwunsch_id)) $alle_unis_ids[] = (int)$s->zweitwunsch_id;
+    if (!empty($s->drittwunsch_id)) $alle_unis_ids[] = (int)$s->drittwunsch_id;
+}
+
+$unis_map = [];
+if (!empty($alle_unis_ids)) {
+    $alle_unis_ids = array_unique($alle_unis_ids);
+    list($insql, $inparams) = $DB->get_in_or_equal($alle_unis_ids);
+    $unis_records = $DB->get_records_sql("SELECT id, name FROM {dhbwio_universities} WHERE id $insql", $inparams);
+    foreach ($unis_records as $uni) {
+        $unis_map[$uni->id] = $uni->name;
+    }
+}
+
+// Konvertiere IDs zu Namen in den Studenten-Datensätzen
+foreach ($studenten as $s) {
+    $s->erstwunsch = isset($unis_map[(int)$s->erstwunsch_id]) ? $unis_map[(int)$s->erstwunsch_id] : $s->erstwunsch_id;
+    $s->zweitwunsch = isset($unis_map[(int)$s->zweitwunsch_id]) ? $unis_map[(int)$s->zweitwunsch_id] : $s->zweitwunsch_id;
+    $s->drittwunsch = isset($unis_map[(int)$s->drittwunsch_id]) ? $unis_map[(int)$s->drittwunsch_id] : $s->drittwunsch_id;
+}
 
 ?>
 
