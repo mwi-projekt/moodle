@@ -1,5 +1,13 @@
 # Prozesse des International Office
 
+[![CI](https://github.com/mwi-projekt/moodle/actions/workflows/ci.yml/badge.svg)](https://github.com/mwi-projekt/moodle/actions/workflows/ci.yml)
+
+> **Testabdeckung:** Jeder CI-Lauf erzeugt eine PHPUnit-Coverage-Auswertung.
+> Sie wird direkt in der **Zusammenfassung des Actions-Laufs** angezeigt
+> (Tab *Actions* → Lauf öffnen → Abschnitt „Testabdeckung (PHPUnit)") und
+> zusätzlich als Artefakt `coverage-report` zum Download bereitgestellt.
+> Es ist kein externer Dienst und kein Token nötig.
+
 ## Lokale Entwicklung
 
 ### Moodle lokal aufsetzen

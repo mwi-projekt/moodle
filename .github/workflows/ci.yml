@@ -73,9 +73,39 @@ jobs:
 
       # --fail-on-warning: PHP-Warnings werden als Testfehler gewertet
       # --coverage-clover: Clover-XML im internen Build-Verzeichnis
-      # --coverage-text: gibt Zusammenfassung direkt im Actions-Log aus
+      # --coverage-text:   menschenlesbare Zusammenfassung auf stdout
+      # tee:               Ausgabe zusätzlich in coverage.txt für Anzeige + Artefakt
       - name: PHPUnit ausführen
-        run: moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text
+        run: |
+          set -o pipefail
+          moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text \
+            | tee coverage.txt
+
+      # Rendert die Coverage-Tabelle direkt in die Zusammenfassung des
+      # Actions-Laufs (kein externer Dienst, kein Token nötig).
+      - name: Testabdeckung in die Run-Summary schreiben
+        if: always()
+        run: |
+          {
+            echo '## Testabdeckung (PHPUnit)'
+            echo '```'
+            # Nur den Coverage-Block ab "Code Coverage Report" anhängen;
+            # falls das Muster fehlt, die komplette Ausgabe als Fallback.
+            sed -n '/Code Coverage Report/,$p' coverage.txt | grep -q . \
+              && sed -n '/Code Coverage Report/,$p' coverage.txt \
+              || cat coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Stellt die vollständige Coverage-Ausgabe als herunterladbares Artefakt bereit.
+      - name: Coverage-Report als Artefakt hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.txt
+          if-no-files-found: warn
+          retention-days: 7
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Job 2: Behat

@@ -574,4 +574,74 @@ final class application_validation_test extends \advanced_testcase {
 
         $this->assertArrayHasKey('field_1', $errors);
     }
+
+    // =========================================================================
+    // User Story #15: Herkunft & Sprache (NATIONALITAET / MUTTERSPRACHE)
+    //
+    // Beide Felder sind in default_form_manager als verpflichtende Textfelder
+    // mit der Regel param4 'lettersonly' konfiguriert. Diese Tests prüfen genau
+    // dieses reale Verhalten über validation_manager::validate() – es werden
+    // KEINE im Code nicht vorhandenen Regeln (z.B. feste Sprachlisten) erfunden.
+    // =========================================================================
+
+    /**
+     * Baut ein Pflicht-Textfeld mit lettersonly-Regel, wie NATIONALITAET und
+     * MUTTERSPRACHE im echten Formular definiert sind.
+     *
+     * @param string $name Feldname (NATIONALITAET oder MUTTERSPRACHE).
+     * @return \stdClass
+     */
+    private function make_herkunft_field(string $name): \stdClass {
+        return $this->make_field([
+            'id'          => 1,
+            'name'        => $name,
+            'type'        => 'text',
+            'param4'      => 'lettersonly',
+            'description' => $name . ' des Bewerbers (verpflichtende Angabe)',
+        ]);
+    }
+
+    /** Nationalität-Pflichtfeld: leer -> Fehler. */
+    public function test_nationalitaet_required_empty_returns_error(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('NATIONALITAET')], [1 => '']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('required'), $errors['field_1']);
+    }
+
+    /** Nationalität: reiner Buchstabenwert (inkl. Bindestrich) -> kein Fehler. */
+    public function test_nationalitaet_lettersonly_value_passes(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('NATIONALITAET')], [1 => 'Deutsch-Französisch']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    /** Nationalität: enthält Ziffern -> lettersonly-Regel schlägt an. */
+    public function test_nationalitaet_with_digits_returns_error(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('NATIONALITAET')], [1 => 'Deutsch123']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+    }
+
+    /** Muttersprache-Pflichtfeld: leer -> Fehler. */
+    public function test_muttersprache_required_empty_returns_error(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('MUTTERSPRACHE')], [1 => '']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+        $this->assertSame(\get_string('required'), $errors['field_1']);
+    }
+
+    /** Muttersprache: reiner Buchstabenwert (inkl. Umlaut) -> kein Fehler. */
+    public function test_muttersprache_lettersonly_value_passes(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('MUTTERSPRACHE')], [1 => 'Schwäbisch']);
+
+        $this->assertArrayNotHasKey('field_1', $errors);
+    }
+
+    /** Muttersprache: enthält Sonderzeichen -> lettersonly-Regel schlägt an. */
+    public function test_muttersprache_with_special_char_returns_error(): void {
+        $errors = $this->run_validate([$this->make_herkunft_field('MUTTERSPRACHE')], [1 => 'Deutsch!']);
+
+        $this->assertArrayHasKey('field_1', $errors);
+    }
 }

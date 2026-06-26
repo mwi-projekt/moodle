@@ -3,3 +3,4 @@ io_plugin/node_modules/
 .idea/**
 .vscode/**
 copy-to-local-moodle_mine.sh
+.claude
