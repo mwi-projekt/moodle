@@ -574,3 +574,4 @@ $string['accepted_university'] = 'Zugewiesene Hochschule';
 $string['firstchoice'] = 'Erstwunsch';
 $string['secondchoice'] = 'Zweitwunsch';
 $string['thirdchoice'] = 'Drittwunsch';
+$string['nav_files'] = 'Dateien';

@@ -546,3 +546,4 @@ $string['accepted_university'] = 'Assigned university';
 $string['firstchoice'] = 'First choice';
 $string['secondchoice'] = 'Second choice';
 $string['thirdchoice'] = 'Third choice';
+$string['nav_files'] = 'Files';
