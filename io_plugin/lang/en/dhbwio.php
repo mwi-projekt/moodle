@@ -543,3 +543,6 @@ $string['la_recreate_button'] = 'Create new LA';
 $string['minimumage16'] = 'Applicant has to be at least 16 years old.';
 $string['choicetaken'] = 'This selection has already been used for another request.';
 $string['accepted_university'] = 'Assigned university';
+$string['firstchoice'] = 'First choice';
+$string['secondchoice'] = 'Second choice';
+$string['thirdchoice'] = 'Third choice';

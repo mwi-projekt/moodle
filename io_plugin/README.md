@@ -62,6 +62,7 @@ Das Plugin enthält benutzerdefinierte Berechtigungen für verschiedene Benutzer
 | mod/dhbwio:manageuniversities | Hochschuldaten verwalten | Trainer, Manager |
 | mod/dhbwio:submitreport | Erfahrungsberichte einreichen | Studenten |
 | mod/dhbwio:viewreports | Statistiken anzeigen | Trainer, Manager |
+| mod/dhbwio:canviewallapplications | Alle Bewerbungen anzeigen lassen | Trainer, Manager |
 
 ## Entwicklung
 Dieses Plugin folgt den Moodle-Entwicklungsstandards und bewährten Praktiken:
@@ -79,6 +80,8 @@ mod_dhbwio/
 │   ├── event/          # Ereignisklassen
 │   ├── external/       # Externe Funktionen
 │   ├── form/           # Formulardefinitionen
+│   ├── local/          # Lokale Anpassungen
+│   │  └── dataform/    # Klassen speziell für das Dataform
 │   ├── output/         # Ausgabe-Renderer
 │   └── privacy/        # Privacy API-Implementierung
 ├── db/                 # Datenbankdefinitionen

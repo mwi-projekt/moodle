@@ -25,7 +25,8 @@ class form_renderer
         string $value = '',
         string $error = '',
         bool $applicationaccepted = false,
-        int $dhbwioid = 0
+        int $dhbwioid = 0,
+        ?int $selectedstudyprogramid = null
     ): string {
         $islockedchoicefield = $applicationaccepted && in_array($field->name, [
             'ERSTWUNSCH',
@@ -88,7 +89,7 @@ class form_renderer
                 if ($field->name === 'STUDIENGANG') {
                     $options = self::get_studyprogram_options();
                 } else if ($field->name === 'STUDIENRICHTUNG') {
-                    $options = self::get_studytrack_options();
+                    $options = self::get_studytrack_options($selectedstudyprogramid);
                 } else if (self::is_university_choice_field($field)) {
                     $options = self::get_university_options($field->name, $dhbwioid);
                 } else {
@@ -415,20 +416,26 @@ class form_renderer
                 ? $record->en_name
                 : $record->de_name;
 
-            $options[$record->de_name] = $label;
+            $options[(string)$record->id] = $label;
         }
 
         return $options;
     }
-    private static function get_studytrack_options(): array
+    private static function get_studytrack_options(?int $studyprogramid = null): array
     {
         global $DB;
 
         $options = ['' => get_string('choose')];
 
+        $conditions = ['active' => 1];
+
+        if (!empty($studyprogramid)) {
+            $conditions['studyprogramid'] = $studyprogramid;
+        }
+
         $records = $DB->get_records(
             'dhbwio_studytracks',
-            ['active' => 1],
+            $conditions,
             'sortorder ASC, de_name ASC'
         );
 

@@ -311,16 +311,24 @@ class entry_manager
 
         return $universitylabel;
     }
-    public static function get_status_by_shortname(string $shortname): ?\stdClass
+    public static function get_studyprogram_label(int $studyprogramid): string
     {
         global $DB;
 
-        return $DB->get_record(
-            'dhbwio_application_status',
-            ['shortname' => $shortname, 'active' => 1],
+        $record = $DB->get_record(
+            'dhbwio_studyprograms',
+            ['id' => $studyprogramid, 'active' => 1],
             '*',
             IGNORE_MISSING
-        ) ?: null;
+        );
+
+        if (!$record) {
+            return '-';
+        }
+
+        return current_language() === 'en'
+            ? $record->en_name
+            : $record->de_name;
     }
     public static function update_status(int $entryid, int $statusid): void
     {

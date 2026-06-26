@@ -9,31 +9,48 @@
                     {{#isadmin}}
                         <th>{{#str}} applicant_name, dhbwio {{/str}}</th>
                         <th>{{#str}} studyprogram, dhbwio {{/str}}</th>
+                        <th>{{#str}} modified, dhbwio {{/str}}</th>
+                        <th>{{#str}} created, dhbwio {{/str}}</th>
+                        <th>{{#str}} accepted_university, dhbwio {{/str}}</th>
+                        <th>{{#str}} status, dhbwio {{/str}}</th>
                     {{/isadmin}}
-                <th>{{#str}} created, dhbwio {{/str}}</th>
-                <th>{{#str}} modified, dhbwio {{/str}}</th>
-                <th>{{#str}} accepted_university, dhbwio {{/str}}</th>
-                {{#isadmin}}<th>{{#str}} status, dhbwio {{/str}}</th>{{/isadmin}}
-                <th>{{#str}} action, dhbwio {{/str}}</th>
+
+                    {{^isadmin}}
+                        <th>{{#str}} created, dhbwio {{/str}}</th>
+                        <th>{{#str}} firstchoice, dhbwio {{/str}}</th>
+                        <th>{{#str}} secondchoice, dhbwio {{/str}}</th>
+                        <th>{{#str}} thirdchoice, dhbwio {{/str}}</th>
+                        <th>{{#str}} accepted_university, dhbwio {{/str}}</th>
+                    {{/isadmin}}
+
+                    <th>{{#str}} action, dhbwio {{/str}}</th>
                 </tr>
             </thead>
+
             <tbody>
                 {{#applications}}
                     <tr>
                         {{#isadmin}}
                             <td>{{applicantname}}</td>
                             <td>{{studyprogram}}</td>
+                            <td>{{timemodified}}</td>
+                            <td>{{timecreated}}</td>
+                            <td>{{acceptedchoice}}</td>
+                            <td>
+                                <span class="dhbwio-status-badge {{statusclass}}">
+                                    {{status}}
+                                </span>
+                            </td>
                         {{/isadmin}}
-                        <td>{{timecreated}}</td>
-                        <td>{{timemodified}}</td>
-                        <td>{{firstchoice}}</td>
-                        {{#isadmin}}
-                        <td>
-                            <span class="dhbwio-status-badge {{statusclass}}">
-                                {{status}}
-                            </span>
-                        </td>
+
+                        {{^isadmin}}
+                            <td>{{timecreated}}</td>
+                            <td>{{firstchoice}}</td>
+                            <td>{{secondchoice}}</td>
+                            <td>{{thirdchoice}}</td>
+                            <td>{{acceptedchoice}}</td>
                         {{/isadmin}}
+
                         <td>
                             {{{actions}}}
                         </td>
