@@ -934,26 +934,10 @@ switch ($tab) {
 
 			$isnachzureichen_tab = ($appstatuskey_la === 'nachzureichen');
 
-			// ── Upload buttons (immer sichtbar) ────────────────────────────
 			$lauploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
-				'cmid'    => $cm->id,
-				'doctype' => 'learning_agreement',
-			]);
-			$otherurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
 				'cmid'    => $cm->id,
 				'doctype' => 'other_document',
 			]);
-			echo '<div class="mb-3">';
-			if ($isnachzureichen_tab) {
-				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
-				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-secondary']);
-			} else {
-				echo '<button class="btn btn-secondary me-2" disabled>'
-					. get_string('la_create_btn', 'mod_dhbwio') . '</button>';
-				echo html_writer::link($lauploadurl, get_string('la_la_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary me-2']);
-				echo html_writer::link($otherurl,    get_string('la_other_btn', 'mod_dhbwio'), ['class' => 'btn btn-outline-secondary']);
-			}
-			echo '</div>';
 
 			// ── DELETE action ──────────────────────────────────────────────
 			$deletelaid = optional_param('deletelaid', 0, PARAM_INT);
@@ -973,7 +957,7 @@ switch ($tab) {
 				'userid' => $USER->id,
 			], 'timecreated DESC');
 
-			echo '<h5 class="mt-4">' . get_string('la_doc_history', 'mod_dhbwio') . '</h5>';
+			echo '<h5 class="mt-2">' . get_string('la_doc_history', 'mod_dhbwio') . '</h5>';
 
 			if (empty($allrecords)) {
 				echo '<p class="text-muted">' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
@@ -1034,25 +1018,48 @@ switch ($tab) {
 				}
 				echo html_writer::table($histable);
 			}
+
+			// ── Moodle File Upload button ────────────────────────────────────
+			echo '<div class="mt-3">';
+			echo html_writer::link($lauploadurl, get_string('la_moodle_upload_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary']);
+			echo '</div>';
 		} else {
-			// Coordinator view: all uploaded documents grouped by student.
+			// Coordinator view: inline comment form per entry.
+
+			// Handle inline comment POST.
+			$inlineaction = optional_param('la_inline_action', '', PARAM_ALPHA);
+			if ($inlineaction === 'savecomment' && confirm_sesskey()) {
+				$inlinelaid    = required_param('laid', PARAM_INT);
+				$inlinestatus  = required_param('la_status', PARAM_ALPHA);
+				$inlinecomment = optional_param('la_comment', '', PARAM_TEXT);
+				$inlinerec     = $DB->get_record('dhbwio_learning_agreements', ['id' => $inlinelaid, 'dhbwio' => $dhbwio->id]);
+				if ($inlinerec && in_array($inlinestatus, ['pending', 'approved', 'rejected'])) {
+					$DB->update_record('dhbwio_learning_agreements', (object)[
+						'id'      => $inlinelaid,
+						'status'  => $inlinestatus,
+						'comment' => $inlinecomment,
+					]);
+				}
+				redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']));
+			}
+
 			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'userid ASC, timecreated DESC');
 
 			if (empty($records)) {
 				echo $OUTPUT->notification(get_string('la_no_submissions', 'mod_dhbwio'), 'info');
 			} else {
 				$fs = get_file_storage();
+				$statusbadgecolors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'];
 
-				$table = new html_table();
-				$table->head = [
-					get_string('la_col_student',  'mod_dhbwio'),
-					get_string('la_col_doctype',  'mod_dhbwio'),
-					get_string('la_col_file',     'mod_dhbwio'),
-					get_string('la_col_submitted','mod_dhbwio'),
-					get_string('la_col_status',   'mod_dhbwio'),
-					get_string('actions',         'mod_dhbwio'),
-				];
-				$table->attributes['class'] = 'table table-striped table-hover';
+				echo '<table class="table table-striped table-hover">';
+				echo '<thead><tr>';
+				echo '<th>' . get_string('la_col_student',  'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_doctype',  'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_file',     'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_submitted','mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_status',   'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_comment',  'mod_dhbwio') . '</th>';
+				echo '</tr></thead><tbody>';
 
 				foreach ($records as $rec) {
 					$student     = $DB->get_record('user', ['id' => $rec->userid]);
@@ -1070,28 +1077,42 @@ switch ($tab) {
 						$filelink = '-';
 					}
 
-					$reviewurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
-						'cmid'   => $cm->id,
-						'action' => 'review',
-						'laid'   => $rec->id,
-					]);
+					$recstatus = $rec->status ?? 'pending';
+					$statusbadge = '<span class="badge badge-' . ($statusbadgecolors[$recstatus] ?? 'secondary') . '">'
+						. ($statuslabels[$recstatus] ?? $recstatus) . '</span>';
 
-					$statusbadge = '<span class="badge badge-'
-						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
-						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+					$formid  = 'la-comment-form-' . $rec->id;
+					$formurl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']);
 
-					$table->data[] = [
-						$studentname,
-						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
-						$filelink,
-						userdate($rec->timecreated),
-						$statusbadge,
-						'<a href="' . $reviewurl . '" class="btn btn-sm btn-secondary">'
-							. get_string('la_review_btn', 'mod_dhbwio') . '</a>',
-					];
+					$statusoptions = '';
+					foreach (['pending' => $statuslabels['pending'], 'approved' => $statuslabels['approved'], 'rejected' => $statuslabels['rejected']] as $val => $label) {
+						$sel = ($recstatus === $val) ? ' selected' : '';
+						$statusoptions .= '<option value="' . $val . '"' . $sel . '>' . $label . '</option>';
+					}
+
+					$inlineform = '
+						<form id="' . $formid . '" method="post" action="' . $formurl . '">
+							<input type="hidden" name="sesskey" value="' . sesskey() . '">
+							<input type="hidden" name="la_inline_action" value="savecomment">
+							<input type="hidden" name="laid" value="' . $rec->id . '">
+							<div class="d-flex gap-2 align-items-start flex-wrap">
+								<select name="la_status" class="form-select form-select-sm" style="width:auto">' . $statusoptions . '</select>
+								<textarea name="la_comment" class="form-control form-control-sm" rows="2" style="min-width:180px" placeholder="' . get_string('la_comment_label', 'mod_dhbwio') . '">' . s($rec->comment ?? '') . '</textarea>
+								<button type="submit" class="btn btn-sm btn-primary">' . get_string('la_save_review', 'mod_dhbwio') . '</button>
+							</div>
+						</form>';
+
+					echo '<tr>';
+					echo '<td>' . s($studentname) . '</td>';
+					echo '<td>' . ($doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype) . '</td>';
+					echo '<td>' . $filelink . '</td>';
+					echo '<td>' . userdate($rec->timecreated) . '</td>';
+					echo '<td>' . $statusbadge . '</td>';
+					echo '<td>' . $inlineform . '</td>';
+					echo '</tr>';
 				}
 
-				echo html_writer::table($table);
+				echo '</tbody></table>';
 			}
 		}
 
