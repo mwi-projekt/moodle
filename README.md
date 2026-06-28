@@ -68,3 +68,10 @@ Um den Moodle Raum unter 'moodle_raum_export' in den lokalen Moodle Server zu in
 7. Deaktiviere dort Asynchrone Sicherungen (Standardmäßig aktiviert) und speichere die Einstellungen
 8. Navigiere nun zu `Website-Administration -> Kurse -> Kurs wiederherstellen`
 9. Befolge die Schritte 2-4 aus der Mac Anleitung
+
+
+### SQL-Testdatengenerierung
+1. Nach der Kurswiederherstellung unter "Bewerbung(en)"->"Bewerbung anlegen" um die Felder und das Dataform generieren.
+2. Anschließend die Kurs_ID / dhbwio_ID / Dataform_ID ermitteln (unter /moodle_raum_export/SQL_Insert_Into_Statements_zur_Testdatengenerierung.txt)
+3. Die ausgegebene _dataid_ sowie _dhbwioid_ müssen in den zugehörigen Variablen eingetragen werden.
+4. Anschließend können die Testdaten über das Skript generiert werden.

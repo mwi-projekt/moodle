@@ -522,3 +522,30 @@ $string['status_in_pruefung'] = 'Under review';
 $string['status_angenommen'] = 'Accepted';
 $string['status_abgelehnt'] = 'Rejected';
 $string['choose'] = 'Choose';
+
+
+// DHBWIO Learning Agreement Strings
+$string['la_step_create'] = 'Create the LA';
+$string['la_step_under_review'] = 'Under Review';
+$string['la_step_revision_needed'] = 'Revision Needed';
+$string['la_step_result'] = 'Result';
+$string['la_step_accepted'] = 'Accepted';
+$string['la_step_rejected'] = 'Rejected';
+$string['la_create_button'] = 'Create LA';
+$string['la_recreate_confirm'] = 'Delete current LA and create new LA?';
+$string['no_learning_agreements'] = 'No Learning Agreement available';
+$string['lashow/edit'] = 'Show/Edit';
+$string['all_la_overview_title'] = 'All Learning Agreements ';
+$string['la_overview_title'] = 'My Learning Agreement';
+$string['all_la_emptytext'] = 'No Learning Agreements available';
+$string['la_emptytext'] = 'Learning Agreement not created yet';
+$string['lachangessaved'] = 'Saved Changes';
+$string['nav_learningagreements'] = 'Learning Agreements';
+$string['la_recreate_button'] = 'Create new LA';
+$string['minimumage16'] = 'Applicant has to be at least 16 years old.';
+$string['choicetaken'] = 'This selection has already been used for another request.';
+$string['accepted_university'] = 'Assigned university';
+$string['firstchoice'] = 'First choice';
+$string['secondchoice'] = 'Second choice';
+$string['thirdchoice'] = 'Third choice';
+$string['nav_files'] = 'Files';

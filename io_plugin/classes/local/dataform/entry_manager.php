@@ -228,19 +228,13 @@ class entry_manager
 
         $DB->update_record('dhbwio_dataform_entries', $entry);
     }
-    public static function update_accepted_choice(int $entryid, ?string $acceptedchoice): void
+    public static function update_accepted_university(int $entryid, ?int $universityid): void
     {
         global $DB;
 
-        $allowed = [null, 'first', 'second', 'third'];
-
-        if (!in_array($acceptedchoice, $allowed, true)) {
-            throw new \coding_exception('Invalid accepted choice.');
-        }
-
         $record = (object) [
             'id' => $entryid,
-            'acceptedchoice' => $acceptedchoice,
+            'acceptedchoice' => $universityid,
             'timemodified' => time(),
         ];
 
@@ -259,16 +253,82 @@ class entry_manager
             default => '-',
         };
     }
-    public static function get_status_by_shortname(string $shortname): ?\stdClass
+    public static function get_university_label(int $universityid): string
     {
         global $DB;
 
-        return $DB->get_record(
-            'dhbwio_application_status',
-            ['shortname' => $shortname, 'active' => 1],
+        $university = $DB->get_record(
+            'dhbwio_universities',
+            ['id' => $universityid],
             '*',
             IGNORE_MISSING
-        ) ?: null;
+        );
+
+        if (!$university) {
+            return '-';
+        }
+
+        return trim($university->country . ' - ' . $university->name);
+    }
+
+    public static function format_university_choice($value): string
+    {
+        if ($value === '' || $value === null || (string)$value === '0') {
+            return 'Keine';
+        }
+
+        if (!is_numeric($value)) {
+            return (string)$value;
+        }
+
+        return self::get_university_label((int)$value);
+    }
+
+    public static function get_accepted_university_label(\stdClass $entry, callable $getvalue): string
+    {
+        if (empty($entry->acceptedchoice)) {
+            return '-';
+        }
+
+        $acceptedid = (int)$entry->acceptedchoice;
+        $universitylabel = self::get_university_label($acceptedid);
+
+        $firstchoice = (int)$getvalue('ERSTWUNSCH');
+        $secondchoice = (int)$getvalue('ZWEITWUNSCH');
+        $thirdchoice = (int)$getvalue('DRITTWUNSCH');
+
+        if ($acceptedid === $firstchoice) {
+            return 'Erstwunsch – ' . $universitylabel;
+        }
+
+        if ($acceptedid === $secondchoice) {
+            return 'Zweitwunsch – ' . $universitylabel;
+        }
+
+        if ($acceptedid === $thirdchoice) {
+            return 'Drittwunsch – ' . $universitylabel;
+        }
+
+        return $universitylabel;
+    }
+    public static function get_studyprogram_label(int $studyprogramid): string
+    {
+        global $DB;
+
+        $record = $DB->get_record(
+            'dhbwio_studyprograms',
+            ['id' => $studyprogramid, 'active' => 1],
+            '*',
+            IGNORE_MISSING
+        );
+
+        if (!$record) {
+            return '-';
+        }
+
+        return current_language() === 'en'
+            ? $record->en_name
+            : $record->de_name;
     }
     public static function update_status(int $entryid, int $statusid): void
     {

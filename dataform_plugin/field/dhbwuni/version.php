@@ -31,5 +31,4 @@ $plugin->maturity = MATURITY_ALPHA;
 $plugin->release = 'v1.0.0';
 $plugin->dependencies = array(
     'mod_dataform' => 2017051501,
-    'mod_dhbwio' => 2025052601
 );

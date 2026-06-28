@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(gh run *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(gh run *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 150)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25670893345 --repo mwi-projekt/moodle --log-failed 2>&1 | Select-Object -First 300)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" log --all --oneline --grep=\"nationalit\\\\|muttersprache\\\\|herkunft\\\\|sprache\\\\|#15\" -i)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" show 2c8bd2d --stat)",
+      "Bash(git -C \"C:/Users/Admin/Repos/moodle\" show e053515 --stat)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\\\\io_plugin\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\\\\io_plugin\\\\tests\" -File)",
+      "Bash(Find \"C:\\\\Users\\\\Admin\\\\Repos\\\\moodle\\\\io_plugin\" -name \"*.feature\")",
+      "Skill(code-review)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run list --repo mwi-projekt/moodle --branch teamTestautomation --limit 5)",
+      "Bash(xargs wc -l)",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && head -30 \"{}\"')",
+      "Bash(xargs grep -l \"extends.*TestCase\")"
+    ]
+  }
+}

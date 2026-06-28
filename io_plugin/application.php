@@ -184,6 +184,19 @@ if ($ispost) {
 
 $fieldcontext = [];
 
+$studyprogramfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
+$selectedstudyprogramid = null;
+
+if ($studyprogramfield) {
+    $studyprogramformfield = 'field_' . $studyprogramfield->id;
+
+    if (isset($formvalues[$studyprogramformfield]) && is_numeric($formvalues[$studyprogramformfield])) {
+        $selectedstudyprogramid = (int)$formvalues[$studyprogramformfield];
+    } else if (!empty($contents[$studyprogramfield->id]->content) && is_numeric($contents[$studyprogramfield->id]->content)) {
+        $selectedstudyprogramid = (int)$contents[$studyprogramfield->id]->content;
+    }
+}
+
 foreach ($fields as $field) {
 
     if (!field_manager::is_student_field($field)) {
@@ -198,7 +211,6 @@ foreach ($fields as $field) {
     if (isset($formvalues[$formfieldname])) {
 
         $value = $formvalues[$formfieldname];
-
     } else if (!empty($contents[$field->id])) {
 
         $value = $contents[$field->id]->content;
@@ -212,9 +224,64 @@ foreach ($fields as $field) {
             $field,
             (string)$value,
             (string)$error,
-            $applicationaccepted
+            $applicationaccepted,
+            (int)$dhbwio->id,
+            $selectedstudyprogramid
         )
     ];
+}
+
+$studyprogramfield = field_manager::get_field_by_name($dataid, 'STUDIENGANG');
+$studytrackfield = field_manager::get_field_by_name($dataid, 'STUDIENRICHTUNG');
+
+if ($studyprogramfield && $studytrackfield) {
+    $tracksbyprogram = [];
+
+    $tracks = $DB->get_records(
+        'dhbwio_studytracks',
+        ['active' => 1],
+        'sortorder ASC, de_name ASC'
+    );
+
+    foreach ($tracks as $track) {
+        $label = current_language() === 'en'
+            ? $track->en_name
+            : $track->de_name;
+
+        $tracksbyprogram[(int)$track->studyprogramid][] = [
+            'id' => (string)$track->id,
+            'label' => $label,
+        ];
+    }
+
+    $js = '
+        const tracksByProgram = ' . json_encode($tracksbyprogram) . ';
+        const programSelect = document.getElementById("field_' . (int)$studyprogramfield->id . '");
+        const trackSelect = document.getElementById("field_' . (int)$studytrackfield->id . '");
+
+        if (programSelect && trackSelect) {
+            programSelect.addEventListener("change", function () {
+                const selectedProgram = programSelect.value;
+                const selectedTracks = tracksByProgram[selectedProgram] || [];
+
+                trackSelect.innerHTML = "";
+
+                const emptyOption = document.createElement("option");
+                emptyOption.value = "";
+                emptyOption.textContent = "' . get_string('choose') . '";
+                trackSelect.appendChild(emptyOption);
+
+                selectedTracks.forEach(function (track) {
+                    const option = document.createElement("option");
+                    option.value = track.id;
+                    option.textContent = track.label;
+                    trackSelect.appendChild(option);
+                });
+            });
+        }
+    ';
+
+    $PAGE->requires->js_init_code($js);
 }
 
 echo $OUTPUT->header();
@@ -222,7 +289,7 @@ echo $OUTPUT->header();
 $acceptedchoicelabel = '';
 
 if ($entryid > 0 && $entry) {
-    $getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
+    $getvalue = static function (string $fieldname) use ($dataid, $entryid): string {
         $field = field_manager::get_field_by_name($dataid, $fieldname);
 
         if (!$field) {
@@ -232,7 +299,7 @@ if ($entryid > 0 && $entry) {
         return entry_manager::get_content_value($entryid, (int)$field->id) ?? '';
     };
 
-    $acceptedchoicelabel = entry_manager::get_accepted_choice_label($entry, $getvalue);
+    $acceptedchoicelabel = entry_manager::get_accepted_university_label($entry, $getvalue);
 }
 
 $templatecontext = [

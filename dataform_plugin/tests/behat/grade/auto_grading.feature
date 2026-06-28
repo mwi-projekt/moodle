@@ -38,7 +38,7 @@ Feature: Auto grading
         And I am on "Course 1" course homepage
 
         And I follow "Auto grade by number of entries"
-        And I navigate to "Edit settings" in current page administration
+        And I navigate to "Settings" in current page administration
         And I press "Save and display"
 
         And I am on "Course 1" course gradebook

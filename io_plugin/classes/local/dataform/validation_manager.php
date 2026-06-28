@@ -155,7 +155,7 @@ class validation_manager
     /**
      * Validiert ein mehrzeiliges Textfeld.
      *
-     * Die maximale Länge eines Textbereichs beträgt 5000 Zeichen.
+     * Die maximale Länge eines Textbereichs beträgt 999 Zeichen.
      *
      * @param \stdClass $field Felddefinition.
      * @param string $fieldname Formularfeldname.
@@ -165,8 +165,8 @@ class validation_manager
      */
     private static function validate_textarea(\stdClass $field, string $fieldname, $value, array &$errors): void
     {
-        if (\core_text::strlen((string) $value) > 5000) {
-            $errors[$fieldname] = get_string('maximumchars', '', 5000);
+        if (\core_text::strlen((string) $value) > 999) {
+            $errors[$fieldname] = get_string('maximumchars', '', 999);
         }
     }
     /**
@@ -190,6 +190,11 @@ class validation_manager
 
         if (self::is_university_choice_field($field)) {
             self::validate_university_option($field, $fieldname, $value, $errors);
+            return;
+        }
+
+        if ($field->name === 'STUDIENRICHTUNG') {
+            self::validate_studytrack_option($fieldname, $value, $errors);
             return;
         }
 
@@ -227,18 +232,31 @@ class validation_manager
      * @param array $errors Fehlerliste.
      * @return void
      */
-    private static function validate_university_option(\stdClass $field, string $fieldname, $value, array &$errors): void
-    {
+    private static function validate_university_option(
+        \stdClass $field,
+        string $fieldname,
+        $value,
+        array &$errors
+    ): void {
         global $DB;
 
-        if (($field->name === 'ZWEITWUNSCH' || $field->name === 'DRITTWUNSCH') && $value === 'Keine') {
+        if (($field->name === 'ZWEITWUNSCH' || $field->name === 'DRITTWUNSCH')
+            && (string)$value === '0'
+        ) {
             return;
         }
 
-        $exists = $DB->record_exists_select(
+        if (!is_numeric($value)) {
+            $errors[$fieldname] = get_string('invaliddata', 'error');
+            return;
+        }
+
+        $exists = $DB->record_exists(
             'dhbwio_universities',
-            "active = 1 AND " . $DB->sql_concat('country', "' - '", 'name') . " = :label",
-            ['label' => (string) $value]
+            [
+                'id' => (int)$value,
+                'active' => 1,
+            ]
         );
 
         if (!$exists) {
@@ -257,10 +275,30 @@ class validation_manager
      * @param array $errors Fehlerliste.
      * @return void
      */
-    private static function validate_time(\stdClass $field, string $fieldname, $value, array &$errors): void
-    {
-        if (!is_numeric($value) || (int) $value <= 0) {
+    private static function validate_time(
+        \stdClass $field,
+        string $fieldname,
+        $value,
+        array &$errors
+    ): void {
+
+        if (!is_numeric($value) || (int)$value <= 0) {
             $errors[$fieldname] = get_string('invaliddate');
+            return;
+        }
+
+        // Sonderregel für Geburtsdatum.
+        if ($field->name === 'GEBURTSDATUM') {
+
+            $birthdate = new \DateTime();
+            $birthdate->setTimestamp((int)$value);
+
+            $today = new \DateTime();
+            $age = $today->diff($birthdate)->y;
+
+            if ($age < 16) {
+                $errors[$fieldname] = get_string('minimumage16', 'dhbwio');
+            }
         }
     }
     /**
@@ -354,7 +392,7 @@ class validation_manager
             $fieldname = self::get_form_field_name($field);
             $value = $data->{$fieldname} ?? '';
 
-            if (self::is_empty($value)) {
+            if ($value === '' || (string)$value === '0') {
                 continue;
             }
 
@@ -365,7 +403,7 @@ class validation_manager
             $normalized = \core_text::strtolower(trim((string) $value));
 
             if (isset($values[$normalized])) {
-                $errors[$fieldname] = 'Diese Auswahl wurde bereits bei einem anderen Wunsch verwendet.';
+                $errors[$fieldname] = get_string('choicetaken', 'dhbwio');
             }
 
             $values[$normalized] = true;
@@ -441,6 +479,30 @@ class validation_manager
                     $errors[$fieldname] = 'Bitte nur Buchstaben und Zahlen eingeben.';
                 }
                 break;
+        }
+    }
+    private static function validate_studytrack_option(
+        string $fieldname,
+        $value,
+        array &$errors
+    ): void {
+        global $DB;
+
+        if (!is_numeric($value)) {
+            $errors[$fieldname] = get_string('invaliddata', 'error');
+            return;
+        }
+
+        $exists = $DB->record_exists(
+            'dhbwio_studytracks',
+            [
+                'id' => (int)$value,
+                'active' => 1,
+            ]
+        );
+
+        if (!$exists) {
+            $errors[$fieldname] = get_string('invaliddata', 'error');
         }
     }
 }

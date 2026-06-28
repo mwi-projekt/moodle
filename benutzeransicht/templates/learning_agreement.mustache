@@ -1,0 +1,159 @@
+<form id="learning-agreement-form" method="POST" action="{{actionurl}}">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="dataid" value="{{dataid}}">
+    <input type="hidden" name="entryid" value="{{entryid}}">
+
+    <!-- BLOCK 1: Learning Agreement - Allgemeine Angaben -->
+    <div class="form benutzeransicht-form">
+        <div class="input" style="margin-top:1em; margin-bottom:1.5em;">
+            <strong style="color:rgb(140,0,17); font-size:large;">Learning Agreement - Allgemeine Angaben</strong>
+        </div>
+
+        <div class="input" style="margin-right:2em; margin-bottom:1em;">
+            <table style="width:100%; border-collapse:separate; border-spacing:0 0.75rem; table-layout:fixed;">
+                <tbody>
+                <tr>
+                    <td style="width:33.333%; padding-right:0.75rem; vertical-align:top;">
+                        <div class="col-md-3"><strong>Nachname:</strong></div>
+                        <div class="col-md-8">{{{fields.NACHNAME.html}}}</div>
+                    </td>
+                    <td style="width:33.333%; padding-right:0.75rem; vertical-align:top;">
+                        <div class="col-md-3"><strong>Vorname:</strong></div>
+                        <div class="col-md-8">{{{fields.VORNAME.html}}}</div>
+                    </td>
+                    <td style="width:33.333%; vertical-align:top;">
+                        <div class="col-md-3"><strong>Zeitraum Auslandssemester:</strong></div>
+                        <div class="col-md-8">{{{fields.Zeitraum.html}}}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:33.333%; padding-right:0.75rem; vertical-align:top;">
+                        <div class="col-md-3"><strong>Studienrichtung:</strong></div>
+                        <div class="col-md-8">{{{fields.Studienrichtung.html}}}</div>
+                    </td>
+                    <td style="width:33.333%; padding-right:0.75rem; vertical-align:top;">
+                        <div class="col-md-3"><strong>Wahlmodul:</strong></div>
+                        <div class="col-md-8">{{{fields.wahlmodul.html}}}</div>
+                    </td>
+                    <td style="width:33.333%; vertical-align:top;">
+                        <div class="col-md-3"><strong>Gasthochschule:</strong></div>
+                        <div class="col-md-8">{{{fields.Gasthochschule.html}}}</div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BLOCK 2: Learning Agreement - Kurszuordnung -->
+    <div class="form benutzeransicht-form" style="margin-top:2em;">
+        <div class="input" style="margin-top:1em; margin-bottom:1.5em;">
+            <strong style="color:rgb(140,0,17); font-size:large;">Learning Agreement - Kurszuordnung</strong>
+        </div>
+
+        <div class="input" style="margin-right:2em;">
+            <div class="la-table-toolbar">
+                <button type="button" id="la-add-row" class="btn btn-primary">+ Zeile hinzufügen</button>
+            </div>
+
+            <table id="learning-agreement-course-table" class="la-course-table">
+                <thead>
+                <tr style="background:#e7e7e7;">
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">Nr.</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">Modul (Prüfungsart)</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">ECTS</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">Anteil der Teilprüfung</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">LV an der Partnerhochschule bzw. anderweitig anerkannte Prüfungsleistung</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">Credits</th>
+                    <th style="padding:10px; border:1px solid #d0d0d0; text-align:left;">Aktion</th>
+                </tr>
+                </thead>
+                <tbody id="learning-agreement-course-table-body">
+                {{#courserows}}
+                    <tr class="la-course-row">
+                        <td class="la-row-number" style="padding:10px; border:1px solid #d0d0d0;">{{row_number}}</td>
+                        <td style="padding:10px; border:1px solid #d0d0d0;">
+                            <input type="text"
+                                   name="course[{{row_number}}][modul_name]"
+                                   class="form-control la-course-input"
+                                   value="{{modul_name}}"
+                                   placeholder="Modul eingeben">
+                        </td>
+                        <td style="padding:10px; border:1px solid #d0d0d0;">
+                            <input type="text"
+                                   name="course[{{row_number}}][ects]"
+                                   class="form-control la-course-input"
+                                   value="{{ects}}"
+                                   placeholder="ECTS">
+                        </td>
+                        <td style="padding:10px; border:1px solid #d0d0d0;">
+                            <input type="text"
+                                   name="course[{{row_number}}][anteil]"
+                                   class="form-control la-course-input"
+                                   value="{{anteil}}"
+                                   placeholder="Anteil">
+                        </td>
+                        <td style="padding:10px; border:1px solid #d0d0d0;">
+                            <input type="text"
+                                   name="course[{{row_number}}][partnerhochschule_value]"
+                                   class="form-control la-course-input"
+                                   value="{{partnerhochschule_value}}"
+                                   placeholder="LV an der Partnerhochschule">
+                        </td>
+                        <td style="padding:10px; border:1px solid #d0d0d0;">
+                            <input type="text"
+                                   name="course[{{row_number}}][credits]"
+                                   class="form-control la-course-input"
+                                   value="{{credits}}"
+                                   placeholder="Credits">
+                        </td>
+                        <td style="padding:10px; border:1px solid #d0d0d0; white-space:nowrap;">
+                            <button type="button" class="btn btn-secondary la-delete-row">Löschen</button>
+                        </td>
+                    </tr>
+                {{/courserows}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="button-group" style="margin-top:1.5em; margin-bottom:1em;">
+            <button type="submit" name="submitbutton" value="save" class="btn btn-primary">
+                Speichern und fortfahren
+            </button>
+            <button type="submit" name="submitbutton" value="submit" class="btn btn-secondary">
+                Zur Überprüfung einreichen
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden template row -->
+    <template id="learning-agreement-course-row-template">
+        <tr class="la-course-row">
+            <td class="la-row-number" style="padding:10px; border:1px solid #d0d0d0;"></td>
+            <td style="padding:10px; border:1px solid #d0d0d0;">
+                <input type="text" name="course[__INDEX__][modul_name]" class="form-control la-course-input" value="" placeholder="Modul eingeben">
+            </td>
+            <td style="padding:10px; border:1px solid #d0d0d0;">
+                <input type="text" name="course[__INDEX__][ects]" class="form-control la-course-input" value="" placeholder="ECTS">
+            </td>
+            <td style="padding:10px; border:1px solid #d0d0d0;">
+                <input type="text" name="course[__INDEX__][anteil]" class="form-control la-course-input" value="" placeholder="Anteil">
+            </td>
+            <td style="padding:10px; border:1px solid #d0d0d0;">
+                <input type="text" name="course[__INDEX__][partnerhochschule_value]" class="form-control la-course-input" value="" placeholder="LV an der Partnerhochschule">
+            </td>
+            <td style="padding:10px; border:1px solid #d0d0d0;">
+                <input type="text" name="course[__INDEX__][credits]" class="form-control la-course-input" value="" placeholder="Credits">
+            </td>
+            <td style="padding:10px; border:1px solid #d0d0d0; white-space:nowrap;">
+                <button type="button" class="btn btn-secondary la-delete-row">Löschen</button>
+            </td>
+        </tr>
+    </template>
+
+    <!-- Back link -->
+    <div style="margin-top:2em; margin-bottom:2em;">
+        <a href="{{backurl}}" class="btn btn-secondary">Zurück</a>
+    </div>
+</form>

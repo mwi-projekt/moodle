@@ -101,13 +101,12 @@ if ($formdata = $mform->get_data()) {
 
         entry_manager::save_content($entryid, (int) $field->id, (string) $value);
 
-        $acceptedchoice = $formdata->acceptedchoice ?? null;
+        $accepteduniversityid = !empty($formdata->acceptedchoice)
+            ? (int)$formdata->acceptedchoice
+            : null;
 
-        if ($acceptedchoice === '') {
-            $acceptedchoice = null;
-        }
-
-        entry_manager::update_accepted_choice($entryid, $acceptedchoice);
+        // entry_manager::update_accepted_university($entryid, $accepteduniversityid);
+        $entry->acceptedchoice = $accepteduniversityid;
     }
 
     $entry->timemodified = time();
@@ -144,9 +143,9 @@ $summarycontext = [
     'course' => s($getvalue('KURSNAME')),
     'director' => s($getvalue('STUDIENGANGSLEITUNG')),
     'studyprogram' => s($getvalue('STUDIENGANG')),
-    'firstchoice' => s($getvalue('ERSTWUNSCH')),
-    'secondchoice' => s($getvalue('ZWEITWUNSCH')),
-    'thirdchoice' => s($getvalue('DRITTWUNSCH')),
+    'firstchoice' => s(entry_manager::format_university_choice($getvalue('ERSTWUNSCH'))),
+    'secondchoice' => s(entry_manager::format_university_choice($getvalue('ZWEITWUNSCH'))),
+    'thirdchoice' => s(entry_manager::format_university_choice($getvalue('DRITTWUNSCH'))),
 ];
 
 echo $OUTPUT->render_from_template(

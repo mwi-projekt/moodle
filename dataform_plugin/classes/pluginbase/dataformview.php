@@ -1082,7 +1082,7 @@ class dataformview {
         // Escape [ and ] and the pattern rule character *.
         $delims = quotemeta($delims);
 
-        $elements = preg_split("/($delims)/", $subject, null, PREG_SPLIT_DELIM_CAPTURE);
+        $elements = preg_split("/($delims)/", $subject, -1, PREG_SPLIT_DELIM_CAPTURE);
 
         return $elements;
     }
@@ -1421,7 +1421,7 @@ class dataformview {
                     // Number of decimals can be set as ;n at the end of the pattern.
                     list(, $decimals) = array_pad(explode(';', trim($pattern, '%')), 2, 0);
                     if (is_numeric($decimals)) {
-                        $result = sprintf("%4.{$decimals}f", $result);
+                        $result = sprintf("%.{$decimals}f", $result);
                     }
                     $replacement = $result;
                 }

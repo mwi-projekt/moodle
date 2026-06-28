@@ -22,7 +22,7 @@ Feature: Multiple grade items
         #Then "Grade items" "link" should not exist in the "Administration" "block"
 
         # I cannot access it via direct url.
-        When I go to dataform page "grade/items.php?d=1"
+        When I go to dataform "dataform1" page "grade/items.php"
         Then I do not see "Grade items in Dataform enable site config"
 
         And I log out
@@ -147,7 +147,7 @@ Feature: Multiple grade items
         And I follow "Test multiple grade items"
 
         #Section: Add default grade item
-        And I navigate to "Edit settings" in current page administration
+        And I navigate to "Settings" in current page administration
         And I set the following fields to these values:
         | Type              | Point     |
         | Maximum grade    | 4        |

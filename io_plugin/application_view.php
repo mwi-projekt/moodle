@@ -118,10 +118,10 @@ $getvalue = static function(string $fieldname) use ($dataid, $entryid): string {
         return '';
     }
 
-    return entry_manager::get_content_value($entryid, (int) $field->id) ?? '';
+    return entry_manager::get_content_value($entryid, (int)$field->id) ?? '';
 };
 
-$acceptedchoicelabel = entry_manager::get_accepted_choice_label($entry, $getvalue);
+$acceptedchoicelabel = entry_manager::get_accepted_university_label($entry, $getvalue);
 
 $templatecontext = [
     'fields' => $fieldcontext,
