@@ -35,8 +35,12 @@ class view_renderer
             $value = self::get_university_label((int) $value);
         }
 
+        if ($field->name === 'STUDIENGANG' && $value !== '-' && is_numeric($value)) {
+            $value = entry_manager::get_studyprogram_label((int)$value);
+        }
+
         if ($field->name === 'STUDIENRICHTUNG' && $value !== '-' && is_numeric($value)) {
-            $value = self::get_studytrack_label((int) $value);
+            $value = self::get_studytrack_label((int)$value);
         }
 
         $rowclass = $alternate
