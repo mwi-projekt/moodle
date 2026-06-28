@@ -137,12 +137,22 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading('Bewerbung prüfen', 3);
 
+
+$studyprogramvalue = $getvalue('STUDIENGANG');
+
+$studyprogram = '-';
+if (is_numeric($studyprogramvalue) && (int)$studyprogramvalue > 0) {
+    $studyprogram = entry_manager::get_studyprogram_label((int)$studyprogramvalue);
+} else if ($studyprogramvalue !== '') {
+    $studyprogram = $studyprogramvalue;
+}
+
 $summarycontext = [
     'name' => s(trim($getvalue('VORNAME') . ' ' . $getvalue('NACHNAME'))),
     'email' => s($getvalue('EMAIL')),
     'course' => s($getvalue('KURSNAME')),
     'director' => s($getvalue('STUDIENGANGSLEITUNG')),
-    'studyprogram' => s($getvalue('STUDIENGANG')),
+    'studyprogram' => s($studyprogram),
     'firstchoice' => s(entry_manager::format_university_choice($getvalue('ERSTWUNSCH'))),
     'secondchoice' => s(entry_manager::format_university_choice($getvalue('ZWEITWUNSCH'))),
     'thirdchoice' => s(entry_manager::format_university_choice($getvalue('DRITTWUNSCH'))),
