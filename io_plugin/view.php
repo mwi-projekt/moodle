@@ -1313,6 +1313,190 @@ switch ($tab) {
 		break;
 
 
+			$lauploadurl = new moodle_url('/mod/dhbwio/learning_agreement.php', [
+				'cmid'    => $cm->id,
+				'doctype' => 'other_document',
+			]);
+
+			// ── DELETE action ──────────────────────────────────────────────
+			$deletelaid = optional_param('deletelaid', 0, PARAM_INT);
+			if ($deletelaid > 0 && confirm_sesskey()) {
+				$delrec = $DB->get_record('dhbwio_learning_agreements', ['id' => $deletelaid, 'dhbwio' => $dhbwio->id, 'userid' => $USER->id]);
+				if ($delrec) {
+					$fs = get_file_storage();
+					$fs->delete_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $delrec->id);
+					$DB->delete_records('dhbwio_learning_agreements', ['id' => $delrec->id]);
+				}
+				redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']));
+			}
+
+			// ── Document history ────────────────────────────────────────────
+			$allrecords = $DB->get_records('dhbwio_learning_agreements', [
+				'dhbwio' => $dhbwio->id,
+				'userid' => $USER->id,
+			], 'timecreated DESC');
+
+			echo '<h5 class="mt-2">' . get_string('la_doc_history', 'mod_dhbwio') . '</h5>';
+
+			if (empty($allrecords)) {
+				echo '<p class="text-muted">' . get_string('la_no_upload_yet', 'mod_dhbwio') . '</p>';
+			} else {
+				$fs = get_file_storage();
+				$histable = new html_table();
+				$histable->head = [
+					get_string('la_col_doctype',  'mod_dhbwio'),
+					get_string('la_col_file',     'mod_dhbwio'),
+					get_string('la_col_status',   'mod_dhbwio'),
+					get_string('la_col_uploaded', 'mod_dhbwio'),
+					get_string('actions',         'mod_dhbwio'),
+				];
+				$histable->attributes['class'] = 'table table-striped table-hover';
+
+				foreach ($allrecords as $rec) {
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file    = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$statusbadge = '<span class="badge badge-'
+						. (['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$rec->status ?? 'pending'] ?? 'secondary')
+						. '">' . ($statuslabels[$rec->status ?? 'pending'] ?? $rec->status) . '</span>';
+
+					if (!empty($rec->comment)) {
+						$statusbadge .= '<br><small class="text-muted">' . s($rec->comment) . '</small>';
+					}
+
+					$deleteurl = new moodle_url('/mod/dhbwio/view.php', [
+						'id'         => $cm->id,
+						'tab'        => 'learningagreement',
+						'deletelaid' => $rec->id,
+						'sesskey'    => sesskey(),
+					]);
+
+					$histable->data[] = [
+						$doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype,
+						$filelink,
+						$statusbadge,
+						userdate($rec->timecreated),
+						html_writer::link(
+							$deleteurl,
+							get_string('delete'),
+							[
+								'class'   => 'btn btn-sm btn-outline-danger',
+								'onclick' => 'return confirm("' . get_string('la_delete_confirm', 'mod_dhbwio') . '")',
+							]
+						),
+					];
+				}
+				echo html_writer::table($histable);
+			}
+
+			// ── Moodle File Upload button ────────────────────────────────────
+			echo '<div class="mt-3">';
+			echo html_writer::link($lauploadurl, get_string('la_moodle_upload_btn', 'mod_dhbwio'), ['class' => 'btn btn-primary']);
+			echo '</div>';
+		} else {
+			// Coordinator view: inline comment form per entry.
+
+			// Handle inline comment POST.
+			$inlineaction = optional_param('la_inline_action', '', PARAM_ALPHA);
+			if ($inlineaction === 'savecomment' && confirm_sesskey()) {
+				$inlinelaid    = required_param('laid', PARAM_INT);
+				$inlinestatus  = required_param('la_status', PARAM_ALPHA);
+				$inlinecomment = optional_param('la_comment', '', PARAM_TEXT);
+				$inlinerec     = $DB->get_record('dhbwio_learning_agreements', ['id' => $inlinelaid, 'dhbwio' => $dhbwio->id]);
+				if ($inlinerec && in_array($inlinestatus, ['pending', 'approved', 'rejected'])) {
+					$DB->update_record('dhbwio_learning_agreements', (object)[
+						'id'      => $inlinelaid,
+						'status'  => $inlinestatus,
+						'comment' => $inlinecomment,
+					]);
+				}
+				redirect(new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']));
+			}
+
+			$records = $DB->get_records('dhbwio_learning_agreements', ['dhbwio' => $dhbwio->id], 'userid ASC, timecreated DESC');
+
+			if (empty($records)) {
+				echo $OUTPUT->notification(get_string('la_no_submissions', 'mod_dhbwio'), 'info');
+			} else {
+				$fs = get_file_storage();
+				$statusbadgecolors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'];
+
+				echo '<table class="table table-striped table-hover">';
+				echo '<thead><tr>';
+				echo '<th>' . get_string('la_col_student',  'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_doctype',  'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_file',     'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_submitted','mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_status',   'mod_dhbwio') . '</th>';
+				echo '<th>' . get_string('la_col_comment',  'mod_dhbwio') . '</th>';
+				echo '</tr></thead><tbody>';
+
+				foreach ($records as $rec) {
+					$student     = $DB->get_record('user', ['id' => $rec->userid]);
+					$studentname = $student ? fullname($student) : '(unbekannt)';
+
+					$files = $fs->get_area_files($context->id, 'mod_dhbwio', 'learning_agreements', $rec->id, '', false);
+					if (!empty($files)) {
+						$file    = reset($files);
+						$fileurl = moodle_url::make_pluginfile_url(
+							$context->id, 'mod_dhbwio', 'learning_agreements', $rec->id,
+							$file->get_filepath(), $file->get_filename()
+						);
+						$filelink = '<a href="' . $fileurl . '" target="_blank">' . s($file->get_filename()) . '</a>';
+					} else {
+						$filelink = '-';
+					}
+
+					$recstatus = $rec->status ?? 'pending';
+					$statusbadge = '<span class="badge badge-' . ($statusbadgecolors[$recstatus] ?? 'secondary') . '">'
+						. ($statuslabels[$recstatus] ?? $recstatus) . '</span>';
+
+					$formid  = 'la-comment-form-' . $rec->id;
+					$formurl = new moodle_url('/mod/dhbwio/view.php', ['id' => $cm->id, 'tab' => 'learningagreement']);
+
+					$statusoptions = '';
+					foreach (['pending' => $statuslabels['pending'], 'approved' => $statuslabels['approved'], 'rejected' => $statuslabels['rejected']] as $val => $label) {
+						$sel = ($recstatus === $val) ? ' selected' : '';
+						$statusoptions .= '<option value="' . $val . '"' . $sel . '>' . $label . '</option>';
+					}
+
+					$inlineform = '
+						<form id="' . $formid . '" method="post" action="' . $formurl . '">
+							<input type="hidden" name="sesskey" value="' . sesskey() . '">
+							<input type="hidden" name="la_inline_action" value="savecomment">
+							<input type="hidden" name="laid" value="' . $rec->id . '">
+							<div class="d-flex gap-2 align-items-start flex-wrap">
+								<select name="la_status" class="form-select form-select-sm" style="width:auto">' . $statusoptions . '</select>
+								<textarea name="la_comment" class="form-control form-control-sm" rows="2" style="min-width:180px" placeholder="' . get_string('la_comment_label', 'mod_dhbwio') . '">' . s($rec->comment ?? '') . '</textarea>
+								<button type="submit" class="btn btn-sm btn-primary">' . get_string('la_save_review', 'mod_dhbwio') . '</button>
+							</div>
+						</form>';
+
+					echo '<tr>';
+					echo '<td>' . s($studentname) . '</td>';
+					echo '<td>' . ($doctypelabels[$rec->doctype ?? 'learning_agreement'] ?? $rec->doctype) . '</td>';
+					echo '<td>' . $filelink . '</td>';
+					echo '<td>' . userdate($rec->timecreated) . '</td>';
+					echo '<td>' . $statusbadge . '</td>';
+					echo '<td>' . $inlineform . '</td>';
+					echo '</tr>';
+				}
+
+				echo '</tbody></table>';
+			}
+		}
+
+		echo '</div>';
+		break;
 }
 
 echo $OUTPUT->footer();
