@@ -364,12 +364,15 @@ class entry_manager
         }
 
         // 1. Studiengang aus dem Eintrag lesen.
+        // STUDIENGANG speichert die ID aus dhbwio_studyprograms (siehe form_renderer.php),
+        // dieselbe ID wird auch in dhbwio_fristen.studiengang gespeichert – so bleiben
+        // beide Tabellen konsistent, auch wenn sich Studiengangsnamen ändern.
         $studiengang_field = $DB->get_record('dhbwio_dataform_fields', ['dataid' => $entry->dataid, 'name' => 'STUDIENGANG'], 'id');
         if (!$studiengang_field) {
             return 1;
         }
         $sg_content = $DB->get_record('dhbwio_dataform_contents', ['entryid' => $entryid, 'fieldid' => $studiengang_field->id], 'content');
-        if (!$sg_content || empty($sg_content->content)) {
+        if (!$sg_content || empty($sg_content->content) || !is_numeric($sg_content->content)) {
             return 1;
         }
         $studiengang = trim($sg_content->content);

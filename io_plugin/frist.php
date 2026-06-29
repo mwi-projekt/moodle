@@ -54,6 +54,18 @@ if ($action === 'delete') {
     require_sesskey();
     if ($fristid) {
         $DB->delete_records('dhbwio_fristen', ['id' => $fristid, 'dhbwio' => $dhbwio->id]);
+
+        // Alle bestehenden Bewerbungen neu prüfen, damit das within_deadline-Flag
+        // korrekt zurückgesetzt wird, falls keine andere passende Frist mehr existiert.
+        try {
+            $dataform = dataform_manager::get_course_dataform((int) $course->id);
+            $entries  = entry_manager::get_entries((int) $dataform->id);
+            foreach ($entries as $entry) {
+                entry_manager::update_within_deadline((int) $entry->id, (int) $dhbwio->id);
+            }
+        } catch (Exception $e) {
+            // Kein Dataform vorhanden – kein Problem, einfach überspringen.
+        }
     }
     redirect($returnurl, get_string('frist_deleted', 'mod_dhbwio'));
 }

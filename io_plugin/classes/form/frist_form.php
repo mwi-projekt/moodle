@@ -44,32 +44,10 @@ class frist_form extends \moodleform {
         $mform->addRule('art', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
         $mform->setType('art', PARAM_ALPHA);
 
-        // Studiengang
-        $studiengaenge = [
-            'alle'                                                  => get_string('frist_alle_studiengaenge', 'mod_dhbwio'),
-            'Angewandte Gesundheits- und Pflegewissenschaften'      => 'Angewandte Gesundheits- und Pflegewissenschaften',
-            'Angewandte Hebammenwissenschaft'                       => 'Angewandte Hebammenwissenschaft',
-            'Physician Assistant / Arztassistent'                   => 'Physician Assistant / Arztassistent',
-            'Elektro- und Informationstechnik'                      => 'Elektro- und Informationstechnik',
-            'Informatik'                                            => 'Informatik',
-            'Maschinenbau'                                          => 'Maschinenbau',
-            'Mechatronik'                                           => 'Mechatronik',
-            'Papiertechnik'                                         => 'Papiertechnik',
-            'Sicherheitswesen'                                      => 'Sicherheitswesen',
-            'Sustainable Science and Technology'                    => 'Sustainable Science and Technology',
-            'Wirtschaftsingenieurwesen'                             => 'Wirtschaftsingenieurwesen',
-            'BWL - Bank'                                            => 'BWL - Bank',
-            'BWL - Deutsch-Franz. Management'                       => 'BWL - Deutsch-Franz. Management',
-            'BWL - Digital Business Management'                     => 'BWL - Digital Business Management',
-            'BWL - Digital Commerce Management'                     => 'BWL - Digital Commerce Management',
-            'BWL - Handel'                                          => 'BWL - Handel',
-            'BWL - Industrie'                                       => 'BWL - Industrie',
-            'BWL - Versicherung'                                    => 'BWL - Versicherung',
-            'Data Science und Künstliche Intelligenz'               => 'Data Science und Künstliche Intelligenz',
-            'RSW - Steuern und Prüfungswesen'                       => 'RSW - Steuern und Prüfungswesen',
-            'Unternehmertum'                                        => 'Unternehmertum',
-            'Wirtschaftsinformatik'                                 => 'Wirtschaftsinformatik',
-        ];
+        // Studiengang – dynamisch aus dhbwio_studyprograms, damit Fristen und
+        // Bewerbungen immer auf denselben Datenstand zugreifen.
+        $studiengaenge = ['alle' => get_string('frist_alle_studiengaenge', 'mod_dhbwio')];
+        $studiengaenge += self::get_studyprogram_options();
         $mform->addElement('select', 'studiengang', get_string('frist_studiengang', 'mod_dhbwio'), $studiengaenge);
         $mform->addRule('studiengang', get_string('required', 'mod_dhbwio'), 'required', null, 'client');
         $mform->setType('studiengang', PARAM_TEXT);
@@ -99,5 +77,26 @@ class frist_form extends \moodleform {
         }
 
         $this->add_action_buttons(true, get_string('frist_save', 'mod_dhbwio'));
+    }
+
+    /**
+     * Liefert die aktiven Studiengänge aus dhbwio_studyprograms als ID => Label.
+     *
+     * @return array
+     */
+    private static function get_studyprogram_options(): array
+    {
+        global $DB;
+
+        $options = [];
+        $records = $DB->get_records('dhbwio_studyprograms', ['active' => 1], 'sortorder ASC, de_name ASC');
+        $lang    = current_language();
+
+        foreach ($records as $record) {
+            $label = ($lang === 'en') ? $record->en_name : $record->de_name;
+            $options[(string) $record->id] = $label;
+        }
+
+        return $options;
     }
 }

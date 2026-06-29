@@ -932,9 +932,13 @@ switch ($tab) {
 
 			foreach ($fristen as $frist) {
 				$artlabel = $artlabels[$frist->art] ?? $frist->art;
-				$sgLabel  = $frist->studiengang === 'alle'
-					? get_string('frist_alle_studiengaenge', 'mod_dhbwio')
-					: format_string($frist->studiengang);
+				if ($frist->studiengang === 'alle') {
+					$sgLabel = get_string('frist_alle_studiengaenge', 'mod_dhbwio');
+				} elseif (is_numeric($frist->studiengang)) {
+					$sgLabel = entry_manager::get_studyprogram_label((int) $frist->studiengang);
+				} else {
+					$sgLabel = format_string($frist->studiengang);
+				}
 
 				$editurl = new moodle_url('/mod/dhbwio/frist.php', [
 					'cmid'    => $cm->id,

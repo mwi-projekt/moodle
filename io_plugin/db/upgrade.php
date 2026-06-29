@@ -923,7 +923,7 @@ function xmldb_dhbwio_upgrade($oldversion)
 
 
 
-    if ($oldversion < $newversion) {
+    if ($oldversion < 2026061700) {
 
             //crete dhbwio_la_status
             $table = new xmldb_table('dhbwio_la_status');
@@ -1023,7 +1023,7 @@ function xmldb_dhbwio_upgrade($oldversion)
         }
 
         // Savepoint
-        upgrade_mod_savepoint(true, $newversion, 'dhbwio');
+        upgrade_mod_savepoint(true, 2026061700, 'dhbwio');
     }
     if ($oldversion <= 2026061702) { // Nutze hier deine nächste Plugin-Version
         $table = new xmldb_table('dhbwio_la');
