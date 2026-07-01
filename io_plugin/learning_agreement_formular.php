@@ -124,20 +124,14 @@ if ($entryid == 0) {
     }
 
     //studienrichtung auf der Bewerbung aktuell noch per Textfeld gesetzt daher nach studienrichtungsname in der Tabelle dhbwio_studytracks suchen und die ID zurückgeben
-    $studienrichtung = $DB->get_field('dhbwio_studytracks', 'id', ['de_name' => $studienrichtungname], IGNORE_MISSING);
+    //Wenn Studienrichtung numerischer Wert ist, dann direkt die ID zurückgeben
+    if(is_numeric($studienrichtungname)) {
+        $studienrichtung = (int)$studienrichtungname;
+        $studienrichtungname = $DB->get_field('dhbwio_studytracks', 'de_name', ['id' => $studienrichtung], IGNORE_MISSING);
+    } else {
+        $studienrichtung = $DB->get_field('dhbwio_studytracks', 'id', ['de_name' => $studienrichtungname], IGNORE_MISSING);
+    }
 
-    /**
-//     $name = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 16],'content', IGNORE_MISSING);
-//     $vorname = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 15],'content', IGNORE_MISSING);
-//     $studiengang = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 30],'content', IGNORE_MISSING);
-//     $studienrichtungname = $DB->get_record('dhbwio_dataform_contents',['entryid' => $app_entry_record->id, 'fieldid' => 18],'content', IGNORE_MISSING);
-//     $gasthochschulid = $DB->get_record('dhbwio_dataform_entries',['id' => $app_entry_record->id],'acceptedchoice', IGNORE_MISSING);
-//     $gasthochschule = $DB->get_record('dhbwio_universities',['id' => $gasthochschulid],'name', IGNORE_MISSING);
-//
-//
-//     //studienrichtung auf der Bewerbung aktuell noch per Textfeld gesetzt daher nach studienrichtungsname in der Tabelle dhbwio_studytracks suchen und die ID zurückgeben
-//     $studienrichtung = $DB->get_record('dhbwio_studytracks',['de_name' => $studienrichtungname],'id', IGNORE_MISSING);
-    */
 
     $content->name = $name;
     $content->vorname = $vorname;
